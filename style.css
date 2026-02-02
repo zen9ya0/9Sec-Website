@@ -603,3 +603,40 @@ footer {
         font-size: 2.5rem;
     }
 }
+
+/* Language Switcher */
+.lang-selector {
+    margin-left: 1rem;
+}
+
+.lang-selector select {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    border-radius: 0; /* Cyber sharp edges */
+}
+
+.lang-selector select:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
+
+.lang-selector select option {
+    background: #050505;
+    color: var(--text-primary);
+}
+
+/* Adjust mobile layout to include lang selector */
+@media (max-width: 768px) {
+    .lang-selector {
+        margin-left: auto; /* Push to right */
+        margin-right: 1rem;
+    }
+}

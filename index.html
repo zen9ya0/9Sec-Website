@@ -31,11 +31,18 @@
                 <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
             </div>
             <ul class="nav-links">
-                <li><a href="#hero" class="active">/Home</a></li>
-                <li><a href="#model">/9SEC_Model</a></li>
-                <li><a href="#tools">/Arsenal</a></li>
-                <li><a href="#articles">/Intelligence</a></li>
+                <li><a href="#hero" class="active" data-i18n="nav.home">/Home</a></li>
+                <li><a href="#model" data-i18n="nav.model">/9SEC_Model</a></li>
+                <li><a href="#tools" data-i18n="nav.tools">/Arsenal</a></li>
+                <li><a href="#articles" data-i18n="nav.intelligence">/Intelligence</a></li>
             </ul>
+            <div class="lang-selector">
+                <select id="lang-switch">
+                    <option value="tw">TW</option>
+                    <option value="en" selected>EN</option>
+                    <option value="jp">JP</option>
+                </select>
+            </div>
             <div class="mobile-menu-btn">
                 <i class="fa-solid fa-bars"></i>
             </div>
@@ -47,20 +54,19 @@
         <section id="hero" class="hero-section">
             <div class="container">
                 <div class="hero-content">
-                    <p class="terminal-text">Initializing 9SEC Defense Protocol... <span
+                    <p class="terminal-text" data-i18n="hero.init">Initializing 9SEC Defense Protocol... <span
                             class="status-ok">[ACTIVE]</span></p>
-                    <h1 class="glitch-title" data-text="EVIDENCE-BASED SECURITY">EVIDENCE-BASED SECURITY</h1>
-                    <p class="subtitle">Turning Incidents into Verifiable Defense Capabilities.</p>
+                    <h1 class="glitch-title" data-text="EVIDENCE-BASED SECURITY" data-i18n="hero.title">EVIDENCE-BASED SECURITY</h1>
+                    <p class="subtitle" data-i18n="hero.subtitle">Turning Incidents into Verifiable Defense Capabilities.</p>
                     <div class="hero-desc">
-                        <p>We provide security consulting centered on <strong>Forensics</strong> and
+                        <p data-i18n="hero.desc">We provide security consulting centered on <strong>Forensics</strong> and
                             <strong>Evidence</strong>. Through our unique <strong>9-Layer Defense Model</strong>, we
                             help enterprises see the full attack picture and close defense gaps.
                         </p>
                     </div>
                     <div class="cta-group">
-                        <a href="#model" class="btn primary-btn"><i class="fa-solid fa-layer-group"></i> 9-Layer
-                            Model</a>
-                        <a href="#tools" class="btn secondary-btn"><i class="fa-solid fa-terminal"></i> Our Arsenal</a>
+                        <a href="#model" class="btn primary-btn"><i class="fa-solid fa-layer-group"></i> <span data-i18n="hero.cta_model">9-Layer Model</span></a>
+                        <a href="#tools" class="btn secondary-btn"><i class="fa-solid fa-terminal"></i> <span data-i18n="hero.cta_arsenal">Our Arsenal</span></a>
                     </div>
                 </div>
             </div>
@@ -70,13 +76,13 @@
         <section id="model" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="hash">#</span> The_9SEC_Model</h2>
+                    <h2><span class="hash">#</span> <span data-i18n="section.model">The_9SEC_Model</span></h2>
                     <div class="line"></div>
                 </div>
 
                 <div class="model-intro">
-                    <p class="highlight-text">> OSI is for Communication. 9SEC is for Operations.</p>
-                    <p>A practical framework covering Governance, Protection, Detection, Response, and Evolution.</p>
+                    <p class="highlight-text" data-i18n="model.intro1">> OSI is for Communication. 9SEC is for Operations.</p>
+                    <p data-i18n="model.intro2">A practical framework covering Governance, Protection, Detection, Response, and Evolution.</p>
                 </div>
 
                 <div class="grid-layout model-grid">
@@ -232,7 +238,7 @@
         <section id="tools" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="hash">#</span> Operational_Arsenal</h2>
+                    <h2><span class="hash">#</span> <span data-i18n="section.arsenal">Operational_Arsenal</span></h2>
                     <div class="line"></div>
                 </div>
 
@@ -300,7 +306,7 @@
         <section id="articles" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="hash">#</span> Threat_Intelligence</h2>
+                    <h2><span class="hash">#</span> <span data-i18n="section.intelligence">Threat_Intelligence</span></h2>
                     <div class="line"></div>
                 </div>
 
@@ -349,7 +355,7 @@
         <div class="container footer-content">
             <div class="brand">
                 <h4>Nine-Security.INC</h4>
-                <p>Securing the digital frontier.</p>
+                <p data-i18n="footer.tagline">Securing the digital frontier.</p>
             </div>
             <div class="socials">
                 <a href="#"><i class="fa-brands fa-github"></i></a>
@@ -357,7 +363,7 @@
                 <a href="#"><i class="fa-brands fa-twitter"></i></a>
             </div>
             <div class="copyright">
-                <p>&copy; 2026 Nine-Security. All Systems Operational.</p>
+                <p data-i18n="footer.copyright">&copy; 2026 Nine-Security. All Systems Operational.</p>
             </div>
         </div>
     </footer>
