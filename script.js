@@ -185,22 +185,26 @@ const translations = {
     }
 };
 
-const langSwitch = document.getElementById('lang-switch');
+const langBtn = document.getElementById('current-lang');
+const langOptions = document.querySelectorAll('.lang-menu li');
 
 // Load saved language
 const savedLang = localStorage.getItem('9sec_lang') || 'en';
-if (langSwitch) {
-    langSwitch.value = savedLang;
-    updateLanguage(savedLang);
+updateLanguage(savedLang);
 
-    langSwitch.addEventListener('change', (e) => {
-        const lang = e.target.value;
+// Event Listeners for Custom Dropdown
+langOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        const lang = option.getAttribute('data-lang');
         localStorage.setItem('9sec_lang', lang);
         updateLanguage(lang);
     });
-}
+});
 
 function updateLanguage(lang) {
+    // Update Button Text
+    if (langBtn) langBtn.textContent = lang.toUpperCase();
+
     // Traverse the object using dot notation string
     document.querySelectorAll('[data-i18n]').forEach(element => {
         const key = element.getAttribute('data-i18n');
@@ -211,8 +215,6 @@ function updateLanguage(lang) {
         });
 
         if (val) {
-            // For elements that might contain HTML (like spans in desc), use innerHTML
-            // Check if it's safe - in this static content case, it is.
             element.innerHTML = val;
         }
     });

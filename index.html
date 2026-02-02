@@ -37,11 +37,12 @@
                 <li><a href="#articles" data-i18n="nav.intelligence">/Intelligence</a></li>
             </ul>
             <div class="lang-selector">
-                <select id="lang-switch">
-                    <option value="tw">TW</option>
-                    <option value="en" selected>EN</option>
-                    <option value="jp">JP</option>
-                </select>
+                <button id="current-lang" class="lang-btn">EN</button>
+                <ul class="lang-menu">
+                    <li data-lang="tw">TW [繁體中文]</li>
+                    <li data-lang="en">EN [English]</li>
+                    <li data-lang="jp">JP [日本語]</li>
+                </ul>
             </div>
             <div class="mobile-menu-btn">
                 <i class="fa-solid fa-bars"></i>
@@ -56,17 +57,22 @@
                 <div class="hero-content">
                     <p class="terminal-text" data-i18n="hero.init">Initializing 9SEC Defense Protocol... <span
                             class="status-ok">[ACTIVE]</span></p>
-                    <h1 class="glitch-title" data-text="EVIDENCE-BASED SECURITY" data-i18n="hero.title">EVIDENCE-BASED SECURITY</h1>
-                    <p class="subtitle" data-i18n="hero.subtitle">Turning Incidents into Verifiable Defense Capabilities.</p>
+                    <h1 class="glitch-title" data-text="EVIDENCE-BASED SECURITY" data-i18n="hero.title">EVIDENCE-BASED
+                        SECURITY</h1>
+                    <p class="subtitle" data-i18n="hero.subtitle">Turning Incidents into Verifiable Defense
+                        Capabilities.</p>
                     <div class="hero-desc">
-                        <p data-i18n="hero.desc">We provide security consulting centered on <strong>Forensics</strong> and
+                        <p data-i18n="hero.desc">We provide security consulting centered on <strong>Forensics</strong>
+                            and
                             <strong>Evidence</strong>. Through our unique <strong>9-Layer Defense Model</strong>, we
                             help enterprises see the full attack picture and close defense gaps.
                         </p>
                     </div>
                     <div class="cta-group">
-                        <a href="#model" class="btn primary-btn"><i class="fa-solid fa-layer-group"></i> <span data-i18n="hero.cta_model">9-Layer Model</span></a>
-                        <a href="#tools" class="btn secondary-btn"><i class="fa-solid fa-terminal"></i> <span data-i18n="hero.cta_arsenal">Our Arsenal</span></a>
+                        <a href="#model" class="btn primary-btn"><i class="fa-solid fa-layer-group"></i> <span
+                                data-i18n="hero.cta_model">9-Layer Model</span></a>
+                        <a href="#tools" class="btn secondary-btn"><i class="fa-solid fa-terminal"></i> <span
+                                data-i18n="hero.cta_arsenal">Our Arsenal</span></a>
                     </div>
                 </div>
             </div>
@@ -81,8 +87,10 @@
                 </div>
 
                 <div class="model-intro">
-                    <p class="highlight-text" data-i18n="model.intro1">> OSI is for Communication. 9SEC is for Operations.</p>
-                    <p data-i18n="model.intro2">A practical framework covering Governance, Protection, Detection, Response, and Evolution.</p>
+                    <p class="highlight-text" data-i18n="model.intro1">> OSI is for Communication. 9SEC is for
+                        Operations.</p>
+                    <p data-i18n="model.intro2">A practical framework covering Governance, Protection, Detection,
+                        Response, and Evolution.</p>
                 </div>
 
                 <div class="grid-layout model-grid">
@@ -306,7 +314,8 @@
         <section id="articles" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="hash">#</span> <span data-i18n="section.intelligence">Threat_Intelligence</span></h2>
+                    <h2><span class="hash">#</span> <span data-i18n="section.intelligence">Threat_Intelligence</span>
+                    </h2>
                     <div class="line"></div>
                 </div>
 

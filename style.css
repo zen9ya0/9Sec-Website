@@ -604,39 +604,74 @@ footer {
     }
 }
 
-/* Language Switcher */
+/* Language Switcher (Custom Cyber Style) */
 .lang-selector {
+    position: relative;
     margin-left: 1rem;
-}
-
-.lang-selector select {
-    background: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-    padding: 0.4rem 0.8rem;
     font-family: var(--font-mono);
-    font-size: 0.9rem;
-    cursor: pointer;
-    outline: none;
-    transition: all 0.3s ease;
-    border-radius: 0; /* Cyber sharp edges */
 }
 
-.lang-selector select:hover {
+.lang-btn {
+    background: rgba(0, 0, 0, 0.5);
     color: var(--accent-color);
-    border-color: var(--accent-color);
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+    border: 1px solid var(--accent-color);
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    min-width: 60px;
+    text-align: center;
 }
 
-.lang-selector select option {
-    background: #050505;
-    color: var(--text-primary);
+.lang-btn:hover {
+    background: var(--accent-color);
+    color: #000;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.4);
+}
+
+.lang-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 150px;
+    background: #000;
+    border: 1px solid var(--border-color);
+    list-style: none;
+    display: none;
+    /* Hidden by default */
+    z-index: 200;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+}
+
+.lang-selector:hover .lang-menu {
+    display: block;
+    /* Show on hover */
+}
+
+.lang-menu li {
+    padding: 0.6rem 1rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+.lang-menu li:last-child {
+    border-bottom: none;
+}
+
+.lang-menu li:hover {
+    background: rgba(0, 255, 65, 0.1);
+    color: var(--accent-color);
+    padding-left: 1.2rem;
+    /* Slide effect */
 }
 
 /* Adjust mobile layout to include lang selector */
 @media (max-width: 768px) {
     .lang-selector {
-        margin-left: auto; /* Push to right */
+        margin-left: auto;
+        /* Push to right */
         margin-right: 1rem;
     }
 }
