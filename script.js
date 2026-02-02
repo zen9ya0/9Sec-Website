@@ -430,14 +430,22 @@ function generateMockReport(domain) {
         dns_posture: {
             spf: "pass",
             dmarc: "none",
-            dkim: "pass"
+            dkim: "pass",
+            mta_sts: Math.random() > 0.5 ? "enforce" : "missing", // Mock
+            tls_rpt: Math.random() > 0.5 ? "enabled" : "missing"  // Mock
         },
         smtp_tls: {
             starttls: true,
             version: "TLS 1.3",
             cipher: "TLS_AES_256_GCM_SHA384"
         },
-        risk_level: "Medium"
+        risk_level: "Medium",
+        risk_score: 65,
+        risk_breakdown: [
+            { item: "DMARC policy is 'none' (Monitoring only)", score: 20, severity: "high" },
+            { item: "MTA-STS policy missing or invalid", score: 10, severity: "medium" },
+            { item: "SPF lookup count near limit (9/10)", score: 5, severity: "low" }
+        ]
     };
 }
 
@@ -447,35 +455,71 @@ function renderReport(report) {
 
     // Helper for coloring
     const getStatusClass = (val) => {
-        if (val === 'pass' || val === true || val === 'Low') return 'pass';
-        if (val === 'none' || val === 'Medium') return 'warn';
+        if (val === 'pass' || val === true || val === 'Low' || val === 'enforce' || val === 'enabled') return 'pass';
+        if (val === 'none' || val === 'Medium' || val === 'missing') return 'warn';
         return 'fail';
     };
 
-    grid.innerHTML = `
-        <div class="report-item">
-            <h4>Sender IP</h4>
-            <div class="value">${report.sender_ip}</div>
+    let html = `
+        <div class="report-section-title">> Basic Authentication</div>
+        <div class="report-grid">
+            <div class="report-item">
+                <h4>Sender IP</h4>
+                <div class="value">${report.sender_ip}</div>
+            </div>
+            <div class="report-item">
+                <h4>SPF Status</h4>
+                <div class="value ${getStatusClass(report.dns_posture.spf)}">${report.dns_posture.spf.toUpperCase()}</div>
+            </div>
+            <div class="report-item">
+                <h4>DMARC Policy</h4>
+                <div class="value ${getStatusClass(report.dns_posture.dmarc)}">${report.dns_posture.dmarc.toUpperCase()}</div>
+            </div>
+            <div class="report-item">
+                <h4>DKIM Signature</h4>
+                <div class="value ${getStatusClass(report.dns_posture.dkim)}">${report.dns_posture.dkim.toUpperCase()}</div>
+            </div>
         </div>
-        <div class="report-item">
-            <h4>SPF Status</h4>
-            <div class="value ${getStatusClass(report.dns_posture.spf)}">${report.dns_posture.spf.toUpperCase()}</div>
+
+        <div class="report-section-title">> Advanced Policy (MTA-STS & Reports)</div>
+        <div class="report-grid">
+            <div class="report-item">
+                <h4>MTA-STS Policy</h4>
+                <div class="value ${getStatusClass(report.dns_posture.mta_sts)}">${report.dns_posture.mta_sts.toUpperCase()}</div>
+            </div>
+            <div class="report-item">
+                <h4>TLS Reporting (TLS-RPT)</h4>
+                <div class="value ${getStatusClass(report.dns_posture.tls_rpt)}">${report.dns_posture.tls_rpt.toUpperCase()}</div>
+            </div>
+            <div class="report-item">
+                <h4>TLS Version</h4>
+                <div class="value">${report.smtp_tls.version}</div>
+            </div>
         </div>
-        <div class="report-item">
-            <h4>DMARC Policy</h4>
-            <div class="value ${getStatusClass(report.dns_posture.dmarc)}">${report.dns_posture.dmarc.toUpperCase()}</div>
-        </div>
-        <div class="report-item">
-            <h4>STARTTLS</h4>
-            <div class="value ${report.smtp_tls.starttls ? 'pass' : 'fail'}">${report.smtp_tls.starttls ? 'ENABLED' : 'DISABLED'}</div>
-        </div>
-        <div class="report-item">
-            <h4>TLS Version</h4>
-            <div class="value">${report.smtp_tls.version}</div>
-        </div>
-        <div class="report-item">
-            <h4>Overall Risk</h4>
-            <div class="value ${getStatusClass(report.risk_level)}">${report.risk_level.toUpperCase()}</div>
-        </div>
+
+        <div class="report-section-title">> Risk Assessment (Score: ${report.risk_score || 'N/A'})</div>
     `;
+
+    // Render Risk Breakdown if available
+    if (report.risk_breakdown && report.risk_breakdown.length > 0) {
+        html += `<div class="risk-list">`;
+        report.risk_breakdown.forEach(risk => {
+            html += `
+                <div class="risk-item severity-${risk.severity}">
+                    <div class="risk-name">${risk.item}</div>
+                    <div class="risk-score">+${risk.score} Risk</div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    } else {
+        html += `
+            <div class="report-item">
+                <h4>Overall Risk</h4>
+                <div class="value ${getStatusClass(report.risk_level)}">${report.risk_level.toUpperCase()}</div>
+            </div>
+        `;
+    }
+
+    grid.innerHTML = html;
 }

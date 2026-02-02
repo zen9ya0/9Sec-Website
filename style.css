@@ -965,4 +965,55 @@ footer {
 .report-actions {
     display: flex;
     justify-content: center;
+    margin-top: 2rem;
+}
+
+/* Advanced Report Layout Needed */
+.report-section-title {
+    font-family: var(--font-mono);
+    color: var(--accent-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.risk-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.risk-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 0, 85, 0.1);
+    /* Default reddish bg */
+    border: 1px solid rgba(255, 0, 85, 0.3);
+    padding: 0.8rem;
+    border-radius: 4px;
+}
+
+.risk-item.severity-low {
+    background: rgba(255, 204, 0, 0.1);
+    border-color: rgba(255, 204, 0, 0.3);
+}
+
+.risk-item .risk-name {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: #e0e0e0;
+}
+
+.risk-item .risk-score {
+    font-family: var(--font-mono);
+    font-weight: bold;
+    color: #ffcc00;
+    /* Warn by default */
+}
+
+.risk-item.severity-high .risk-score {
+    color: #ff0055;
 }
