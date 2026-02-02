@@ -362,6 +362,9 @@ function addLog(msg, type = '') {
     }
 }
 
+// State tracking to prevent log spam
+let isAnalyzing = false;
+
 async function checkStatus(id) {
     // Call real backend: GET /api/assessment/{id}
     let resp;
@@ -383,12 +386,12 @@ async function checkStatus(id) {
     if (!resp.ok || !data.ok) {
         console.error("POLL_FAIL", resp.status, data);
         addLog(`Error: Connection failed [${resp.status}]`, "error");
+        clearInterval(pollInterval); // Stop polling on error
         return;
     }
 
-    // Waiting state: keep polling
+    // STATE 1: WAITING
     if (data.status === "waiting_email") {
-        // Randomly add "noise" logs to make it feel alive
         if (Math.random() > 0.7) {
             const msg = logMessages[Math.floor(Math.random() * logMessages.length)];
             addLog(msg);
@@ -396,30 +399,44 @@ async function checkStatus(id) {
         return;
     }
 
-    if (data.status === "verified" || data.status === "probing") {
+    // STATE 2: VERIFIED / ANALYZING
+    // Since backend currently stops at 'verified', we handle the transition here.
+    if ((data.status === "verified" || data.status === "probing") && !isAnalyzing) {
+        isAnalyzing = true;
+
+        // Stop polling immediately to prevent loops
+        clearInterval(pollInterval);
+
         addLog("Email received! Starting deep analysis...", "success");
+        addLog("Analyzing SPF/DKIM/DMARC alignment...", "warn");
 
-        // If probing, show more specific logs
-        if (data.status === "probing") {
-            addLog("Probing MX host capabilities...", "warn");
-            addLog("Handshaking TLS...", "warn");
-        }
+        setTimeout(() => addLog("Probing MX host capabilities...", "warn"), 800);
+        setTimeout(() => addLog("Verifying MTA-STS policy...", "warn"), 1600);
+        setTimeout(() => addLog("Calculating risk score...", "warn"), 2400);
 
-        // Wait a bit before showing report if it's instant
-        if (data.status === "verified") return;
+        // Transition to Report after "analysis" simulation
+        setTimeout(() => {
+            addLog("Analysis complete. Generating report...", "success");
+            const report = data.report || generateMockReport(data.domain);
+            renderReport(report);
+
+            setTimeout(() => {
+                stepVerify.classList.add('hidden');
+                stepReport.classList.remove('hidden');
+                isAnalyzing = false; // Reset for next run
+            }, 1000);
+        }, 3500);
+
+        return;
     }
 
-    // Verified -> stop polling and show report step
+    // STATE 3: COMPLETED (Future proofing)
     if (data.status === "report_ready" || data.status === "completed") {
         clearInterval(pollInterval);
-        addLog("Analysis complete. Generatnig report...", "success");
-
-        setTimeout(() => {
-            const report = data.report || generateMockReport(data.domain); // Use backend report if avail
-            renderReport(report);
-            stepVerify.classList.add('hidden');
-            stepReport.classList.remove('hidden');
-        }, 1000);
+        const report = data.report || generateMockReport(data.domain);
+        renderReport(report);
+        stepVerify.classList.add('hidden');
+        stepReport.classList.remove('hidden');
     }
 }
 
