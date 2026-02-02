@@ -327,12 +327,39 @@ async function startAssessment(email) {
     stepInput.classList.add('hidden');
     stepVerify.classList.remove('hidden');
 
+    // Reset Log
+    const logContainer = document.getElementById('scan-log');
+    logContainer.innerHTML = '<div class="log-line">> Session started. Waiting for inbound connection...</div>';
+
     // Start polling backend status
     if (pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(() => checkStatus(currentAssessmentId), 3000);
 
     // Optional: immediate check
     await checkStatus(currentAssessmentId);
+}
+
+// Log simulation messages
+const logMessages = [
+    "Listening for SMTP connection...",
+    "Monitoring MX records for target domain...",
+    "Warming up analysis engine...",
+    "Checking global blocklists (RBL)...",
+    "Verifying TLS handshake capability..."
+];
+
+function addLog(msg, type = '') {
+    const logContainer = document.getElementById('scan-log');
+    const div = document.createElement('div');
+    div.className = `log-line ${type}`;
+    div.textContent = `> ${msg}`;
+    logContainer.appendChild(div);
+    logContainer.scrollTop = logContainer.scrollHeight;
+
+    // Keep only last 6 lines
+    while (logContainer.children.length > 6) {
+        logContainer.removeChild(logContainer.firstChild);
+    }
 }
 
 async function checkStatus(id) {
@@ -355,25 +382,45 @@ async function checkStatus(id) {
 
     if (!resp.ok || !data.ok) {
         console.error("POLL_FAIL", resp.status, data);
+        addLog(`Error: Connection failed [${resp.status}]`, "error");
         return;
     }
 
     // Waiting state: keep polling
-    if (data.status !== "verified") {
-        // still waiting_email (expected)
+    if (data.status === "waiting_email") {
+        // Randomly add "noise" logs to make it feel alive
+        if (Math.random() > 0.7) {
+            const msg = logMessages[Math.floor(Math.random() * logMessages.length)];
+            addLog(msg);
+        }
         return;
     }
 
-    // Verified -> stop polling and show report step (temporary)
-    clearInterval(pollInterval);
+    if (data.status === "verified" || data.status === "probing") {
+        addLog("Email received! Starting deep analysis...", "success");
 
-    // For now, reuse your existing mock report generator to render a "Report" UI
-    // Later you can replace this with GET /api/assessment/{id}/report or similar
-    const report = generateMockReport(data.domain);
-    renderReport(report);
+        // If probing, show more specific logs
+        if (data.status === "probing") {
+            addLog("Probing MX host capabilities...", "warn");
+            addLog("Handshaking TLS...", "warn");
+        }
 
-    stepVerify.classList.add('hidden');
-    stepReport.classList.remove('hidden');
+        // Wait a bit before showing report if it's instant
+        if (data.status === "verified") return;
+    }
+
+    // Verified -> stop polling and show report step
+    if (data.status === "report_ready" || data.status === "completed") {
+        clearInterval(pollInterval);
+        addLog("Analysis complete. Generatnig report...", "success");
+
+        setTimeout(() => {
+            const report = data.report || generateMockReport(data.domain); // Use backend report if avail
+            renderReport(report);
+            stepVerify.classList.add('hidden');
+            stepReport.classList.remove('hidden');
+        }, 1000);
+    }
 }
 
 function generateMockReport(domain) {
