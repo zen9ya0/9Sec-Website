@@ -263,7 +263,7 @@ const stepVerify = document.getElementById('smtp-step-verify');
 const stepReport = document.getElementById('smtp-step-report');
 const verifyEmailCode = document.getElementById('verification-email');
 const btnCopy = document.getElementById('btn-copy-email');
-const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only
+const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - Can be removed
 
 let currentAssessmentId = null;
 let pollInterval = null;
@@ -285,66 +285,95 @@ if (btnCopy) {
     });
 }
 
-if (btnMockVerify) {
-    btnMockVerify.addEventListener('click', () => {
-        // Dev backdoor to simulate email arrival
-        if (currentAssessmentId) {
-            mockBackendState[currentAssessmentId].status = 'report_ready';
-            checkStatus(currentAssessmentId); // Immediate check
-        }
-    });
-}
-
-// Mock Backend Storage (Browser Memory)
-const mockBackendState = {};
-
 async function startAssessment(email) {
-    // Simulate POST /api/assessment
-    const domain = email.split('@')[1];
-    const token = Math.random().toString(36).substring(2, 10);
-    const assessmentId = 'asmt_' + Date.now();
-    const verifyAddr = `smtpcheck+${token}@smtpcheck.nine-security.com`;
+    // Read consent checkbox (required by backend)
+    const consentEl = document.getElementById('consent-check');
+    const consent = !!consentEl?.checked;
 
-    // Store in mock backend
-    mockBackendState[assessmentId] = {
-        id: assessmentId,
-        email: email,
-        domain: domain,
-        token: token,
-        verifyAddr: verifyAddr,
-        status: 'waiting_email',
-        report: null
-    };
+    // Call real backend: POST /api/assessment
+    let resp;
+    try {
+        resp = await fetch("/api/assessment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, consent })
+        });
+    } catch (e) {
+        console.error("API_ERROR", e);
+        alert("Backend unreachable. Check Worker route /api/* and network.");
+        return;
+    }
 
-    currentAssessmentId = assessmentId;
+    let data;
+    try {
+        data = await resp.json();
+    } catch {
+        alert("Invalid backend response (non-JSON).");
+        return;
+    }
 
-    // UI Update
-    verifyEmailCode.textContent = verifyAddr;
+    if (!resp.ok || !data.ok) {
+        console.error("API_FAIL", resp.status, data);
+        alert(`Assessment failed: ${data?.error || resp.status}`);
+        return;
+    }
+
+    // Persist assessment_id for polling
+    currentAssessmentId = data.assessment_id;
+
+    // UI update: show verification address from backend
+    verifyEmailCode.textContent = data.verification_address;
+
     stepInput.classList.add('hidden');
     stepVerify.classList.remove('hidden');
 
-    // Start Polling
-    pollInterval = setInterval(() => checkStatus(assessmentId), 3000);
+    // Start polling backend status
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => checkStatus(currentAssessmentId), 3000);
+
+    // Optional: immediate check
+    await checkStatus(currentAssessmentId);
 }
 
 async function checkStatus(id) {
-    // Simulate GET /api/assessment/{id}
-    const state = mockBackendState[id];
-
-    if (!state) return;
-
-    if (state.status === 'report_ready' || state.status === 'completed') {
-        clearInterval(pollInterval);
-
-        // Generate Mock Report if not exists
-        if (!state.report) {
-            state.report = generateMockReport(state.domain);
-        }
-
-        renderReport(state.report);
-        stepVerify.classList.add('hidden');
-        stepReport.classList.remove('hidden');
+    // Call real backend: GET /api/assessment/{id}
+    let resp;
+    try {
+        resp = await fetch(`/api/assessment/${encodeURIComponent(id)}`, { method: "GET" });
+    } catch (e) {
+        console.error("POLL_ERROR", e);
+        return;
     }
+
+    let data;
+    try {
+        data = await resp.json();
+    } catch {
+        console.error("POLL_INVALID_JSON", resp.status);
+        return;
+    }
+
+    if (!resp.ok || !data.ok) {
+        console.error("POLL_FAIL", resp.status, data);
+        return;
+    }
+
+    // Waiting state: keep polling
+    if (data.status !== "verified") {
+        // still waiting_email (expected)
+        return;
+    }
+
+    // Verified -> stop polling and show report step (temporary)
+    clearInterval(pollInterval);
+
+    // For now, reuse your existing mock report generator to render a "Report" UI
+    // Later you can replace this with GET /api/assessment/{id}/report or similar
+    const report = generateMockReport(data.domain);
+    renderReport(report);
+
+    stepVerify.classList.add('hidden');
+    stepReport.classList.remove('hidden');
 }
 
 function generateMockReport(domain) {
