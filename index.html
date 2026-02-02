@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine-Security | 9-Layer Defense Model</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Background Canvas for Particles -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Overlay Scanline Effect -->
+    <div class="scanlines"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <img src="assets/logo_v2.png" alt="Nine-Security Logo" class="logo-img">
+                <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#hero" class="active">/Home</a></li>
+                <li><a href="#model">/9SEC_Model</a></li>
+                <li><a href="#tools">/Arsenal</a></li>
+                <li><a href="#articles">/Intelligence</a></li>
+            </ul>
+            <div class="mobile-menu-btn">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <p class="terminal-text">Initializing 9SEC Defense Protocol... <span
+                            class="status-ok">[ACTIVE]</span></p>
+                    <h1 class="glitch-title" data-text="EVIDENCE-BASED SECURITY">EVIDENCE-BASED SECURITY</h1>
+                    <p class="subtitle">Turning Incidents into Verifiable Defense Capabilities.</p>
+                    <div class="hero-desc">
+                        <p>We provide security consulting centered on <strong>Forensics</strong> and
+                            <strong>Evidence</strong>. Through our unique <strong>9-Layer Defense Model</strong>, we
+                            help enterprises see the full attack picture and close defense gaps.
+                        </p>
+                    </div>
+                    <div class="cta-group">
+                        <a href="#model" class="btn primary-btn"><i class="fa-solid fa-layer-group"></i> 9-Layer
+                            Model</a>
+                        <a href="#tools" class="btn secondary-btn"><i class="fa-solid fa-terminal"></i> Our Arsenal</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9SEC Model Section -->
+        <section id="model" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="hash">#</span> The_9SEC_Model</h2>
+                    <div class="line"></div>
+                </div>
+
+                <div class="model-intro">
+                    <p class="highlight-text">> OSI is for Communication. 9SEC is for Operations.</p>
+                    <p>A practical framework covering Governance, Protection, Detection, Response, and Evolution.</p>
+                </div>
+
+                <div class="grid-layout model-grid">
+                    <!-- L1 -->
+                    <div class="card layer-card" style="--layer-color: #4a90e2;">
+                        <div class="card-header">
+                            <span class="layer-num">01</span>
+                            <h3>Governance & Risk</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Building the correct security foundation from decision-making and risk
+                                perspectives.</p>
+                            <ul class="layer-details">
+                                <li>Policy & Responsibility</li>
+                                <li>Risk Assessment</li>
+                                <li>Compliance (ISO/NIST)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L2 -->
+                    <div class="card layer-card" style="--layer-color: #50e3c2;">
+                        <div class="card-header">
+                            <span class="layer-num">02</span>
+                            <h3>Identity & Access</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Minimizing initial intrusion and lateral movement risks.</p>
+                            <ul class="layer-details">
+                                <li>AD/IAM Architecture</li>
+                                <li>Over-Privilege Analysis</li>
+                                <li>MFA Strategies</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L3 -->
+                    <div class="card layer-card" style="--layer-color: #7ed321;">
+                        <div class="card-header">
+                            <span class="layer-num">03</span>
+                            <h3>Endpoint Protection</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Mastering actual attack execution and landing behavior.</p>
+                            <ul class="layer-details">
+                                <li>EDR/XDR Health Check</li>
+                                <li>Behavior Analysis</li>
+                                <li>Fileless Monitoring</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L4 -->
+                    <div class="card layer-card" style="--layer-color: #f5a623;">
+                        <div class="card-header">
+                            <span class="layer-num">04</span>
+                            <h3>Network Defense</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Identifying hidden communications and lateral movement.</p>
+                            <ul class="layer-details">
+                                <li>Traffic Analysis</li>
+                                <li>C2 Communication</li>
+                                <li>Lateral Movement Paths</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L5 -->
+                    <div class="card layer-card" style="--layer-color: #bd10e0;">
+                        <div class="card-header">
+                            <span class="layer-num">05</span>
+                            <h3>Application & Cloud</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Securing the modern attack surface.</p>
+                            <ul class="layer-details">
+                                <li>Web/API Analysis</li>
+                                <li>Cloud Config Risks</li>
+                                <li>SaaS Access Review</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L6 -->
+                    <div class="card layer-card" style="--layer-color: #d0021b;">
+                        <div class="card-header">
+                            <span class="layer-num">06</span>
+                            <h3>Threat Intelligence</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Strengthening defense decisions from the adversary's perspective.</p>
+                            <ul class="layer-details">
+                                <li>APT Behavioral Analysis</li>
+                                <li>MITRE ATT&CK Mapping</li>
+                                <li>Threat Profiling</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L7 -->
+                    <div class="card layer-card" style="--layer-color: #9013fe;">
+                        <div class="card-header">
+                            <span class="layer-num">07</span>
+                            <h3>Detection Engineering</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Making defense capabilities quantifiable and verifiable.</p>
+                            <ul class="layer-details">
+                                <li>Rule Design & QA</li>
+                                <li>Attack Chain Coverage</li>
+                                <li>Gap Analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L8 -->
+                    <div class="card layer-card" style="--layer-color: #00ff41;">
+                        <div class="card-header">
+                            <span class="layer-num">08</span>
+                            <h3>Incident Response & DFIR</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Restoring the full truth when incidents occur.</p>
+                            <ul class="layer-details">
+                                <li>Forensic Investigation</li>
+                                <li>Timeline Reconstruction</li>
+                                <li>Root Cause Analysis</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- L9 -->
+                    <div class="card layer-card" style="--layer-color: #ffffff;">
+                        <div class="card-header">
+                            <span class="layer-num">09</span>
+                            <h3>Resilience & Evolution</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="layer-desc">Transforming incidents into long-term defense capabilities.</p>
+                            <ul class="layer-details">
+                                <li>Post-Incident Review</li>
+                                <li>Process Optimization</li>
+                                <li>Evolution Roadmap</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools Section (Arsenal) -->
+        <section id="tools" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="hash">#</span> Operational_Arsenal</h2>
+                    <div class="line"></div>
+                </div>
+
+                <div class="grid-layout">
+                    <!-- Tool Card 1 -->
+                    <div class="card tool-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-box-archive"></i>
+                            <h3>DFIR_Collector</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Supporting [Layer 8]. Portable, high-speed evidence collection for live response.</p>
+                            <div class="tech-stack">
+                                <span>C#</span>
+                                <span>WinAPI</span>
+                                <span>L8_Artifacts</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="link-btn">Check Capability <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Tool Card 2 -->
+                    <div class="card tool-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <h3>GhostLocker_Neutralizer</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Supporting [Layer 3]. EDR neutralization research and AppLocker manipulation.</p>
+                            <div class="tech-stack">
+                                <span>PoC</span>
+                                <span>L3_Bypass</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="link-btn">View PoC <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- Tool Card 3 -->
+                    <div class="card tool-card">
+                        <div class="card-header">
+                            <i class="fa-solid fa-chart-line"></i>
+                            <h3>Log_Normalizer</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Supporting [Layer 4/7]. Automated parsing and normalization for detection engineering.
+                            </p>
+                            <div class="tech-stack">
+                                <span>Python</span>
+                                <span>L7_Engineering</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="#" class="link-btn">Details <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Articles Section (Intelligence) -->
+        <section id="articles" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="hash">#</span> Threat_Intelligence</h2>
+                    <div class="line"></div>
+                </div>
+
+                <div class="list-layout">
+                    <!-- Article Item 1 -->
+                    <article class="list-item">
+                        <div class="date">2026-01-30</div>
+                        <div class="content">
+                            <h3>Log Normalization Techniques for Large Scale Incidents</h3>
+                            <p>Exploring efficient parsing strategies for heterogeneous log sources...</p>
+                        </div>
+                        <div class="action">
+                            <a href="#" class="read-btn">READ_ONLY</a>
+                        </div>
+                    </article>
+
+                    <!-- Article Item 2 -->
+                    <article class="list-item">
+                        <div class="date">2026-01-22</div>
+                        <div class="content">
+                            <h3>Deep Dive: MFT Parsing Implementation</h3>
+                            <p>Technical breakdown of NTFS Master File Table structures and extraction...</p>
+                        </div>
+                        <div class="action">
+                            <a href="#" class="read-btn">READ_ONLY</a>
+                        </div>
+                    </article>
+
+                    <!-- Article Item 3 -->
+                    <article class="list-item">
+                        <div class="date">2025-12-31</div>
+                        <div class="content">
+                            <h3>Understanding PrinterBug Coercion</h3>
+                            <p>Analysis of CVE-2025-33073 and RPC structure handling in modern Windows...</p>
+                        </div>
+                        <div class="action">
+                            <a href="#" class="read-btn">READ_ONLY</a>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="container footer-content">
+            <div class="brand">
+                <h4>Nine-Security.INC</h4>
+                <p>Securing the digital frontier.</p>
+            </div>
+            <div class="socials">
+                <a href="#"><i class="fa-brands fa-github"></i></a>
+                <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2026 Nine-Security. All Systems Operational.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
