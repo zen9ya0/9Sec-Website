@@ -35,6 +35,7 @@
                 <li><a href="#model" data-i18n="nav.model">/9SEC_Model</a></li>
                 <li><a href="#tools" data-i18n="nav.tools">/Arsenal</a></li>
                 <li><a href="#articles" data-i18n="nav.intelligence">/Intelligence</a></li>
+                <li><a href="#smtp-check" data-i18n="nav.smtp">/SMTP_Check</a></li>
             </ul>
             <div class="lang-selector">
                 <button id="current-lang" class="lang-btn">EN</button>
@@ -355,6 +356,82 @@
                             <a href="#" class="read-btn">READ_ONLY</a>
                         </div>
                     </article>
+                </div>
+            </div>
+        </section>
+        <!-- SMTP Security Check Section -->
+        <section id="smtp-check" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="hash">#</span> <span data-i18n="section.smtp">SMTP_Security_Check</span></h2>
+                    <div class="line"></div>
+                </div>
+
+                <div class="card check-interface">
+                    <!-- State 1: Input -->
+                    <div id="smtp-step-input" class="smtp-step">
+                        <div class="smtp-intro">
+                            <h3 data-i18n="smtp.title">Free Inbound Mail Security Assessment</h3>
+                            <p data-i18n="smtp.desc">Non-intrusive. Evidence-based. Verifies your domain control and
+                                checks MX
+                                health.</p>
+                        </div>
+                        <form id="smtp-form">
+                            <div class="form-group">
+                                <label for="email-input" data-i18n="smtp.email_label">Enter Work Email:</label>
+                                <input type="email" id="email-input" placeholder="user@company.com" required>
+                            </div>
+                            <div class="form-checkbox">
+                                <input type="checkbox" id="consent-check" required>
+                                <label for="consent-check" data-i18n="smtp.consent">I authorize scanning of this
+                                    domain's
+                                    inbound MX.</label>
+                            </div>
+                            <button type="submit" class="btn primary-btn" id="btn-start-check">
+                                <i class="fa-solid fa-radar"></i> <span data-i18n="smtp.btn_start">Start
+                                    Assessment</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- State 2: Verification -->
+                    <div id="smtp-step-verify" class="smtp-step hidden">
+                        <div class="verify-content">
+                            <div class="step-icon">
+                                <i class="fa-solid fa-envelope-circle-check fa-beat"></i>
+                            </div>
+                            <h3 data-i18n="smtp.verify_title">Verification Required</h3>
+                            <p data-i18n="smtp.verify_desc">To prove domain control, please send an empty email from
+                                your
+                                address to:</p>
+
+                            <div class="copy-box">
+                                <code id="verification-email">loading...</code>
+                                <button class="copy-btn" id="btn-copy-email"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+
+                            <div class="loader-box">
+                                <div class="loader-text" data-i18n="smtp.waiting">Waiting for inbound email...</div>
+                                <div class="progress-bar">
+                                    <div class="bar-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- State 3: Report -->
+                    <div id="smtp-step-report" class="smtp-step hidden">
+                        <div class="report-header">
+                            <div class="report-status status-ok">[COMPLETED]</div>
+                            <h3 id="report-domain">example.com</h3>
+                        </div>
+                        <div class="report-grid" id="report-content">
+                            <!-- Report details injected via JS -->
+                        </div>
+                        <div class="report-actions">
+                            <button class="btn primary-btn" onclick="location.reload()">New Check</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

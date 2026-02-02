@@ -101,7 +101,8 @@ const translations = {
             home: "/Home",
             model: "/9SEC_Model",
             tools: "/Arsenal",
-            intelligence: "/Intelligence"
+            intelligence: "/Intelligence",
+            smtp: "/SMTP_Check"
         },
         hero: {
             init: "Initializing 9SEC Defense Protocol... <span class='status-ok'>[ACTIVE]</span>",
@@ -114,7 +115,8 @@ const translations = {
         section: {
             model: "The_9SEC_Model",
             arsenal: "Operational_Arsenal",
-            intelligence: "Threat_Intelligence"
+            intelligence: "Threat_Intelligence",
+            smtp: "SMTP_Security_Check"
         },
         model: {
             intro1: "> OSI is for Communication. 9SEC is for Operations.",
@@ -123,6 +125,16 @@ const translations = {
         footer: {
             tagline: "Securing the digital frontier.",
             copyright: "&copy; 2026 Nine-Security. All Systems Operational."
+        },
+        smtp: {
+            title: "Free Inbound Mail Security Assessment",
+            desc: "Non-intrusive. Evidence-based. Verifies your domain control and checks MX health.",
+            email_label: "Enter Work Email:",
+            consent: "I authorize scanning of this domain's inbound MX.",
+            btn_start: "Start Assessment",
+            verify_title: "Verification Required",
+            verify_desc: "To prove domain control, please send an empty email from your address to:",
+            waiting: "Waiting for inbound email..."
         }
     },
     tw: {
@@ -130,7 +142,8 @@ const translations = {
             home: "/首頁",
             model: "/九層防護模型",
             tools: "/軍火庫",
-            intelligence: "/威脅情資"
+            intelligence: "/威脅情資",
+            smtp: "/SMTP_檢測"
         },
         hero: {
             init: "正在初始化 9SEC 防護協定... <span class='status-ok'>[運作中]</span>",
@@ -143,7 +156,8 @@ const translations = {
         section: {
             model: "九層資安防護模型",
             arsenal: "作戰軍火庫",
-            intelligence: "威脅情資"
+            intelligence: "威脅情資",
+            smtp: "SMTP_安全檢測"
         },
         model: {
             intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
@@ -152,6 +166,16 @@ const translations = {
         footer: {
             tagline: "捍衛數位邊疆。",
             copyright: "&copy; 2026 Nine-Security. 系統正常運作中。"
+        },
+        smtp: {
+            title: "免費 Inbound 郵件安全健診",
+            desc: "低侵入、證據導向。驗證網域控制權並檢查 MX 健康狀況。",
+            email_label: "輸入公司信箱：",
+            consent: "我授權對此網域的 Inbound MX 進行掃描。",
+            btn_start: "開始健診",
+            verify_title: "需要驗證",
+            verify_desc: "為證明網域控制權，請從您的信箱寄一封空信至：",
+            waiting: "等待驗證郵件中..."
         }
     },
     jp: {
@@ -159,7 +183,8 @@ const translations = {
             home: "/ホーム",
             model: "/9層防御モデル",
             tools: "/アーセナル",
-            intelligence: "/脅威インテリジェンス"
+            intelligence: "/脅威インテリジェンス",
+            smtp: "/SMTP_チェック"
         },
         hero: {
             init: "9SEC 防御プロトコルを初期化中... <span class='status-ok'>[アクティブ]</span>",
@@ -172,7 +197,8 @@ const translations = {
         section: {
             model: "9層セキュリティ防御モデル",
             arsenal: "運用アーセナル",
-            intelligence: "脅威インテリジェンス"
+            intelligence: "脅威インテリジェンス",
+            smtp: "SMTP_セキュリティ診断"
         },
         model: {
             intro1: "> OSIは通信のため、9SECは運用のために。",
@@ -181,6 +207,16 @@ const translations = {
         footer: {
             tagline: "デジタルフロンティアを守る。",
             copyright: "&copy; 2026 Nine-Security. 全システム正常稼働中。"
+        },
+        smtp: {
+            title: "無料 Inbound メールセキュリティ診断",
+            desc: "低侵襲。証拠ベース。ドメイン管理権を確認し、MXの健全性をチェックします。",
+            email_label: "会社のメールアドレス：",
+            consent: "このドメインの Inbound MX スキャンを許可します。",
+            btn_start: "診断を開始",
+            verify_title: "認証が必要です",
+            verify_desc: "ドメイン管理権を証明するため、以下のアドレスに空メールを送信してください：",
+            waiting: "認証メールを待機中..."
         }
     }
 };
@@ -218,4 +254,152 @@ function updateLanguage(lang) {
             element.innerHTML = val;
         }
     });
+}
+
+// --- SMTP Check Logic ---
+const smtpForm = document.getElementById('smtp-form');
+const stepInput = document.getElementById('smtp-step-input');
+const stepVerify = document.getElementById('smtp-step-verify');
+const stepReport = document.getElementById('smtp-step-report');
+const verifyEmailCode = document.getElementById('verification-email');
+const btnCopy = document.getElementById('btn-copy-email');
+const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only
+
+let currentAssessmentId = null;
+let pollInterval = null;
+
+if (smtpForm) {
+    smtpForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email-input').value;
+        startAssessment(email);
+    });
+}
+
+if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText(verifyEmailCode.textContent);
+        const originalIcon = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
+    });
+}
+
+if (btnMockVerify) {
+    btnMockVerify.addEventListener('click', () => {
+        // Dev backdoor to simulate email arrival
+        if (currentAssessmentId) {
+            mockBackendState[currentAssessmentId].status = 'report_ready';
+            checkStatus(currentAssessmentId); // Immediate check
+        }
+    });
+}
+
+// Mock Backend Storage (Browser Memory)
+const mockBackendState = {};
+
+async function startAssessment(email) {
+    // Simulate POST /api/assessment
+    const domain = email.split('@')[1];
+    const token = Math.random().toString(36).substring(2, 10);
+    const assessmentId = 'asmt_' + Date.now();
+    const verifyAddr = `smtpcheck+${token}@smtpcheck.nine-security.com`;
+
+    // Store in mock backend
+    mockBackendState[assessmentId] = {
+        id: assessmentId,
+        email: email,
+        domain: domain,
+        token: token,
+        verifyAddr: verifyAddr,
+        status: 'waiting_email',
+        report: null
+    };
+
+    currentAssessmentId = assessmentId;
+
+    // UI Update
+    verifyEmailCode.textContent = verifyAddr;
+    stepInput.classList.add('hidden');
+    stepVerify.classList.remove('hidden');
+
+    // Start Polling
+    pollInterval = setInterval(() => checkStatus(assessmentId), 3000);
+}
+
+async function checkStatus(id) {
+    // Simulate GET /api/assessment/{id}
+    const state = mockBackendState[id];
+
+    if (!state) return;
+
+    if (state.status === 'report_ready' || state.status === 'completed') {
+        clearInterval(pollInterval);
+
+        // Generate Mock Report if not exists
+        if (!state.report) {
+            state.report = generateMockReport(state.domain);
+        }
+
+        renderReport(state.report);
+        stepVerify.classList.add('hidden');
+        stepReport.classList.remove('hidden');
+    }
+}
+
+function generateMockReport(domain) {
+    return {
+        domain: domain,
+        sender_ip: "203.0.113." + Math.floor(Math.random() * 255),
+        dns_posture: {
+            spf: "pass",
+            dmarc: "none",
+            dkim: "pass"
+        },
+        smtp_tls: {
+            starttls: true,
+            version: "TLS 1.3",
+            cipher: "TLS_AES_256_GCM_SHA384"
+        },
+        risk_level: "Medium"
+    };
+}
+
+function renderReport(report) {
+    document.getElementById('report-domain').textContent = report.domain;
+    const grid = document.getElementById('report-content');
+
+    // Helper for coloring
+    const getStatusClass = (val) => {
+        if (val === 'pass' || val === true || val === 'Low') return 'pass';
+        if (val === 'none' || val === 'Medium') return 'warn';
+        return 'fail';
+    };
+
+    grid.innerHTML = `
+        <div class="report-item">
+            <h4>Sender IP</h4>
+            <div class="value">${report.sender_ip}</div>
+        </div>
+        <div class="report-item">
+            <h4>SPF Status</h4>
+            <div class="value ${getStatusClass(report.dns_posture.spf)}">${report.dns_posture.spf.toUpperCase()}</div>
+        </div>
+        <div class="report-item">
+            <h4>DMARC Policy</h4>
+            <div class="value ${getStatusClass(report.dns_posture.dmarc)}">${report.dns_posture.dmarc.toUpperCase()}</div>
+        </div>
+        <div class="report-item">
+            <h4>STARTTLS</h4>
+            <div class="value ${report.smtp_tls.starttls ? 'pass' : 'fail'}">${report.smtp_tls.starttls ? 'ENABLED' : 'DISABLED'}</div>
+        </div>
+        <div class="report-item">
+            <h4>TLS Version</h4>
+            <div class="value">${report.smtp_tls.version}</div>
+        </div>
+        <div class="report-item">
+            <h4>Overall Risk</h4>
+            <div class="value ${getStatusClass(report.risk_level)}">${report.risk_level.toUpperCase()}</div>
+        </div>
+    `;
 }
