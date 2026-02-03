@@ -257,6 +257,8 @@ function updateLanguage(lang) {
 }
 
 // --- SMTP Check Logic ---
+const API_BASE_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api";
+
 const smtpForm = document.getElementById('smtp-form');
 const stepInput = document.getElementById('smtp-step-input');
 const stepVerify = document.getElementById('smtp-step-verify');
@@ -293,7 +295,7 @@ async function startAssessment(email) {
     // Call real backend: POST /api/assessment
     let resp;
     try {
-        resp = await fetch("/api/assessment", {
+        resp = await fetch(`${API_BASE_URL}/assessment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, consent })
@@ -308,7 +310,7 @@ async function startAssessment(email) {
     try {
         data = await resp.json();
     } catch {
-        alert("Invalid backend response (non-JSON).");
+        alert(`Invalid backend response (non-JSON). Status: ${resp.status} ${resp.statusText}`);
         return;
     }
 
@@ -369,7 +371,7 @@ async function checkStatus(id) {
     // Call real backend: GET /api/assessment/{id}
     let resp;
     try {
-        resp = await fetch(`/api/assessment/${encodeURIComponent(id)}`, { method: "GET" });
+        resp = await fetch(`${API_BASE_URL}/assessment/${encodeURIComponent(id)}`, { method: "GET" });
     } catch (e) {
         console.error("POLL_ERROR", e);
         return;
