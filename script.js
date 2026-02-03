@@ -129,7 +129,9 @@ if (articlesContainer && articlesSection) {
                         articlesSection.querySelector(".container").appendChild(btnWrap);
                     }
                     const isAll = countToShow >= list.length;
-                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}">${isAll ? "收起" : "顯示更多 (" + (list.length - countToShow) + " 篇)"}</button>`;
+                    const remaining = list.length - countToShow;
+                    const btnText = getArticlesButtonLabel(isAll, remaining);
+                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(btnText)}</button>`;
                     btnWrap.querySelector("button").onclick = () => {
                         render(isAll ? ARTICLES_INITIAL : list.length);
                     };
@@ -186,6 +188,10 @@ const translations = {
             verify_title: "Verification Required",
             verify_desc: "To prove domain control, please send an empty email from your address to:",
             waiting: "Waiting for inbound email..."
+        },
+        articles: {
+            show_more: "Show more ({n})",
+            collapse: "Collapse"
         }
     },
     tw: {
@@ -227,6 +233,10 @@ const translations = {
             verify_title: "需要驗證",
             verify_desc: "為證明網域控制權，請從您的信箱寄一封空信至：",
             waiting: "等待驗證郵件中..."
+        },
+        articles: {
+            show_more: "顯示更多 ({n} 篇)",
+            collapse: "收起"
         }
     },
     jp: {
@@ -268,9 +278,20 @@ const translations = {
             verify_title: "認証が必要です",
             verify_desc: "ドメイン管理権を証明するため、以下のアドレスに空メールを送信してください：",
             waiting: "認証メールを待機中..."
+        },
+        articles: {
+            show_more: "もっと見る ({n} 件)",
+            collapse: "閉じる"
         }
     }
 };
+
+function getArticlesButtonLabel(isAll, remaining) {
+    const lang = localStorage.getItem('9sec_lang') || 'en';
+    const t = (translations[lang] && translations[lang].articles) ? translations[lang].articles : translations.en.articles;
+    if (isAll) return t.collapse;
+    return (t.show_more || "Show more ({n})").replace("{n}", remaining);
+}
 
 const langBtn = document.getElementById('current-lang');
 const langOptions = document.querySelectorAll('.lang-menu li');
@@ -304,6 +325,13 @@ function updateLanguage(lang) {
         if (val) {
             element.innerHTML = val;
         }
+    });
+
+    // Update articles "Show more" / "Collapse" button text by current lang
+    document.querySelectorAll('.articles-more-btn').forEach(btn => {
+        const isAll = btn.dataset.expanded === 'true';
+        const remaining = parseInt(btn.dataset.remaining, 10) || 0;
+        btn.textContent = getArticlesButtonLabel(isAll, remaining);
     });
 }
 
