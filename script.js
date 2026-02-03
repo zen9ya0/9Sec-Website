@@ -655,6 +655,17 @@ function renderReport(report) {
             `;
         }
 
+        // Consultancy CTA Block
+        html += `
+            <div class="report-section-title">> Professional Security Consultancy</div>
+            <div class="risk-item" style="border: 1px solid #00ff41; background: rgba(0,255,65,0.02); padding: 1.5rem; border-radius: 4px; display: block; text-align: center;">
+                <p style="margin-bottom: 1rem; color: #aaa;">Looking for the technical forensic data and step-by-step remediation guide?</p>
+                <a href="mailto:consult@nine-security.com?subject=Detailed Report Request: ${report.domain}" class="btn primary-btn" style="display: block; width: 100%;">
+                    <i class="fa-solid fa-user-shield"></i> Apply for Detailed Analysis & Setup
+                </a>
+            </div>
+        `;
+
         grid.innerHTML = html;
     } catch (e) {
         console.error("RENDER_ERROR", e);
@@ -714,26 +725,21 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
                 <div class="report-section-title">> EXECUTIVE SUMMARY</div>
                 ${content}
 
-                <div class="report-section-title">> TECHNICAL FORENSICS (Detailed)</div>
-                <div class="report-grid">
-                    <div class="report-item" style="grid-column: span 2;">
-                        <h4>RAW SPF RECORD</h4>
-                        <code style="word-break: break-all; color: #aaa;">${dns.spf_raw || 'Not detected'}</code>
-                    </div>
-                    <div class="report-item" style="grid-column: span 2;">
-                        <h4>RAW DMARC RECORD</h4>
-                        <code style="word-break: break-all; color: #aaa;">${dns.dmarc_raw || 'Not detected'}</code>
-                    </div>
-                    <div class="report-item" style="grid-column: span 2;">
-                        <h4>AUTHENTICATION FORENSICS (Raw Header)</h4>
-                        <pre style="white-space: pre-wrap; word-break: break-all; color: #666; font-size: 0.8rem; background: #000; padding: 0.5rem;">${dns.auth_raw || 'No forensics captured'}</pre>
-                    </div>
+                <div class="report-section-title">> PROFESSIONAL RECOMMENDATION</div>
+                <div class="report-item" style="border-left-color: #00ff41; background: rgba(0, 255, 65, 0.05);">
+                    <p style="color: #eee;">Detected significant security gaps in your email infrastructure that could lead to your domain being used for phishing or mail being marked as spam.</p>
+                    <p style="color: #aaa; font-style: italic;">"Our advanced scanners have captured 15+ additional forensic indicators not shown in this public summary."</p>
+                    <br>
+                    <a href="mailto:consult@nine-security.com?subject=Consultancy Request for ${domain}" 
+                       style="display: inline-block; background: #00ff41; color: #000; padding: 0.8rem 1.5rem; text-decoration: none; font-weight: bold; border-radius: 4px;">
+                       Apply for Professional Security Consultancy
+                    </a>
                 </div>
 
                 <div class="report-section-title">> COMPLIANCE STATUS</div>
                 <div class="report-item">
                     <h4>Target Email</h4>
-                    <div class="value">${report.email_hidden || 'Redacted (Privacy)'}</div>
+                    <div class="value">${report.domain} Assessment Instance</div>
                 </div>
             </body>
         </html>
