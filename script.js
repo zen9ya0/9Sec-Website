@@ -327,6 +327,14 @@ async function submitAssessment() {
     pollInterval = setInterval(() => checkStatus(currentAssessmentId), 2500);
 }
 
+// Bind Start Button (Robust)
+const btnStartCheck = document.getElementById('btn-start-check');
+if (btnStartCheck) {
+    btnStartCheck.addEventListener('click', submitAssessment);
+} else {
+    console.error("Critical: Start Assessment button not found in DOM");
+}
+
 const smtpForm = document.getElementById('smtp-form');
 const stepInput = document.getElementById('smtp-step-input');
 const stepVerify = document.getElementById('smtp-step-verify');
@@ -338,13 +346,14 @@ const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - 
 let currentAssessmentId = null;
 let pollInterval = null;
 
+/* Legacy form handler removed
 if (smtpForm) {
     smtpForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('email-input').value;
-        startAssessment(email);
+        // Legacy call removed
     });
 }
+*/
 
 if (btnCopy) {
     btnCopy.addEventListener('click', () => {
@@ -710,4 +719,4 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 });
-document.getElementById('btn-start-check').addEventListener('click', submitAssessment);
+// Script loaded
