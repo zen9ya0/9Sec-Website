@@ -401,6 +401,15 @@ async function checkStatus(id) {
         return;
     }
 
+    // STATE 1.5: TIMEOUT
+    if (data.status === "timeout") {
+        clearInterval(pollInterval);
+        addLog("Error: Session timed out. No email received.", "error");
+        alert("Session timed out (5 minutes). Please restart the assessment if you wish to try again.");
+        // Optional: Reset UI or stay on log
+        return;
+    }
+
     // STATE 2: VERIFIED / ANALYZING
     // Since backend currently stops at 'verified', we handle the transition here.
     if ((data.status === "verified" || data.status === "probing") && !isAnalyzing) {
