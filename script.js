@@ -642,3 +642,4 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 });
+document.getElementById('btn-start-check').addEventListener('click', submitAssessment);
