@@ -293,11 +293,24 @@ function getArticlesButtonLabel(isAll, remaining) {
     return (t.show_more || "Show more ({n})").replace("{n}", remaining);
 }
 
+function getBrowserLang() {
+    const raw = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    const list = navigator.languages ? [...navigator.languages] : [raw];
+    for (const l of list) {
+        const code = (l || '').toLowerCase().split('-')[0];
+        if (code === 'zh') return 'tw';
+        if (code === 'ja') return 'jp';
+    }
+    if (raw.startsWith('zh')) return 'tw';
+    if (raw.startsWith('ja')) return 'jp';
+    return 'en';
+}
+
 const langBtn = document.getElementById('current-lang');
 const langOptions = document.querySelectorAll('.lang-menu li');
 
-// Load saved language
-const savedLang = localStorage.getItem('9sec_lang') || 'en';
+// Load language: 優先使用使用者曾選過的，否則依瀏覽器語系（中文/日文對應，其餘英文）
+const savedLang = localStorage.getItem('9sec_lang') || getBrowserLang();
 updateLanguage(savedLang);
 
 // Event Listeners for Custom Dropdown
