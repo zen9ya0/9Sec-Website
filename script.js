@@ -739,7 +739,7 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
                 <div class="report-section-title">> COMPLIANCE STATUS</div>
                 <div class="report-item">
                     <h4>Target Email</h4>
-                    <div class="value">${report.domain} Assessment Instance</div>
+                    <div class="value">${domain} Assessment Instance</div>
                 </div>
             </body>
         </html>
