@@ -34,7 +34,8 @@
                 <li><a href="#hero" class="active" data-i18n="nav.home">/Home</a></li>
                 <li><a href="#model" data-i18n="nav.model">/9SEC_Model</a></li>
                 <li><a href="arsenal.html" data-i18n="nav.tools">/Arsenal</a></li>
-                <li><a href="#articles" data-i18n="nav.intelligence">/Intelligence</a></li>
+                <li><a href="#security-news" data-i18n="nav.news">/Security_News</a></li>
+                <li><a href="#threat-intel" data-i18n="nav.threat_intel">/Threat_Intel</a></li>
                 <li><a href="#smtp-check" data-i18n="nav.smtp">/SMTP_Check</a></li>
             </ul>
             <div class="lang-selector">
@@ -243,12 +244,11 @@
             </div>
         </section>
 
-        <!-- Articles Section (Intelligence) -->
-        <section id="articles" class="section">
+        <!-- 資安新聞 (RSS 文章) -->
+        <section id="security-news" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2><span class="hash">#</span> <span data-i18n="section.intelligence">Threat_Intelligence</span>
-                    </h2>
+                    <h2><span class="hash">#</span> <span data-i18n="section.news">Security_News</span></h2>
                     <div class="line"></div>
                 </div>
 
@@ -291,6 +291,20 @@
                 </div>
             </div>
         </section>
+
+        <!-- 威脅情資 (Threat Intelligence，預留) -->
+        <section id="threat-intel" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <h2><span class="hash">#</span> <span data-i18n="section.intelligence">Threat_Intelligence</span></h2>
+                    <div class="line"></div>
+                </div>
+                <div class="list-layout threat-intel-placeholder">
+                    <p class="placeholder-text" data-i18n="section.threat_intel_coming">Threat intelligence feed will be integrated here.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- SMTP Security Check Section -->
         <section id="smtp-check" class="section">
             <div class="container">
@@ -388,7 +402,7 @@
         </div>
     </footer>
 
-    <script src="script.js?v=20260203_BROWSER_LANG"></script>
+    <script src="script.js?v=20260203_THREAT_INTEL"></script>
 </body>
 
 </html>

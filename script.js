@@ -94,11 +94,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// --- Threat Intelligence: 從後端 API 載入資安文章（先顯示 6 篇，其餘「顯示更多」）---
+// --- 資安新聞: 從後端 API 載入 RSS 文章（先顯示 6 篇，其餘「顯示更多」）---
 const ARTICLES_API = "https://9sec-smtp-backend.nine-security.workers.dev/api/articles";
 const ARTICLES_INITIAL = 6;
-const articlesSection = document.querySelector("#articles");
-const articlesContainer = document.querySelector("#articles .list-layout");
+const articlesSection = document.querySelector("#security-news");
+const articlesContainer = document.querySelector("#security-news .list-layout");
 if (articlesContainer && articlesSection) {
     fetch(ARTICLES_API)
         .then((r) => r.ok ? r.json() : [])
@@ -141,6 +141,63 @@ if (articlesContainer && articlesSection) {
         })
         .catch(() => { /* 失敗時保留靜態文章 */ });
 }
+
+// --- 威脅情資: 從後端 API 載入 CISA KEV（顯示前 30 筆）---
+const THREAT_INTEL_API = "https://9sec-smtp-backend.nine-security.workers.dev/api/threat-intel";
+const threatIntelSection = document.querySelector("#threat-intel");
+const threatIntelContainer = document.querySelector("#threat-intel .list-layout");
+if (threatIntelContainer && threatIntelSection) {
+    fetch(THREAT_INTEL_API)
+        .then((r) => r.ok ? r.json() : [])
+        .then((list) => {
+            if (!Array.isArray(list) || list.length === 0) {
+                const msg = getThreatIntelEmptyLabel();
+                threatIntelContainer.className = "list-layout threat-intel-placeholder";
+                threatIntelContainer.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
+                return;
+            }
+            threatIntelContainer.classList.remove("threat-intel-placeholder");
+            threatIntelContainer.innerHTML = list.map((t) => {
+                const severityBadge = (t.severity === "high")
+                    ? `<span class="severity-badge severity-high" data-i18n="threat_intel.ransomware">Ransomware</span>`
+                    : "";
+                const detailLabel = getThreatIntelDetailLabel();
+                return `
+                    <article class="list-item threat-intel-item">
+                        <div class="date">${escapeHtml(t.date || "")}</div>
+                        <div class="content">
+                            <h3>${severityBadge}${escapeHtml(t.title || "")}</h3>
+                            <p>${escapeHtml(t.excerpt || "")}</p>
+                        </div>
+                        <div class="action">
+                            <a href="${escapeHtml(t.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">${escapeHtml(detailLabel)}</a>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        })
+        .catch(() => {
+            const msg = getThreatIntelLoadErrorLabel();
+            threatIntelContainer.className = "list-layout threat-intel-placeholder";
+            threatIntelContainer.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
+        });
+}
+function getThreatIntelEmptyLabel() {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    return (t.threat_intel && t.threat_intel.empty) ? t.threat_intel.empty : "No threat intel entries yet.";
+}
+function getThreatIntelLoadErrorLabel() {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    return (t.threat_intel && t.threat_intel.load_error) ? t.threat_intel.load_error : "Unable to load threat intel.";
+}
+function getThreatIntelDetailLabel() {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    return (t.threat_intel && t.threat_intel.detail) ? t.threat_intel.detail : "CVE";
+}
+
 function escapeHtml(s) {
     const div = document.createElement("div");
     div.textContent = s;
@@ -154,7 +211,8 @@ const translations = {
             home: "/Home",
             model: "/9SEC_Model",
             tools: "/Arsenal",
-            intelligence: "/Intelligence",
+            news: "/Security_News",
+            threat_intel: "/Threat_Intel",
             smtp: "/SMTP_Check"
         },
         hero: {
@@ -168,7 +226,9 @@ const translations = {
         section: {
             model: "The_9SEC_Model",
             arsenal: "Operational_Arsenal",
+            news: "Security_News",
             intelligence: "Threat_Intelligence",
+            threat_intel_coming: "Threat intelligence feed will be integrated here.",
             smtp: "SMTP_Security_Check"
         },
         model: {
@@ -192,6 +252,12 @@ const translations = {
         articles: {
             show_more: "Show more ({n})",
             collapse: "Collapse"
+        },
+        threat_intel: {
+            detail: "CVE",
+            empty: "No threat intel entries yet.",
+            load_error: "Unable to load threat intel.",
+            ransomware: "Ransomware"
         }
     },
     tw: {
@@ -199,7 +265,8 @@ const translations = {
             home: "/首頁",
             model: "/九層防護模型",
             tools: "/軍火庫",
-            intelligence: "/威脅情資",
+            news: "/資安新聞",
+            threat_intel: "/威脅情資",
             smtp: "/SMTP_檢測"
         },
         hero: {
@@ -213,7 +280,9 @@ const translations = {
         section: {
             model: "九層資安防護模型",
             arsenal: "作戰軍火庫",
+            news: "資安新聞",
             intelligence: "威脅情資",
+            threat_intel_coming: "威脅情資來源將整合於此。",
             smtp: "SMTP_安全檢測"
         },
         model: {
@@ -237,6 +306,12 @@ const translations = {
         articles: {
             show_more: "顯示更多 ({n} 篇)",
             collapse: "收起"
+        },
+        threat_intel: {
+            detail: "CVE",
+            empty: "暫無威脅情資。",
+            load_error: "無法載入威脅情資。",
+            ransomware: "勒索軟體"
         }
     },
     jp: {
@@ -244,7 +319,8 @@ const translations = {
             home: "/ホーム",
             model: "/9層防御モデル",
             tools: "/アーセナル",
-            intelligence: "/脅威インテリジェンス",
+            news: "/セキュリティニュース",
+            threat_intel: "/脅威インテリジェンス",
             smtp: "/SMTP_チェック"
         },
         hero: {
@@ -258,7 +334,9 @@ const translations = {
         section: {
             model: "9層セキュリティ防御モデル",
             arsenal: "運用アーセナル",
+            news: "セキュリティニュース",
             intelligence: "脅威インテリジェンス",
+            threat_intel_coming: "脅威情資フィードはここに統合予定です。",
             smtp: "SMTP_セキュリティ診断"
         },
         model: {
@@ -282,6 +360,12 @@ const translations = {
         articles: {
             show_more: "もっと見る ({n} 件)",
             collapse: "閉じる"
+        },
+        threat_intel: {
+            detail: "CVE",
+            empty: "脅威情資はありません。",
+            load_error: "脅威情資を読み込めません。",
+            ransomware: "ランサムウェア"
         }
     }
 };

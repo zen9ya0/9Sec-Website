@@ -445,13 +445,52 @@ h1.glitch-title {
 }
 
 /* 限制文章區塊總高度，避免整頁被拉長 */
-#articles .container {
+#articles .container,
+#security-news .container {
     max-height: 80vh;
     overflow-y: auto;
 }
-#articles .list-layout {
+#articles .list-layout,
+#security-news .list-layout {
     max-height: 65vh;
     overflow-y: auto;
+}
+
+/* 威脅情資區塊 */
+#threat-intel .container {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+#threat-intel .list-layout {
+    max-height: 65vh;
+    overflow-y: auto;
+}
+#threat-intel .list-layout.threat-intel-placeholder {
+    padding: 2rem;
+    text-align: center;
+}
+#threat-intel .placeholder-text {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+#threat-intel .list-item .content h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.severity-badge {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.severity-badge.severity-high {
+    background: rgba(255, 0, 85, 0.2);
+    color: #ff0055;
+    border: 1px solid rgba(255, 0, 85, 0.5);
 }
 .articles-more-wrap {
     margin-top: 1rem;
