@@ -564,11 +564,11 @@ function renderReport(report) {
         document.getElementById('report-domain').textContent = report.domain || 'Unknown Domain';
         const grid = document.getElementById('report-content');
 
-        // Helper for coloring
         const getStatusClass = (val) => {
             if (!val) return 'fail';
-            if (val === 'pass' || val === true || val === 'Low' || val === 'enforce' || val === 'enabled') return 'pass';
-            if (val === 'none' || val === 'Medium' || val === 'missing' || val === 'quarantine/none') return 'warn';
+            const lower = String(val).toLowerCase();
+            if (['pass', 'true', 'low', 'enforce', 'enabled'].includes(lower)) return 'pass';
+            if (['warn', 'none', 'medium', 'missing', 'quarantine/none'].includes(lower)) return 'warn';
             return 'fail';
         };
 
@@ -592,10 +592,12 @@ function renderReport(report) {
                 <div class="report-item">
                     <h4>SPF Status</h4>
                     <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>
+                    ${dns.spf === 'warn' ? '<div style="font-size:0.75rem; color:#ff4444; margin-top:8px; font-style:italic;">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}
                 </div>
                 <div class="report-item">
                     <h4>DMARC Policy</h4>
                     <div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'N/A').toUpperCase()}</div>
+                    ${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div style="font-size:0.75rem; color:#ff4444; margin-top:8px; font-style:italic;">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}
                 </div>
                 <div class="report-item">
                     <h4>DNSSEC Mode</h4>
@@ -616,6 +618,7 @@ function renderReport(report) {
                 <div class="report-item">
                     <h4>MTA-STS Policy</h4>
                     <div class="value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                    ${dns.mta_sts === 'missing' && dns.mta_sts_raw !== 'None' ? '<div style="font-size:0.75rem; color:#ff4444; margin-top:8px; font-style:italic;">⚠️ Policy Handshake Integrity Failed</div>' : ''}
                 </div>
                 <div class="report-item">
                     <h4>TLS Reporting (TLS-RPT)</h4>
