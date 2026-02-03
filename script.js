@@ -161,10 +161,12 @@ if (threatIntelContainer && threatIntelSection) {
                 const severityBadge = (t.severity === "high")
                     ? `<span class="severity-badge severity-high" data-i18n="threat_intel.ransomware">Ransomware</span>`
                     : "";
+                const sourceKey = (t.source === "otx") ? "threat_intel.source_otx" : "threat_intel.source_cisa";
+                const sourceBadge = `<span class="source-badge source-${escapeHtml((t.source || "cisa"))}" data-i18n="${sourceKey}">${(t.source === "otx") ? "OTX" : "CISA"}</span>`;
                 const detailLabel = getThreatIntelDetailLabel();
                 return `
                     <article class="list-item threat-intel-item">
-                        <div class="date">${escapeHtml(t.date || "")}</div>
+                        <div class="date">${sourceBadge} ${escapeHtml(t.date || "")}</div>
                         <div class="content">
                             <h3>${severityBadge}${escapeHtml(t.title || "")}</h3>
                             <p>${escapeHtml(t.excerpt || "")}</p>
@@ -257,7 +259,9 @@ const translations = {
             detail: "CVE",
             empty: "No threat intel entries yet.",
             load_error: "Unable to load threat intel.",
-            ransomware: "Ransomware"
+            ransomware: "Ransomware",
+            source_cisa: "CISA",
+            source_otx: "OTX"
         }
     },
     tw: {
@@ -311,7 +315,9 @@ const translations = {
             detail: "CVE",
             empty: "暫無威脅情資。",
             load_error: "無法載入威脅情資。",
-            ransomware: "勒索軟體"
+            ransomware: "勒索軟體",
+            source_cisa: "CISA",
+            source_otx: "OTX"
         }
     },
     jp: {
@@ -365,7 +371,9 @@ const translations = {
             detail: "CVE",
             empty: "脅威情資はありません。",
             load_error: "脅威情資を読み込めません。",
-            ransomware: "ランサムウェア"
+            ransomware: "ランサムウェア",
+            source_cisa: "CISA",
+            source_otx: "OTX"
         }
     }
 };

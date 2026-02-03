@@ -492,6 +492,25 @@ h1.glitch-title {
     color: #ff0055;
     border: 1px solid rgba(255, 0, 85, 0.5);
 }
+.source-badge {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-right: 0.35rem;
+}
+.source-badge.source-cisa {
+    background: rgba(0, 229, 255, 0.15);
+    color: var(--accent-secondary);
+    border: 1px solid rgba(0, 229, 255, 0.4);
+}
+.source-badge.source-otx {
+    background: rgba(0, 255, 65, 0.15);
+    color: var(--accent-color);
+    border: 1px solid rgba(0, 255, 65, 0.4);
+}
 .articles-more-wrap {
     margin-top: 1rem;
     text-align: center;
