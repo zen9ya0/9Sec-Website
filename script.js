@@ -497,69 +497,36 @@ function renderReport(report) {
 
         // Safely access nested properties
         const dns = report.dns_posture || {};
-        const tls = report.smtp_tls || {};
-        const senderIp = report.sender_ip || 'N/A';
-        const riskScore = report.risk_score ?? 'N/A'; // allow 0
-        const riskLevel = report.risk_level || 'Unknown';
-
-        let html = `
-            <div class="report-section-title">> Basic Authentication</div>
-            <div class="report-grid">
-                <div class="report-item">
-                    <h4>Sender IP</h4>
-                    <div class="value">${senderIp}</div>
-                </div>
-                <div class="report-item">
-                    <h4>SPF Status</h4>
-                    <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>
-                </div>
-                <div class="report-item">
-                    <h4>DMARC Policy</h4>
-                    <div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'N/A').toUpperCase()}</div>
-                </div>
-                <div class="report-item">
-                    <h4>DKIM Signature</h4>
-                    <div class="value ${getStatusClass(dns.dkim)}">${(dns.dkim || 'N/A').toUpperCase()}</div>
-                </div>
-            </div>
-
-            <div class="report-section-title">> Advanced Policy (MTA-STS & Reports)</div>
-            <div class="report-grid">
-                <div class="report-item">
-                    <h4>MTA-STS Policy</h4>
-                    <div class="value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
-                </div>
-                <div class="report-item">
                     <h4>TLS Reporting (TLS-RPT)</h4>
                     <div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
-                </div>
-                <div class="report-item">
-                    <h4>TLS Version</h4>
-                    <div class="value">${tls.version || 'Unknown'}</div>
-                </div>
+                </div >
+            <div class="report-item">
+                <h4>TLS Version</h4>
+                <div class="value">${tls.version || 'Unknown'}</div>
             </div>
+            </div >
 
             <div class="report-section-title">> Risk Assessment (Score: ${riskScore})</div>
         `;
 
         // Render Risk Breakdown if available
         if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length > 0) {
-            html += `<div class="risk-list">`;
+            html += `< div class="risk-list" > `;
             report.risk_breakdown.forEach(risk => {
                 html += `
-                    <div class="risk-item severity-${risk.severity || 'medium'}">
+            < div class="risk-item severity-${risk.severity || 'medium'}" >
                         <div class="risk-name">${risk.item || 'Unknown Risk'}</div>
                         <div class="risk-score">+${risk.score || 0} Risk</div>
-                    </div>
-                `;
+                    </div >
+            `;
             });
-            html += `</div>`;
+            html += `</div > `;
         } else {
             html += `
-                <div class="report-item">
+            < div class="report-item" >
                     <h4>Overall Risk</h4>
                     <div class="value ${getStatusClass(riskLevel)}">${riskLevel.toUpperCase()}</div>
-                </div>
+                </div >
             `;
         }
 
@@ -595,41 +562,41 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
 
     // Create a standalone HTML structure
     const fullHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>SMTP Security Report - ${domain}</title>
-    <style>
-        body { background: #0a0a0a; color: #e0e0e0; font-family: sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
-        h1 { color: #00ff41; border-bottom: 1px solid #333; padding-bottom: 1rem; }
-        .report-section-title { color: #00ff41; margin-top: 2rem; border-bottom: 1px solid #333; font-family: monospace; }
-        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
-        .report-item { background: #111; padding: 1rem; border: 1px solid #333; }
-        .value.pass { color: #00ff41; font-weight: bold; }
-        .value.warn { color: #ffcc00; font-weight: bold; }
-        .value.fail { color: #ff0055; font-weight: bold; }
-        .risk-list { margin-top: 1rem; }
-        .risk-item { display: flex; justify-content: space-between; padding: 0.5rem; border: 1px solid #333; margin-bottom: 0.5rem; }
-        .risk-item.severity-high { background: rgba(255, 0, 85, 0.1); border-color: #ff0055; }
-        .risk-item.severity-medium { background: rgba(255, 100, 0, 0.1); border-color: #ffaa00; }
-        .risk-item.severity-low { background: rgba(255, 204, 0, 0.1); border-color: #ffcc00; }
-    </style>
-</head>
-<body>
-    <h1>Security Assessment Report: ${domain}</h1>
-    <p>Generated by Nine-Security SMTP Check on ${new Date().toLocaleString()}</p>
-    <hr style="border: 0; border-top: 1px solid #333; margin: 2rem 0;">
-    ${content}
-</body>
-</html>
-    `;
+            < !DOCTYPE html >
+                <html>
+                    <head>
+                        <title>SMTP Security Report - ${domain}</title>
+                        <style>
+                            body {background: #0a0a0a; color: #e0e0e0; font-family: sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; }
+                            h1 {color: #00ff41; border-bottom: 1px solid #333; padding-bottom: 1rem; }
+                            .report-section-title {color: #00ff41; margin-top: 2rem; border-bottom: 1px solid #333; font-family: monospace; }
+                            .report-grid {display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+                            .report-item {background: #111; padding: 1rem; border: 1px solid #333; }
+                            .value.pass {color: #00ff41; font-weight: bold; }
+                            .value.warn {color: #ffcc00; font-weight: bold; }
+                            .value.fail {color: #ff0055; font-weight: bold; }
+                            .risk-list {margin - top: 1rem; }
+                            .risk-item {display: flex; justify-content: space-between; padding: 0.5rem; border: 1px solid #333; margin-bottom: 0.5rem; }
+                            .risk-item.severity-high {background: rgba(255, 0, 85, 0.1); border-color: #ff0055; }
+                            .risk-item.severity-medium {background: rgba(255, 100, 0, 0.1); border-color: #ffaa00; }
+                            .risk-item.severity-low {background: rgba(255, 204, 0, 0.1); border-color: #ffcc00; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Security Assessment Report: ${domain}</h1>
+                        <p>Generated by Nine-Security SMTP Check on ${new Date().toLocaleString()}</p>
+                        <hr style="border: 0; border-top: 1px solid #333; margin: 2rem 0;">
+                            ${content}
+                    </body>
+                </html>
+        `;
 
     // Trigger Download
     const blob = new Blob([fullHtml], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SMTP_Report_${domain}_${new Date().toISOString().split('T')[0]}.html`;
+    a.download = `SMTP_Report_${ domain }_${ new Date().toISOString().split('T')[0] }.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
