@@ -259,6 +259,74 @@ function updateLanguage(lang) {
 // --- SMTP Check Logic ---
 const API_BASE_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api";
 
+async function submitAssessment() {
+    console.log("Starting assessment...");
+    const emailInput = document.getElementById('email-input');
+    const consentCheck = document.getElementById('consent-check');
+    const stepInput = document.getElementById('smtp-step-input');
+    const stepVerify = document.getElementById('smtp-step-verify');
+    const verifyEmailCode = document.getElementById('verify-email-code');
+
+    const email = emailInput.value.trim();
+    const consent = consentCheck.checked;
+
+    if (!email || !email.includes('@')) {
+        alert("Please enter a valid corporate email.");
+        return;
+    }
+    if (!consent) {
+        alert("Please agree to the authorization terms.");
+        return;
+    }
+
+    let resp;
+    try {
+        // Use full URL to avoid relative path issues on github pages
+        resp = await fetch(`${API_BASE_URL}/assessment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, consent })
+        });
+    } catch (e) {
+        console.error("API_ERROR", e);
+        alert("Backend Unreachable. Please check your network or try again.");
+        return;
+    }
+
+    let data;
+    try {
+        data = await resp.json();
+    } catch {
+        alert("Backend returned invalid JSON.");
+        return;
+    }
+
+    if (!data.ok) {
+        alert(`Error: ${data.error}`);
+        return;
+    }
+
+    // Update UI
+    currentAssessmentId = data.assessment_id;
+    verifyEmailCode.textContent = data.verification_address;
+
+    stepInput.classList.add('hidden');
+    stepVerify.classList.remove('hidden');
+
+    // Reset Logs
+    const logContainer = document.getElementById('scan-log');
+    if (logContainer) {
+        logContainer.innerHTML = '';
+        addLog("Session Initialized.");
+        addLog(`Target: ${data.domain}`);
+        addLog("Waiting for inbound verification email...");
+    }
+
+    // Start Polling
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => checkStatus(currentAssessmentId), 2500);
+}
+
 const smtpForm = document.getElementById('smtp-form');
 const stepInput = document.getElementById('smtp-step-input');
 const stepVerify = document.getElementById('smtp-step-verify');
