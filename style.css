@@ -969,6 +969,12 @@ footer {
 }
 
 /* Advanced Report Layout Needed */
+#report-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .report-section-title {
     font-family: var(--font-mono);
     color: var(--accent-secondary);
@@ -977,12 +983,14 @@ footer {
     margin-top: 2rem;
     margin-bottom: 1rem;
     font-size: 1rem;
+    width: 100%;
 }
 
 .risk-list {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
+    width: 100%;
 }
 
 .risk-item {
@@ -999,6 +1007,11 @@ footer {
 .risk-item.severity-low {
     background: rgba(255, 204, 0, 0.1);
     border-color: rgba(255, 204, 0, 0.3);
+}
+
+.risk-item.severity-medium {
+    background: rgba(255, 100, 0, 0.1);
+    border-color: rgba(255, 100, 0, 0.3);
 }
 
 .risk-item .risk-name {
