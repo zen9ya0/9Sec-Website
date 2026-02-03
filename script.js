@@ -21,8 +21,8 @@ class Particle {
         this.y += this.speedY;
 
         // Boundary check
-        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
-        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+        if (this.x> canvas.width || this.x < 0) this.speedX = -this.speedX;
+        if (this.y> canvas.height || this.y < 0) this.speedY = -this.speedY;
     }
     draw() {
         ctx.fillStyle = this.color;
@@ -359,7 +359,7 @@ function addLog(msg, type = '') {
     logContainer.scrollTop = logContainer.scrollHeight;
 
     // Keep only last 6 lines
-    while (logContainer.children.length > 6) {
+    while (logContainer.children.length> 6) {
         logContainer.removeChild(logContainer.firstChild);
     }
 }
@@ -394,7 +394,7 @@ async function checkStatus(id) {
 
     // STATE 1: WAITING
     if (data.status === "waiting_email") {
-        if (Math.random() > 0.7) {
+        if (Math.random()> 0.7) {
             const msg = logMessages[Math.floor(Math.random() * logMessages.length)];
             addLog(msg);
         }
@@ -459,8 +459,8 @@ function generateMockReport(domain) {
             spf: "pass",
             dmarc: "none",
             dkim: "pass",
-            mta_sts: Math.random() > 0.5 ? "enforce" : "missing", // Mock
-            tls_rpt: Math.random() > 0.5 ? "enabled" : "missing"  // Mock
+            mta_sts: Math.random()> 0.5 ? "enforce" : "missing", // Mock
+            tls_rpt: Math.random()> 0.5 ? "enabled" : "missing"  // Mock
         },
         smtp_tls: {
             starttls: true,
@@ -499,34 +499,34 @@ function renderReport(report) {
         const dns = report.dns_posture || {};
                     <h4>TLS Reporting (TLS-RPT)</h4>
                     <div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
-                </div >
+                </div>
             <div class="report-item">
                 <h4>TLS Version</h4>
                 <div class="value">${tls.version || 'Unknown'}</div>
             </div>
-            </div >
+            </div>
 
             <div class="report-section-title">> Risk Assessment (Score: ${riskScore})</div>
         `;
 
         // Render Risk Breakdown if available
-        if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length > 0) {
-            html += `< div class="risk-list" > `;
+        if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length> 0) {
+            html += `<div class="risk-list"> `;
             report.risk_breakdown.forEach(risk => {
                 html += `
-            < div class="risk-item severity-${risk.severity || 'medium'}" >
+            <div class="risk-item severity-${risk.severity || 'medium'}">
                         <div class="risk-name">${risk.item || 'Unknown Risk'}</div>
                         <div class="risk-score">+${risk.score || 0} Risk</div>
-                    </div >
+                    </div>
             `;
             });
-            html += `</div > `;
+            html += `</div> `;
         } else {
             html += `
-            < div class="report-item" >
+            <div class="report-item">
                     <h4>Overall Risk</h4>
                     <div class="value ${getStatusClass(riskLevel)}">${riskLevel.toUpperCase()}</div>
-                </div >
+                </div>
             `;
         }
 
@@ -562,7 +562,7 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
 
     // Create a standalone HTML structure
     const fullHtml = `
-            < !DOCTYPE html >
+            <!DOCTYPE html>
                 <html>
                     <head>
                         <title>SMTP Security Report - ${domain}</title>
@@ -575,7 +575,7 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
                             .value.pass {color: #00ff41; font-weight: bold; }
                             .value.warn {color: #ffcc00; font-weight: bold; }
                             .value.fail {color: #ff0055; font-weight: bold; }
-                            .risk-list {margin - top: 1rem; }
+                            .risk-list {margin-top: 1rem; }
                             .risk-item {display: flex; justify-content: space-between; padding: 0.5rem; border: 1px solid #333; margin-bottom: 0.5rem; }
                             .risk-item.severity-high {background: rgba(255, 0, 85, 0.1); border-color: #ff0055; }
                             .risk-item.severity-medium {background: rgba(255, 100, 0, 0.1); border-color: #ffaa00; }
