@@ -94,26 +94,47 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
-// --- Threat Intelligence: 從後端 API 載入資安文章 ---
+// --- Threat Intelligence: 從後端 API 載入資安文章（先顯示 6 篇，其餘「顯示更多」）---
 const ARTICLES_API = "https://9sec-smtp-backend.nine-security.workers.dev/api/articles";
+const ARTICLES_INITIAL = 6;
+const articlesSection = document.querySelector("#articles");
 const articlesContainer = document.querySelector("#articles .list-layout");
-if (articlesContainer) {
+if (articlesContainer && articlesSection) {
     fetch(ARTICLES_API)
         .then((r) => r.ok ? r.json() : [])
         .then((list) => {
             if (!Array.isArray(list) || list.length === 0) return;
-            articlesContainer.innerHTML = list.map((a) => `
-                <article class="list-item">
-                    <div class="date">${escapeHtml(a.date || "")}</div>
-                    <div class="content">
-                        <h3>${escapeHtml(a.title || "")}</h3>
-                        <p>${escapeHtml(a.excerpt || "")}</p>
-                    </div>
-                    <div class="action">
-                        <a href="${escapeHtml(a.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">READ</a>
-                    </div>
-                </article>
-            `).join("");
+            let showing = ARTICLES_INITIAL;
+            const render = (count) => {
+                showing = count;
+                const slice = list.slice(0, count);
+                articlesContainer.innerHTML = slice.map((a) => `
+                    <article class="list-item">
+                        <div class="date">${escapeHtml(a.date || "")}</div>
+                        <div class="content">
+                            <h3>${escapeHtml(a.title || "")}</h3>
+                            <p>${escapeHtml(a.excerpt || "")}</p>
+                        </div>
+                        <div class="action">
+                            <a href="${escapeHtml(a.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">READ</a>
+                        </div>
+                    </article>
+                `).join("");
+                let btnWrap = articlesSection.querySelector(".articles-more-wrap");
+                if (list.length > ARTICLES_INITIAL) {
+                    if (!btnWrap) {
+                        btnWrap = document.createElement("div");
+                        btnWrap.className = "articles-more-wrap";
+                        articlesSection.querySelector(".container").appendChild(btnWrap);
+                    }
+                    const isAll = count >= list.length;
+                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}">${isAll ? "收起" : "顯示更多 (" + (list.length - count) + " 篇)"}</button>`;
+                    btnWrap.querySelector("button").onclick = () => {
+                        render(isAll ? ARTICLES_INITIAL : list.length);
+                    };
+                } else if (btnWrap) btnWrap.remove();
+            };
+            render(showing);
         })
         .catch(() => { /* 失敗時保留靜態文章 */ });
 }
