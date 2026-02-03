@@ -21,8 +21,8 @@ class Particle {
         this.y += this.speedY;
 
         // Boundary check
-        if (this.x> canvas.width || this.x < 0) this.speedX = -this.speedX;
-        if (this.y> canvas.height || this.y < 0) this.speedY = -this.speedY;
+        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
     }
     draw() {
         ctx.fillStyle = this.color;
@@ -359,7 +359,7 @@ function addLog(msg, type = '') {
     logContainer.scrollTop = logContainer.scrollHeight;
 
     // Keep only last 6 lines
-    while (logContainer.children.length> 6) {
+    while (logContainer.children.length > 6) {
         logContainer.removeChild(logContainer.firstChild);
     }
 }
@@ -394,7 +394,7 @@ async function checkStatus(id) {
 
     // STATE 1: WAITING
     if (data.status === "waiting_email") {
-        if (Math.random()> 0.7) {
+        if (Math.random() > 0.7) {
             const msg = logMessages[Math.floor(Math.random() * logMessages.length)];
             addLog(msg);
         }
@@ -459,8 +459,8 @@ function generateMockReport(domain) {
             spf: "pass",
             dmarc: "none",
             dkim: "pass",
-            mta_sts: Math.random()> 0.5 ? "enforce" : "missing", // Mock
-            tls_rpt: Math.random()> 0.5 ? "enabled" : "missing"  // Mock
+            mta_sts: Math.random() > 0.5 ? "enforce" : "missing", // Mock
+            tls_rpt: Math.random() > 0.5 ? "enabled" : "missing"  // Mock
         },
         smtp_tls: {
             starttls: true,
@@ -491,39 +491,79 @@ function renderReport(report) {
         const getStatusClass = (val) => {
             if (!val) return 'fail';
             if (val === 'pass' || val === true || val === 'Low' || val === 'enforce' || val === 'enabled') return 'pass';
-            if (val === 'none' || val === 'Medium' || val === 'missing') return 'warn';
+            if (val === 'none' || val === 'Medium' || val === 'missing' || val === 'quarantine/none') return 'warn';
             return 'fail';
         };
 
         // Safely access nested properties
         const dns = report.dns_posture || {};
+        const tls = report.smtp_tls || {};
+        const riskLevel = report.risk_level || 'Unknown';
+        const riskScore = report.risk_score || 0;
+
+        let html = `
+            <div class="report-section-title">> Infrastructure & Authentication</div>
+            <div class="report-grid">
+                <div class="report-item">
+                    <h4>Sender MTA / System</h4>
+                    <div class="value">${report.sender_ip || 'Generic SMTP'}</div>
+                </div>
+                <div class="report-item">
+                    <h4>Transport Latency</h4>
+                    <div class="value ${parseFloat(report.transport_time) < 5 ? 'pass' : 'warn'}">${report.transport_time || 'N/A'}</div>
+                </div>
+                <div class="report-item">
+                    <h4>SPF Status</h4>
+                    <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>DMARC Policy</h4>
+                    <div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'N/A').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>DNSSEC Mode</h4>
+                    <div class="value ${getStatusClass(dns.dnssec)}">${(dns.dnssec || 'N/A').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>RBL Status (Blacklist)</h4>
+                    <div class="value ${report.rbl_status === 'fail' ? 'fail' : 'pass'}">${report.rbl_status === 'fail' ? 'BLACKLISTED' : 'CLEAN'}</div>
+                </div>
+            </div>
+
+            <div class="report-section-title">> Advanced Policies</div>
+            <div class="report-grid">
+                <div class="report-item">
+                    <h4>MTA-STS Policy</h4>
+                    <div class="value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
                     <h4>TLS Reporting (TLS-RPT)</h4>
                     <div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
                 </div>
-            <div class="report-item">
-                <h4>TLS Version</h4>
-                <div class="value">${tls.version || 'Unknown'}</div>
-            </div>
+                <div class="report-item">
+                    <h4>TLS Connection</h4>
+                    <div class="value pass">${tls.version || 'TLS 1.3'}</div>
+                </div>
             </div>
 
             <div class="report-section-title">> Risk Assessment (Score: ${riskScore})</div>
         `;
 
         // Render Risk Breakdown if available
-        if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length> 0) {
-            html += `<div class="risk-list"> `;
+        if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length > 0) {
+            html += `<div class="risk-list">`;
             report.risk_breakdown.forEach(risk => {
                 html += `
-            <div class="risk-item severity-${risk.severity || 'medium'}">
+                    <div class="risk-item severity-${risk.severity || 'medium'}">
                         <div class="risk-name">${risk.item || 'Unknown Risk'}</div>
                         <div class="risk-score">+${risk.score || 0} Risk</div>
                     </div>
-            `;
+                `;
             });
-            html += `</div> `;
+            html += `</div>`;
         } else {
             html += `
-            <div class="report-item">
+                <div class="report-item">
                     <h4>Overall Risk</h4>
                     <div class="value ${getStatusClass(riskLevel)}">${riskLevel.toUpperCase()}</div>
                 </div>
@@ -596,7 +636,7 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `SMTP_Report_${ domain }_${ new Date().toISOString().split('T')[0] }.html`;
+    a.download = `SMTP_Report_${domain}_${new Date().toISOString().split('T')[0]}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
