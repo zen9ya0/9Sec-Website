@@ -142,31 +142,38 @@ if (articlesContainer && articlesSection) {
         .catch(() => { /* 失敗時保留靜態文章 */ });
 }
 
-// --- 威脅情資: 從後端 API 載入 CISA KEV（顯示前 30 筆）---
+// --- 威脅情資: 從後端 API 載入，CISA / OTX 分開顯示（各預設 8 / 5 筆，其餘「顯示更多」）---
 const THREAT_INTEL_API = "https://9sec-smtp-backend.nine-security.workers.dev/api/threat-intel";
+const THREAT_INTEL_CISA_INITIAL = 8;
+const THREAT_INTEL_OTX_INITIAL = 5;
 const threatIntelSection = document.querySelector("#threat-intel");
-const threatIntelContainer = document.querySelector("#threat-intel .list-layout");
-if (threatIntelContainer && threatIntelSection) {
+const threatIntelContent = document.getElementById("threat-intel-content");
+if (threatIntelContent && threatIntelSection) {
     fetch(THREAT_INTEL_API)
         .then((r) => r.ok ? r.json() : [])
         .then((list) => {
             if (!Array.isArray(list) || list.length === 0) {
                 const msg = getThreatIntelEmptyLabel();
-                threatIntelContainer.className = "list-layout threat-intel-placeholder";
-                threatIntelContainer.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
+                threatIntelContent.className = "threat-intel-content threat-intel-placeholder";
+                threatIntelContent.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
                 return;
             }
-            threatIntelContainer.classList.remove("threat-intel-placeholder");
-            threatIntelContainer.innerHTML = list.map((t) => {
+            const cisaList = list.filter((t) => t.source !== "otx");
+            const otxList = list.filter((t) => t.source === "otx");
+            const headingCisa = getThreatIntelHeadingCisa();
+            const headingOtx = getThreatIntelHeadingOtx();
+
+            const renderOneItem = (t, showSourceBadge) => {
                 const severityBadge = (t.severity === "high")
                     ? `<span class="severity-badge severity-high" data-i18n="threat_intel.ransomware">Ransomware</span>`
                     : "";
-                const sourceKey = (t.source === "otx") ? "threat_intel.source_otx" : "threat_intel.source_cisa";
-                const sourceBadge = `<span class="source-badge source-${escapeHtml((t.source || "cisa"))}" data-i18n="${sourceKey}">${(t.source === "otx") ? "OTX" : "CISA"}</span>`;
+                const sourceBadge = showSourceBadge
+                    ? `<span class="source-badge source-${escapeHtml((t.source || "cisa"))}" data-i18n="threat_intel.source_${(t.source === "otx") ? "otx" : "cisa"}">${(t.source === "otx") ? "OTX" : "CISA"}</span> `
+                    : "";
                 const detailLabel = getThreatIntelDetailLabel();
                 return `
                     <article class="list-item threat-intel-item">
-                        <div class="date">${sourceBadge} ${escapeHtml(t.date || "")}</div>
+                        <div class="date">${sourceBadge}${escapeHtml(t.date || "")}</div>
                         <div class="content">
                             <h3>${severityBadge}${escapeHtml(t.title || "")}</h3>
                             <p>${escapeHtml(t.excerpt || "")}</p>
@@ -176,13 +183,100 @@ if (threatIntelContainer && threatIntelSection) {
                         </div>
                     </article>
                 `;
-            }).join("");
+            };
+
+            let cisaShowing = THREAT_INTEL_CISA_INITIAL;
+            let otxShowing = THREAT_INTEL_OTX_INITIAL;
+
+            const renderCisa = (count) => {
+                cisaShowing = count;
+                const n = Math.min(count, cisaList.length);
+                return cisaList.slice(0, n).map((t) => renderOneItem(t, false)).join("");
+            };
+            const renderOtx = (count) => {
+                otxShowing = count;
+                const n = Math.min(count, otxList.length);
+                return otxList.slice(0, n).map((t) => renderOneItem(t, false)).join("");
+            };
+
+            const buildCisaMoreBtn = (isAll, remaining) => {
+                const btnText = getThreatIntelButtonLabel(isAll, remaining);
+                return `<div class="threat-intel-more-wrap threat-intel-cisa-more"><button type="button" class="articles-more-btn threat-intel-more-btn threat-intel-cisa-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(btnText)}</button></div>`;
+            };
+            const buildOtxMoreBtn = (isAll, remaining) => {
+                const btnText = getThreatIntelButtonLabel(isAll, remaining);
+                return `<div class="threat-intel-more-wrap threat-intel-otx-more"><button type="button" class="articles-more-btn threat-intel-more-btn threat-intel-otx-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(btnText)}</button></div>`;
+            };
+
+            const onCisaMore = () => {
+                const next = cisaShowing >= cisaList.length ? THREAT_INTEL_CISA_INITIAL : cisaList.length;
+                cisaShowing = next;
+                threatIntelSection.querySelector(".threat-intel-cisa-list").innerHTML = renderCisa(cisaShowing);
+                const wrap = threatIntelSection.querySelector(".threat-intel-cisa-more");
+                if (wrap) {
+                    const isAll = cisaShowing >= cisaList.length;
+                    const remaining = cisaList.length - Math.min(cisaShowing, cisaList.length);
+                    wrap.innerHTML = `<button type="button" class="articles-more-btn threat-intel-more-btn threat-intel-cisa-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(getThreatIntelButtonLabel(isAll, remaining))}</button>`;
+                    wrap.querySelector("button").onclick = onCisaMore;
+                }
+            };
+            const onOtxMore = () => {
+                const next = otxShowing >= otxList.length ? THREAT_INTEL_OTX_INITIAL : otxList.length;
+                otxShowing = next;
+                threatIntelSection.querySelector(".threat-intel-otx-list").innerHTML = renderOtx(otxShowing);
+                const wrap = threatIntelSection.querySelector(".threat-intel-otx-more");
+                if (wrap) {
+                    const isAll = otxShowing >= otxList.length;
+                    const remaining = otxList.length - Math.min(otxShowing, otxList.length);
+                    wrap.innerHTML = `<button type="button" class="articles-more-btn threat-intel-more-btn threat-intel-otx-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(getThreatIntelButtonLabel(isAll, remaining))}</button>`;
+                    wrap.querySelector("button").onclick = onOtxMore;
+                }
+            };
+
+            const cisaHtml = cisaList.length === 0
+                ? ""
+                : `<div class="threat-intel-group threat-intel-cisa">
+                    <h3 class="threat-intel-group-title" data-i18n="threat_intel.heading_cisa">${escapeHtml(headingCisa)}</h3>
+                    <div class="list-layout threat-intel-cisa-list">${renderCisa(cisaShowing)}</div>
+                    ${cisaList.length > THREAT_INTEL_CISA_INITIAL ? buildCisaMoreBtn(cisaShowing >= cisaList.length, cisaList.length - Math.min(cisaShowing, cisaList.length)) : ""}
+                </div>`;
+            const otxHtml = otxList.length === 0
+                ? ""
+                : `<div class="threat-intel-group threat-intel-otx">
+                    <h3 class="threat-intel-group-title" data-i18n="threat_intel.heading_otx">${escapeHtml(headingOtx)}</h3>
+                    <div class="list-layout threat-intel-otx-list">${renderOtx(otxShowing)}</div>
+                    ${otxList.length > THREAT_INTEL_OTX_INITIAL ? buildOtxMoreBtn(otxShowing >= otxList.length, otxList.length - Math.min(otxShowing, otxList.length)) : ""}
+                </div>`;
+            threatIntelContent.className = "threat-intel-content threat-intel-split" + (cisaList.length && otxList.length ? " threat-intel-split-two" : "");
+            threatIntelContent.innerHTML = `<div class="threat-intel-split-inner">${cisaHtml}${otxHtml}</div>`;
+
+            const cisaBtn = threatIntelSection.querySelector(".threat-intel-cisa-btn");
+            if (cisaBtn) cisaBtn.onclick = onCisaMore;
+            const otxBtn = threatIntelSection.querySelector(".threat-intel-otx-btn");
+            if (otxBtn) otxBtn.onclick = onOtxMore;
         })
         .catch(() => {
             const msg = getThreatIntelLoadErrorLabel();
-            threatIntelContainer.className = "list-layout threat-intel-placeholder";
-            threatIntelContainer.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
+            threatIntelContent.className = "threat-intel-content threat-intel-placeholder";
+            threatIntelContent.innerHTML = `<p class="placeholder-text">${escapeHtml(msg)}</p>`;
         });
+}
+function getThreatIntelHeadingCisa() {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    return (t.threat_intel && t.threat_intel.heading_cisa) ? t.threat_intel.heading_cisa : "CISA KEV";
+}
+function getThreatIntelHeadingOtx() {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    return (t.threat_intel && t.threat_intel.heading_otx) ? t.threat_intel.heading_otx : "OTX Pulses";
+}
+function getThreatIntelButtonLabel(isAll, remaining) {
+    const lang = localStorage.getItem("9sec_lang") || "en";
+    const t = translations[lang] || translations.en;
+    const ti = (t.threat_intel || {});
+    if (isAll) return (ti.collapse || "Collapse");
+    return (ti.show_more || "Show more ({n})").replace("{n}", remaining);
 }
 function getThreatIntelEmptyLabel() {
     const lang = localStorage.getItem("9sec_lang") || "en";
@@ -261,7 +355,11 @@ const translations = {
             load_error: "Unable to load threat intel.",
             ransomware: "Ransomware",
             source_cisa: "CISA",
-            source_otx: "OTX"
+            source_otx: "OTX",
+            heading_cisa: "CISA KEV",
+            heading_otx: "OTX Pulses",
+            show_more: "Show more ({n})",
+            collapse: "Collapse"
         }
     },
     tw: {
@@ -317,7 +415,11 @@ const translations = {
             load_error: "無法載入威脅情資。",
             ransomware: "勒索軟體",
             source_cisa: "CISA",
-            source_otx: "OTX"
+            source_otx: "OTX",
+            heading_cisa: "CISA 已知遭利用漏洞",
+            heading_otx: "OTX 脈動",
+            show_more: "顯示更多 ({n} 筆)",
+            collapse: "收起"
         }
     },
     jp: {
@@ -373,7 +475,11 @@ const translations = {
             load_error: "脅威情資を読み込めません。",
             ransomware: "ランサムウェア",
             source_cisa: "CISA",
-            source_otx: "OTX"
+            source_otx: "OTX",
+            heading_cisa: "CISA 既知の悪用脆弱性",
+            heading_otx: "OTX パルス",
+            show_more: "もっと見る ({n} 件)",
+            collapse: "閉じる"
         }
     }
 };
@@ -433,10 +539,16 @@ function updateLanguage(lang) {
     });
 
     // Update articles "Show more" / "Collapse" button text by current lang
-    document.querySelectorAll('.articles-more-btn').forEach(btn => {
+    document.querySelectorAll('#security-news .articles-more-btn').forEach(btn => {
         const isAll = btn.dataset.expanded === 'true';
         const remaining = parseInt(btn.dataset.remaining, 10) || 0;
         btn.textContent = getArticlesButtonLabel(isAll, remaining);
+    });
+    // Update threat intel "Show more" / "Collapse" button text by current lang
+    document.querySelectorAll('.threat-intel-more-btn').forEach(btn => {
+        const isAll = btn.dataset.expanded === 'true';
+        const remaining = parseInt(btn.dataset.remaining, 10) || 0;
+        btn.textContent = getThreatIntelButtonLabel(isAll, remaining);
     });
 }
 
