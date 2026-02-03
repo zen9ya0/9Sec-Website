@@ -94,6 +94,35 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     });
 });
 
+// --- Threat Intelligence: 從後端 API 載入資安文章 ---
+const ARTICLES_API = "https://9sec-smtp-backend.nine-security.workers.dev/api/articles";
+const articlesContainer = document.querySelector("#articles .list-layout");
+if (articlesContainer) {
+    fetch(ARTICLES_API)
+        .then((r) => r.ok ? r.json() : [])
+        .then((list) => {
+            if (!Array.isArray(list) || list.length === 0) return;
+            articlesContainer.innerHTML = list.map((a) => `
+                <article class="list-item">
+                    <div class="date">${escapeHtml(a.date || "")}</div>
+                    <div class="content">
+                        <h3>${escapeHtml(a.title || "")}</h3>
+                        <p>${escapeHtml(a.excerpt || "")}</p>
+                    </div>
+                    <div class="action">
+                        <a href="${escapeHtml(a.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">READ</a>
+                    </div>
+                </article>
+            `).join("");
+        })
+        .catch(() => { /* 失敗時保留靜態文章 */ });
+}
+function escapeHtml(s) {
+    const div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+}
+
 /* --- Multi-language Support --- */
 const translations = {
     en: {
