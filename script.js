@@ -478,76 +478,94 @@ function generateMockReport(domain) {
 }
 
 function renderReport(report) {
-    document.getElementById('report-domain').textContent = report.domain;
-    const grid = document.getElementById('report-content');
-
-    // Helper for coloring
-    const getStatusClass = (val) => {
-        if (val === 'pass' || val === true || val === 'Low' || val === 'enforce' || val === 'enabled') return 'pass';
-        if (val === 'none' || val === 'Medium' || val === 'missing') return 'warn';
-        return 'fail';
-    };
-
-    let html = `
-        <div class="report-section-title">> Basic Authentication</div>
-        <div class="report-grid">
-            <div class="report-item">
-                <h4>Sender IP</h4>
-                <div class="value">${report.sender_ip}</div>
-            </div>
-            <div class="report-item">
-                <h4>SPF Status</h4>
-                <div class="value ${getStatusClass(report.dns_posture.spf)}">${report.dns_posture.spf.toUpperCase()}</div>
-            </div>
-            <div class="report-item">
-                <h4>DMARC Policy</h4>
-                <div class="value ${getStatusClass(report.dns_posture.dmarc)}">${report.dns_posture.dmarc.toUpperCase()}</div>
-            </div>
-            <div class="report-item">
-                <h4>DKIM Signature</h4>
-                <div class="value ${getStatusClass(report.dns_posture.dkim)}">${report.dns_posture.dkim.toUpperCase()}</div>
-            </div>
-        </div>
-
-        <div class="report-section-title">> Advanced Policy (MTA-STS & Reports)</div>
-        <div class="report-grid">
-            <div class="report-item">
-                <h4>MTA-STS Policy</h4>
-                <div class="value ${getStatusClass(report.dns_posture.mta_sts)}">${report.dns_posture.mta_sts.toUpperCase()}</div>
-            </div>
-            <div class="report-item">
-                <h4>TLS Reporting (TLS-RPT)</h4>
-                <div class="value ${getStatusClass(report.dns_posture.tls_rpt)}">${report.dns_posture.tls_rpt.toUpperCase()}</div>
-            </div>
-            <div class="report-item">
-                <h4>TLS Version</h4>
-                <div class="value">${report.smtp_tls.version}</div>
-            </div>
-        </div>
-
-        <div class="report-section-title">> Risk Assessment (Score: ${report.risk_score || 'N/A'})</div>
-    `;
-
-    // Render Risk Breakdown if available
-    if (report.risk_breakdown && report.risk_breakdown.length > 0) {
-        html += `<div class="risk-list">`;
-        report.risk_breakdown.forEach(risk => {
-            html += `
-                <div class="risk-item severity-${risk.severity}">
-                    <div class="risk-name">${risk.item}</div>
-                    <div class="risk-score">+${risk.score} Risk</div>
-                </div>
-            `;
-        });
-        html += `</div>`;
-    } else {
-        html += `
-            <div class="report-item">
-                <h4>Overall Risk</h4>
-                <div class="value ${getStatusClass(report.risk_level)}">${report.risk_level.toUpperCase()}</div>
-            </div>
-        `;
+    if (!report) {
+        console.error("No report data available");
+        return;
     }
 
-    grid.innerHTML = html;
+    try {
+        document.getElementById('report-domain').textContent = report.domain || 'Unknown Domain';
+        const grid = document.getElementById('report-content');
+
+        // Helper for coloring
+        const getStatusClass = (val) => {
+            if (!val) return 'fail';
+            if (val === 'pass' || val === true || val === 'Low' || val === 'enforce' || val === 'enabled') return 'pass';
+            if (val === 'none' || val === 'Medium' || val === 'missing') return 'warn';
+            return 'fail';
+        };
+
+        // Safely access nested properties
+        const dns = report.dns_posture || {};
+        const tls = report.smtp_tls || {};
+        const senderIp = report.sender_ip || 'N/A';
+        const riskScore = report.risk_score ?? 'N/A'; // allow 0
+        const riskLevel = report.risk_level || 'Unknown';
+
+        let html = `
+            <div class="report-section-title">> Basic Authentication</div>
+            <div class="report-grid">
+                <div class="report-item">
+                    <h4>Sender IP</h4>
+                    <div class="value">${senderIp}</div>
+                </div>
+                <div class="report-item">
+                    <h4>SPF Status</h4>
+                    <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>DMARC Policy</h4>
+                    <div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'N/A').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>DKIM Signature</h4>
+                    <div class="value ${getStatusClass(dns.dkim)}">${(dns.dkim || 'N/A').toUpperCase()}</div>
+                </div>
+            </div>
+
+            <div class="report-section-title">> Advanced Policy (MTA-STS & Reports)</div>
+            <div class="report-grid">
+                <div class="report-item">
+                    <h4>MTA-STS Policy</h4>
+                    <div class="value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>TLS Reporting (TLS-RPT)</h4>
+                    <div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>TLS Version</h4>
+                    <div class="value">${tls.version || 'Unknown'}</div>
+                </div>
+            </div>
+
+            <div class="report-section-title">> Risk Assessment (Score: ${riskScore})</div>
+        `;
+
+        // Render Risk Breakdown if available
+        if (report.risk_breakdown && Array.isArray(report.risk_breakdown) && report.risk_breakdown.length > 0) {
+            html += `<div class="risk-list">`;
+            report.risk_breakdown.forEach(risk => {
+                html += `
+                    <div class="risk-item severity-${risk.severity || 'medium'}">
+                        <div class="risk-name">${risk.item || 'Unknown Risk'}</div>
+                        <div class="risk-score">+${risk.score || 0} Risk</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            html += `
+                <div class="report-item">
+                    <h4>Overall Risk</h4>
+                    <div class="value ${getStatusClass(riskLevel)}">${riskLevel.toUpperCase()}</div>
+                </div>
+            `;
+        }
+
+        grid.innerHTML = html;
+    } catch (e) {
+        console.error("RENDER_ERROR", e);
+        addLog("Error rendering report data.", "error");
+    }
 }
