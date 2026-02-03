@@ -605,6 +605,10 @@ function renderReport(report) {
                     <h4>RBL Status (Blacklist)</h4>
                     <div class="value ${report.rbl_status === 'fail' ? 'fail' : 'pass'}">${report.rbl_status === 'fail' ? 'BLACKLISTED' : 'CLEAN'}</div>
                 </div>
+                <div class="report-item">
+                    <h4>DKIM Signature</h4>
+                    <div class="value ${getStatusClass(dns.dkim)}">${(dns.dkim || 'N/A').toUpperCase()}</div>
+                </div>
             </div>
 
             <div class="report-section-title">> Advanced Policies</div>
@@ -616,6 +620,10 @@ function renderReport(report) {
                 <div class="report-item">
                     <h4>TLS Reporting (TLS-RPT)</h4>
                     <div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
+                </div>
+                <div class="report-item">
+                    <h4>BIMI Indicator</h4>
+                    <div class="value ${getStatusClass(dns.bimi)}">${(dns.bimi || 'MISSING').toUpperCase()}</div>
                 </div>
                 <div class="report-item">
                     <h4>TLS Connection</h4>
