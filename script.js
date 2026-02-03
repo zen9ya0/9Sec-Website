@@ -265,7 +265,7 @@ async function submitAssessment() {
     const consentCheck = document.getElementById('consent-check');
     const stepInput = document.getElementById('smtp-step-input');
     const stepVerify = document.getElementById('smtp-step-verify');
-    const verifyEmailCode = document.getElementById('verify-email-code');
+    const verifyEmailCode = document.getElementById('verification-email');
 
     const email = emailInput.value.trim();
     const consent = consentCheck.checked;
