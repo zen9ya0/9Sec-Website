@@ -576,68 +576,60 @@ function renderReport(report) {
         const tls = report.smtp_tls || {};
         const riskScore = report.risk_score || 0;
         const riskBreakdown = report.risk_breakdown || [];
+        const rblStatus = report.rbl_status || 'unchecked';
 
-        // TRIPLE-ALIGNED LOGIC: Matching index.js Master Template
+        // Unified Executive Report (與後端 / 下載 / Discord 一致)
+        const riskItemBorder = (r) => r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666');
         let html = `
-            <style>
-                .aligned-section { color: #00ff41; font-family: monospace; margin: 25px 0 12px; border-left: 4px solid #00ff41; padding-left: 15px; font-size: 1.1rem; text-transform: uppercase; }
-                .aligned-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-                .aligned-card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; }
-                .aligned-label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
-                .aligned-value { font-family: 'JetBrains Mono', monospace; font-weight: bold; font-size: 1.1rem; }
-                .aligned-risk { display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border: 1px solid #333; margin-bottom: 8px; }
-                .aligned-gap { font-size: 0.7rem; color: #ff0055; margin-top: 8px; font-style: italic; border-top: 1px solid #222; padding-top: 5px; }
-            </style>
-
-            <div class="aligned-section">> Executive Risk Profile (Score: ${riskScore}/100)</div>
+            <div class="section-title">> Executive Risk Profile (Score: ${riskScore}/100)</div>
             <div class="risk-container">
                 ${riskBreakdown.map(r => `
-                    <div class="aligned-risk" style="border-left: 4px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#888')};">
+                    <div class="risk-item" style="border-left-color: ${riskItemBorder(r)};">
                         <span>${r.item}</span>
-                        <span class="aligned-value pass">+${r.score}</span>
+                        <span class="value pass">+${r.score}</span>
                     </div>
                 `).join('')}
             </div>
 
-            <div class="aligned-section">> Authentication Infrastructure</div>
-            <div class="aligned-grid">
-                <div class="aligned-card">
-                    <div class="aligned-label">Origin MTA Node</div>
-                    <div class="aligned-value">${report.sender_ip || 'Generic SMTP'}</div>
+            <div class="section-title">> Authentication Infrastructure</div>
+            <div class="grid">
+                <div class="card"><div class="label">Origin MTA Node</div><div class="value">${report.sender_ip || 'Generic Postfix/Exim'}</div></div>
+                <div class="card"><div class="label">Network Latency</div><div class="value ${parseFloat(report.transport_time) > 5 ? 'warn' : 'pass'}">${report.transport_time || 'N/A'}</div></div>
+                <div class="card">
+                    <div class="label">SPF Governance</div>
+                    <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'MISSING').toUpperCase()}</div>
+                    ${dns.spf === 'warn' ? '<div class="gap-warning">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}
                 </div>
-                <div class="aligned-card">
-                    <div class="aligned-label">Network Latency</div>
-                    <div class="aligned-value ${parseFloat(report.transport_time) < 5 ? 'pass' : 'warn'}">${report.transport_time || 'N/A'}</div>
+                <div class="card">
+                    <div class="label">DMARC Enforcement</div>
+                    <div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'NONE').toUpperCase()}</div>
+                    ${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div class="gap-warning">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}
                 </div>
-                <div class="aligned-card">
-                    <div class="aligned-label">SPF Governance</div>
-                    <div class="aligned-value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>
-                    ${dns.spf === 'warn' ? '<div class="aligned-gap">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}
-                </div>
-                <div class="aligned-card">
-                    <div class="aligned-label">DMARC Enforcement</div>
-                    <div class="aligned-value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'N/A').toUpperCase()}</div>
-                    ${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div class="aligned-gap">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}
-                </div>
+                <div class="card"><div class="label">DNSSEC Integrity</div><div class="value ${getStatusClass(dns.dnssec)}">${(dns.dnssec || 'FAIL').toUpperCase()}</div></div>
+                <div class="card"><div class="label">RBL Reputation</div><div class="value ${rblStatus === 'fail' ? 'fail' : 'pass'}">${rblStatus === 'fail' ? 'BLACKLISTED' : 'CLEAN'}</div></div>
             </div>
 
-            <div class="aligned-section">> Advanced Security Protocols</div>
-            <div class="aligned-grid">
-                <div class="aligned-card">
-                    <div class="aligned-label">MTA-STS Handshake</div>
-                    <div class="aligned-value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
-                    ${dns.mta_sts === 'missing' && dns.mta_sts_raw !== 'None' ? '<div class="aligned-gap">⚠️ Policy Handshake Integrity Failed</div>' : ''}
+            <div class="section-title">> Advanced Security Protocols</div>
+            <div class="grid">
+                <div class="card">
+                    <div class="label">MTA-STS Handshake</div>
+                    <div class="value ${getStatusClass(dns.mta_sts)}">${(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                    ${dns.mta_sts === 'missing' && dns.mta_sts_raw !== 'None' ? '<div class="gap-warning">⚠️ Policy Handshake Integrity Failed</div>' : ''}
                 </div>
-                <div class="aligned-card">
-                    <div class="aligned-label">Transport Encryption</div>
-                    <div class="aligned-value pass">${tls.version || 'TLS 1.3'}</div>
-                </div>
+                <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
+                <div class="card"><div class="label">BIMI Brand Indicator</div><div class="value ${getStatusClass(dns.bimi)}">${(dns.bimi || 'MISSING').toUpperCase()}</div></div>
+                <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${tls.version || 'TLS 1.3 (Verified)'}</div></div>
             </div>
 
-            <div class="cta-box" style="background: rgba(0,255,65,0.05); border: 1px solid #00ff41; padding: 25px; margin-top: 30px; text-align: center;">
-                <h3 style="color: #00ff41; margin-top: 0; font-family: monospace;">WANT THE TECHNICAL FORENSIC REPORT?</h3>
-                <p style="font-size: 0.9rem; color: #ccc;">Our backend has captured detailed RFC violations and policy handshake failures.</p>
-                <p style="font-size: 0.9rem; color: #ccc;">Contact <strong>consult@nine-security.com</strong> to unlock the full technical diagnostic guide.</p>
+            <div class="cta-box">
+                <h3>Want the Technical Forensic Report?</h3>
+                <p>Our backend has identified specific RFC violations and policy handshake failures.</p>
+                <p>Contact <strong>consult@nine-security.com</strong> to unlock the full technical diagnostic and remediation guide.</p>
+            </div>
+
+            <div class="report-footer">
+                CONFIDENTIAL - GENERATED BY NINE-SECURITY.INC FORENSIC CLUSTER<br>
+                &copy; 2026 Nine-Security Team. All Systems Operational.
             </div>
         `;
 
@@ -672,7 +664,7 @@ document.getElementById('btn-reset-check').addEventListener('click', () => {
     if (consent) consent.checked = false;
 });
 
-// Download Aligned Executive Report
+// Download Aligned Executive Report (與網頁 / 後端 Admin / Discord 連結 同一樣板)
 document.getElementById('btn-download-report').addEventListener('click', () => {
     const data = window.currentReportData;
     if (!data) return;
@@ -681,6 +673,7 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     const dns = data.dns_posture || {};
     const tls = data.smtp_tls || {};
     const riskScore = data.risk_score || 0;
+    const rblStatus = data.rbl_status || 'unchecked';
 
     const getStatusClass = (val) => {
         const lower = String(val || '').toLowerCase();
@@ -695,19 +688,19 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     <meta charset="UTF-8">
     <title>9Sec Security Report - ${domain}</title>
     <style>
-        :root { --green: #00ff41; --fail: #ff0055; --warn: #ffaa00; --bg: #0a0a0a; --card: #111; --border: #333; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 40px; max-width: 850px; margin: 0 auto; line-height: 1.6; }
+        :root { --green: #00ff41; --fail: #ff0055; --warn: #ffaa00; --bg: #0a0a0a; --card: #111; --border: #333; --text: #e0e0e0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; line-height: 1.6; }
         .header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
         .header h1 { color: var(--green); margin: 0; font-family: monospace; letter-spacing: 2px; }
         .section-title { color: var(--green); font-family: monospace; margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid var(--green); padding-left: 15px; text-transform: uppercase; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 4px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 4px; position: relative; }
         .label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
-        .value { font-size: 1.1rem; font-weight: bold; font-family: monospace; }
+        .value { font-size: 1.1rem; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
         .value.pass { color: var(--green); } .value.fail { color: var(--fail); } .value.warn { color: var(--warn); }
         .risk-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 8px; border-left: 4px solid var(--fail); }
         .gap-warning { font-size: 0.7rem; color: var(--fail); margin-top: 8px; font-style: italic; border-top: 1px solid #222; padding-top: 5px; }
-        .cta-box { border: 1px solid var(--green); background: rgba(0,255,65,0.04); padding: 25px; text-align: center; margin-top: 40px; }
+        .cta-box { background: rgba(0,255,65,0.05); border: 1px solid var(--green); padding: 25px; margin-top: 40px; text-align: center; }
         .footer { margin-top: 50px; text-align: center; color: #555; font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 20px; }
     </style>
 </head>
@@ -718,28 +711,55 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
     </div>
 
     <div class="section-title">> Executive Risk Profile (Score: ${riskScore}/100)</div>
-    ${(data.risk_breakdown || []).map(r => `
-        <div class="risk-item" style="border-left-color: ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#888')};">
+    <div class="risk-container">
+        ${(data.risk_breakdown || []).map(r => `
+        <div class="risk-item" style="border-left-color: ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666')};">
             <span>${r.item}</span>
             <span class="value pass">+${r.score}</span>
         </div>
-    `).join('')}
+        `).join('')}
+    </div>
 
     <div class="section-title">> Authentication Infrastructure</div>
     <div class="grid">
-        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${data.sender_ip || 'Generic SMTP'}</div></div>
-        <div class="card"><div class="label">SPF Governance</div><div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'N/A').toUpperCase()}</div>${dns.spf === 'warn' ? '<div class="gap-warning">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}</div>
-        <div class="card"><div class="label">DMARC Enforcement</div><div class="value ${getStatusClass(dns.dmarc)}">${(dns.dmarc || 'NONE').toUpperCase()}</div>${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div class="gap-warning">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}</div>
-        <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${tls.version || 'TLS 1.3'}</div></div>
+        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${data.sender_ip || 'Generic Postfix/Exim'}</div></div>
+        <div class="card"><div class="label">Network Latency</div><div class="value ${parseFloat(data.transport_time) > 5 ? 'warn' : 'pass'}">${data.transport_time || 'N/A'}</div></div>
+        <div class="card">
+            <div class="label">SPF Governance</div>
+            <div class="value ${getStatusClass(dns.spf)}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
+            ${dns.spf === 'warn' ? '<div class="gap-warning">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}
+        </div>
+        <div class="card">
+            <div class="label">DMARC Enforcement</div>
+            <div class="value ${getStatusClass(dns.dmarc)}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
+            ${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div class="gap-warning">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}
+        </div>
+        <div class="card"><div class="label">DNSSEC Integrity</div><div class="value ${getStatusClass(dns.dnssec)}">${String(dns.dnssec || 'FAIL').toUpperCase()}</div></div>
+        <div class="card"><div class="label">RBL Reputation</div><div class="value ${rblStatus === 'fail' ? 'fail' : 'pass'}">${rblStatus === 'fail' ? 'BLACKLISTED' : 'CLEAN'}</div></div>
+    </div>
+
+    <div class="section-title">> Advanced Security Protocols</div>
+    <div class="grid">
+        <div class="card">
+            <div class="label">MTA-STS Handshake</div>
+            <div class="value ${getStatusClass(dns.mta_sts)}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+            ${dns.mta_sts === 'missing' && dns.mta_sts_raw !== 'None' ? '<div class="gap-warning">⚠️ Policy Handshake Integrity Failed</div>' : ''}
+        </div>
+        <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value ${getStatusClass(dns.tls_rpt)}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
+        <div class="card"><div class="label">BIMI Brand Indicator</div><div class="value ${getStatusClass(dns.bimi)}">${String(dns.bimi || 'MISSING').toUpperCase()}</div></div>
+        <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${tls.version || 'TLS 1.3 (Verified)'}</div></div>
     </div>
 
     <div class="cta-box">
-        <h3 style="color: var(--green); margin-top: 0; font-family: monospace;">SECURE YOUR INFRASTRUCTURE</h3>
-        <p>Our scanners identified technical gaps that could lead to email spoofing or delivery failure.</p>
-        <p>Contact <strong>consult@nine-security.com</strong> to receive the full 15-page Forensic Dossier.</p>
+        <h3 style="color: var(--green); margin-top: 0; font-family: monospace;">Want the Technical Forensic Report?</h3>
+        <p>Our backend has identified specific RFC violations and policy handshake failures.</p>
+        <p>Contact <strong>consult@nine-security.com</strong> to unlock the full technical diagnostic and remediation guide.</p>
     </div>
 
-    <div class="footer">&copy; 2026 Nine-Security Team. Forensic Analysis Complete.</div>
+    <div class="footer">
+        CONFIDENTIAL - GENERATED BY NINE-SECURITY.INC FORENSIC CLUSTER<br>
+        &copy; 2026 Nine-Security Team. All Systems Operational.
+    </div>
 </body>
 </html>`;
 

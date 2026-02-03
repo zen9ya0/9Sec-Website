@@ -1030,3 +1030,87 @@ footer {
 .risk-item.severity-high .risk-score {
     color: #ff0055;
 }
+
+/* ========== Unified Executive Report (客戶簡化版) — 與後端 / 下載 / Discord 一致 ========== */
+#report-content .report-header {
+    border-bottom: 2px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+#report-content .report-header h1 {
+    color: #00ff41;
+    margin: 0;
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+#report-content .section-title {
+    color: #00ff41;
+    font-family: monospace;
+    margin: 30px 0 15px;
+    font-size: 1.1rem;
+    border-left: 4px solid #00ff41;
+    padding-left: 15px;
+    text-transform: uppercase;
+}
+#report-content .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+#report-content .card {
+    background: #111;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 4px;
+}
+#report-content .label {
+    color: #888;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+#report-content .value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    font-family: 'JetBrains Mono', monospace;
+}
+#report-content .value.pass { color: #00ff41; }
+#report-content .value.fail { color: #ff0055; }
+#report-content .value.warn { color: #ffaa00; }
+#report-content .risk-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid #333;
+    margin-bottom: 8px;
+    border-left: 4px solid #ff0055;
+}
+#report-content .gap-warning {
+    font-size: 0.7rem;
+    color: #ff0055;
+    margin-top: 8px;
+    font-style: italic;
+    border-top: 1px solid #222;
+    padding-top: 5px;
+}
+#report-content .cta-box {
+    background: rgba(0,255,65,0.05);
+    border: 1px solid #00ff41;
+    padding: 25px;
+    margin-top: 40px;
+    text-align: center;
+}
+#report-content .cta-box h3 {
+    color: #00ff41;
+    margin-top: 0;
+    font-family: monospace;
+}
+#report-content .report-footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #555;
+    font-size: 0.8rem;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+}
