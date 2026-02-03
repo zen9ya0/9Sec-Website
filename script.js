@@ -107,7 +107,8 @@ if (articlesContainer && articlesSection) {
             let showing = ARTICLES_INITIAL;
             const render = (count) => {
                 showing = count;
-                const slice = list.slice(0, count);
+                const countToShow = Math.min(count, list.length);
+                const slice = list.slice(0, countToShow);
                 articlesContainer.innerHTML = slice.map((a) => `
                     <article class="list-item">
                         <div class="date">${escapeHtml(a.date || "")}</div>
@@ -127,8 +128,8 @@ if (articlesContainer && articlesSection) {
                         btnWrap.className = "articles-more-wrap";
                         articlesSection.querySelector(".container").appendChild(btnWrap);
                     }
-                    const isAll = count >= list.length;
-                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}">${isAll ? "收起" : "顯示更多 (" + (list.length - count) + " 篇)"}</button>`;
+                    const isAll = countToShow >= list.length;
+                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}">${isAll ? "收起" : "顯示更多 (" + (list.length - countToShow) + " 篇)"}</button>`;
                     btnWrap.querySelector("button").onclick = () => {
                         render(isAll ? ARTICLES_INITIAL : list.length);
                     };

@@ -443,6 +443,16 @@ h1.glitch-title {
     max-height: 72vh;
     overflow-y: auto;
 }
+
+/* 限制文章區塊總高度，避免整頁被拉長 */
+#articles .container {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+#articles .list-layout {
+    max-height: 65vh;
+    overflow-y: auto;
+}
 .articles-more-wrap {
     margin-top: 1rem;
     text-align: center;
