@@ -913,8 +913,11 @@ function renderReport(report) {
     }
 
     try {
-        document.getElementById('report-domain').textContent = report.domain || 'Unknown Domain';
-        const grid = document.getElementById('report-content');
+        const reportDomain = document.getElementById('report-domain');
+        const reportContent = document.getElementById('report-content');
+        const btnDownload = document.getElementById('btn-download-report');
+
+        if (reportDomain) reportDomain.textContent = report.domain || 'Unknown Domain';
 
         const getStatusClass = (val) => {
             if (!val) return 'fail';
@@ -988,12 +991,13 @@ function renderReport(report) {
         // Store standard object for download
         window.currentReportData = report;
 
-        document.getElementById('report-content').innerHTML = html;
-        document.getElementById('btn-download-report').classList.remove('hidden');
+        if (reportContent) reportContent.innerHTML = html;
+        if (btnDownload) btnDownload.classList.remove('hidden');
 
     } catch (e) {
         console.error("Rendering failed:", e);
-        document.getElementById('report-content').innerHTML = `<div class="error">Report rendering error: ${e.message}</div>`;
+        const reportContent = document.getElementById('report-content');
+        if (reportContent) reportContent.innerHTML = `<div class="error">Report rendering error: ${e.message}</div>`;
     }
 }
 // --- Report Action Handlers ---
