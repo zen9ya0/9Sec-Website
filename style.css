@@ -1552,3 +1552,33 @@ footer {
     background: var(--card-hover-bg) !important;
     color: var(--text-primary) !important;
 }
+
+/* Tool Hash Styling */
+.tool-hash {
+    margin-top: 1.5rem;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+[data-theme="light"] .tool-hash {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.hash-label {
+    display: block;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hash-value {
+    display: block;
+    color: var(--accent-secondary);
+    word-break: break-all;
+    font-family: var(--font-mono);
+}

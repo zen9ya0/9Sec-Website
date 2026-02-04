@@ -401,7 +401,9 @@ const translations = {
         arsenal: {
             host_witness_title: "HostWitness",
             host_witness_desc: "Windows single-host live forensics and activity correlation tool. Collects and correlates processes, network, and timeline events.",
-            host_witness_btn: "View on GitHub"
+            host_witness_btn: "View on GitHub",
+            host_witness_download: "Download .ZIP",
+            host_witness_hash: "SHA-256 Checksum"
         }
     },
     tw: {
@@ -496,7 +498,9 @@ const translations = {
         arsenal: {
             host_witness_title: "HostWitness",
             host_witness_desc: "Windows 單機即時鑑識與活動關聯分析工具。採集並關聯進程、網路與時間軸事件。",
-            host_witness_btn: "前往 GitHub"
+            host_witness_btn: "前往 GitHub",
+            host_witness_download: "下載 .ZIP",
+            host_witness_hash: "SHA-256 校驗值"
         }
     },
     jp: {
@@ -591,7 +595,9 @@ const translations = {
         arsenal: {
             host_witness_title: "HostWitness",
             host_witness_desc: "Windows ホスト型ライブフォレンジックおよびアクティビティ相関分析ツール。プロセス、ネットワーク、タイムラインイベントを収集・相関分析します。",
-            host_witness_btn: "GitHub で見る"
+            host_witness_btn: "GitHub で見る",
+            host_witness_download: "ダウンロード .ZIP",
+            host_witness_hash: "SHA-256 チェックサム"
         }
     }
 };
