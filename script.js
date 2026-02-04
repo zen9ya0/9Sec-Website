@@ -1148,96 +1148,93 @@ if (btnDownloadReport) {
             return 'fail';
         };
 
-        const fullHtml = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>9Sec Security Report - ${domain}</title>
-    <style>
-        :root { --green: #00ff41; --fail: #ff0055; --warn: #ffaa00; --bg: #0a0a0a; --card: #111; --border: #333; --text: #e0e0e0; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; max-width: 900px; margin: 0 auto; line-height: 1.6; }
-        .header { border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 30px; }
-        .header h1 { color: var(--green); margin: 0; font-family: monospace; letter-spacing: 2px; }
-        .section-title { color: var(--green); font-family: monospace; margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid var(--green); padding-left: 15px; text-transform: uppercase; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 4px; position: relative; }
-        .label { color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
-        .value { font-size: 1.1rem; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
-        .value.pass { color: var(--green); } .value.fail { color: var(--fail); } .value.warn { color: var(--warn); }
-        .risk-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 8px; border-left: 4px solid var(--fail); }
-        .gap-warning { font-size: 0.7rem; color: var(--fail); margin-top: 8px; font-style: italic; border-top: 1px solid #222; padding-top: 5px; }
-        .cta-box { background: rgba(0,255,65,0.05); border: 1px solid var(--green); padding: 25px; margin-top: 40px; text-align: center; }
-        .footer { margin-top: 50px; text-align: center; color: #555; font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 20px; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>NINE-SECURITY // ASSESSMENT_LOG</h1>
-        <p>Target Domain: <strong>${domain}</strong> | Timestamp: ${new Date().toLocaleString()}</p>
-    </div>
+        const fullHtml = `
+            <div style="background-color: #0a0a0a; color: #e0e0e0; font-family: Segoe UI, Tahoma, sans-serif; padding: 40px; width: 750px; line-height: 1.6;">
+                <div style="border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #00ff41; margin: 0; font-family: monospace; letter-spacing: 2px;">NINE-SECURITY // ASSESSMENT_LOG</h1>
+                    <p style="margin: 10px 0 0;">Target Domain: <strong style="color: #00ff41;">${domain}</strong> | Timestamp: ${new Date().toLocaleString()}</p>
+                </div>
 
-    <div class="section-title">> Executive Risk Profile (Score: ${riskScore}/100)</div>
-    <div class="risk-container">
-        ${(data.risk_breakdown || []).map(r => `
-        <div class="risk-item" style="border-left-color: ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666')};">
-            <span>${r.item}</span>
-            <span class="value pass">+${r.score}</span>
-        </div>
-        `).join('')}
-    </div>
+                <div style="color: #00ff41; font-family: monospace; margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid #00ff41; padding-left: 15px; text-transform: uppercase;">> Executive Risk Profile (Score: ${riskScore}/100)</div>
+                <div style="margin-bottom: 30px;">
+                    ${(data.risk_breakdown || []).map(r => `
+                    <div style="display: flex; justify-content: space-between; padding: 12px; background: #111; border: 1px solid #333; margin-bottom: 8px; border-left: 4px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666')};">
+                        <span style="color: #e0e0e0;">${r.item}</span>
+                        <span style="color: #00ff41; font-weight: bold;">+${r.score}</span>
+                    </div>
+                    `).join('')}
+                </div>
 
-    <div class="section-title">> Authentication Infrastructure</div>
-    <div class="grid">
-        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${data.sender_ip || 'Generic Postfix/Exim'}</div></div>
-        <div class="card"><div class="label">Network Latency</div><div class="value ${parseFloat(data.transport_time) > 5 ? 'warn' : 'pass'}">${data.transport_time || 'N/A'}</div></div>
-        <div class="card">
-            <div class="label">SPF Governance</div>
-            <div class="value ${getStatusClass(dns.spf)}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
-            ${dns.spf === 'warn' ? '<div class="gap-warning">⚠️ RFC 7208 Complexity Limit Exceeded</div>' : ''}
-        </div>
-        <div class="card">
-            <div class="label">DMARC Enforcement</div>
-            <div class="value ${getStatusClass(dns.dmarc)}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
-            ${dns.dmarc_raw && dns.dmarc_raw.includes('rua=') ? '<div class="gap-warning">⚠️ Potential Data Exfiltration Path via RUA</div>' : ''}
-        </div>
-        <div class="card"><div class="label">DNSSEC Integrity</div><div class="value ${getStatusClass(dns.dnssec)}">${String(dns.dnssec || 'FAIL').toUpperCase()}</div></div>
-        <div class="card"><div class="label">RBL Reputation</div><div class="value ${rblStatus === 'fail' ? 'fail' : 'pass'}">${rblStatus === 'fail' ? 'BLACKLISTED' : 'CLEAN'}</div></div>
-    </div>
+                <div style="color: #00ff41; font-family: monospace; margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid #00ff41; padding-left: 15px; text-transform: uppercase;">> Authentication Infrastructure</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">Origin MTA Node</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: #fff;">${data.sender_ip || 'Generic MTA'}</div>
+                    </div>
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">Network Latency</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: ${parseFloat(data.transport_time) > 5 ? '#ffaa00' : '#00ff41'}">${data.transport_time || 'N/A'}</div>
+                    </div>
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">SPF Governance</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: ${getStatusClass(dns.spf) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
+                    </div>
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">DMARC Enforcement</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: ${getStatusClass(dns.dmarc) === 'pass' ? '#00ff41' : '#ffaa00'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
+                    </div>
+                </div>
 
-    <div class="section-title">> Advanced Security Protocols</div>
-    <div class="grid">
-        <div class="card">
-            <div class="label">MTA-STS Handshake</div>
-            <div class="value ${getStatusClass(dns.mta_sts)}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div>
-            ${dns.mta_sts === 'missing' && dns.mta_sts_raw !== 'None' ? '<div class="gap-warning">⚠️ Policy Handshake Integrity Failed</div>' : ''}
-        </div>
-        <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value ${getStatusClass(dns.tls_rpt)}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
-        <div class="card"><div class="label">BIMI Brand Indicator</div><div class="value ${getStatusClass(dns.bimi)}">${String(dns.bimi || 'MISSING').toUpperCase()}</div></div>
-        <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${tls.version || 'TLS 1.3 (Verified)'}</div></div>
-    </div>
+                <div style="color: #00ff41; font-family: monospace; margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid #00ff41; padding-left: 15px; text-transform: uppercase;">> Advanced Security Protocols</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px;">
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">MTA-STS Handshake</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: ${getStatusClass(dns.mta_sts) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                    </div>
+                    <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 4px; width: 45%;">
+                        <div style="color: #888; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px;">Transport Encryption</div>
+                        <div style="font-size: 1.1rem; font-weight: bold; font-family: monospace; color: #00ff41">${tls.version || 'TLS 1.3'}</div>
+                    </div>
+                </div>
 
-    <div class="cta-box">
-        <h3 style="color: var(--green); margin-top: 0; font-family: monospace;">Want the Technical Forensic Report?</h3>
-        <p>Our backend has identified specific RFC violations and policy handshake failures.</p>
-        <p>Contact <strong>consult@nine-security.com</strong> to unlock the full technical diagnostic and remediation guide.</p>
-    </div>
+                <div style="background: rgba(0,255,65,0.05); border: 2px solid #00ff41; padding: 25px; margin-top: 40px; text-align: center;">
+                    <h3 style="color: #00ff41; margin: 0 0 10px 0; font-family: monospace; font-size: 1.2rem;">Want the Technical Forensic Report?</h3>
+                    <p style="margin: 0; color: #ccc;">Our backend has identified specific RFC violations and policy handshake failures.</p>
+                    <p style="margin: 10px 0 0; color: #fff; font-weight: bold;">Contact consult@nine-security.com</p>
+                </div>
 
-    <div class="footer">
-        CONFIDENTIAL - GENERATED BY NINE-SECURITY.INC FORENSIC CLUSTER<br>
-        &copy; 2026 Nine-Security Team. All Systems Operational.
-    </div>
-</body>
-</html>`;
+                <div style="margin-top: 50px; text-align: center; color: #666; font-size: 0.8rem; border-top: 1px solid #333; padding-top: 20px;">
+                    CONFIDENTIAL - GENERATED BY NINE-SECURITY.INC FORENSIC CLUSTER<br>
+                    &copy; 2026 Nine-Security Team. All Systems Operational.
+                </div>
+            </div>
+        `;
 
-        const blob = new Blob([fullHtml], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `9Sec_Security_Log_${domain}.html`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // PDF Generation via html2pdf.js
+        const opt = {
+            margin: [10, 5, 10, 5],
+            filename: `9Sec_Security_Report_${domain}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        const originalText = btnDownloadReport.innerHTML;
+        btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING_PDF...';
+        btnDownloadReport.disabled = true;
+
+        const worker = html2pdf();
+        worker.from(fullHtml).set(opt).save()
+            .then(() => {
+                btnDownloadReport.innerHTML = originalText;
+                btnDownloadReport.disabled = false;
+            })
+            .catch(err => {
+                console.error("PDF_ERROR", err);
+                btnDownloadReport.innerHTML = originalText;
+                btnDownloadReport.disabled = false;
+                showNotice("PDF Generation Failed. Please try again.");
+            });
     });
 }
 // Script loaded
