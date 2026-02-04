@@ -404,6 +404,10 @@ const translations = {
             host_witness_btn: "View on GitHub",
             host_witness_download: "Download .ZIP",
             host_witness_hash: "SHA-256 Checksum"
+        },
+        common: {
+            notice_header: "SYSTEM_NOTIFICATION",
+            notice_btn: "[ ACKNOWLEDGE ]"
         }
     },
     tw: {
@@ -501,6 +505,10 @@ const translations = {
             host_witness_btn: "前往 GitHub",
             host_witness_download: "下載 .ZIP",
             host_witness_hash: "SHA-256 校驗值"
+        },
+        common: {
+            notice_header: "系統通知",
+            notice_btn: "[ 收到 ]"
         }
     },
     jp: {
@@ -598,6 +606,10 @@ const translations = {
             host_witness_btn: "GitHub で見る",
             host_witness_download: "ダウンロード .ZIP",
             host_witness_hash: "SHA-256 チェックサム"
+        },
+        common: {
+            notice_header: "システム通知",
+            notice_btn: "[ 了解 ]"
         }
     }
 };
@@ -711,11 +723,11 @@ async function submitAssessment() {
     const consent = consentCheck.checked;
 
     if (!email || !email.includes('@')) {
-        alert("Please enter a valid corporate email.");
+        showNotice("Please enter a valid corporate email.");
         return;
     }
     if (!consent) {
-        alert("Please agree to the authorization terms.");
+        showNotice("Please agree to the authorization terms.");
         return;
     }
 
@@ -729,7 +741,7 @@ async function submitAssessment() {
         });
     } catch (e) {
         console.error("API_ERROR", e);
-        alert("Backend Unreachable. Please check your network or try again.");
+        showNotice("Backend Unreachable. Please check your network or try again.");
         return;
     }
 
@@ -737,12 +749,12 @@ async function submitAssessment() {
     try {
         data = await resp.json();
     } catch {
-        alert("Backend returned invalid JSON.");
+        showNotice("Backend returned invalid JSON.");
         return;
     }
 
     if (!data.ok) {
-        alert(`Error: ${data.error}`);
+        showNotice(`Error: ${data.error}`);
         return;
     }
 
@@ -817,7 +829,7 @@ async function startAssessment(email) {
         });
     } catch (e) {
         console.error("API_ERROR", e);
-        alert("Backend unreachable. Check Worker route /api/* and network.");
+        showNotice("Backend unreachable. Check Worker route /api/* and network.");
         return;
     }
 
@@ -825,13 +837,13 @@ async function startAssessment(email) {
     try {
         data = await resp.json();
     } catch {
-        alert(`Invalid backend response (non-JSON). Status: ${resp.status} ${resp.statusText}`);
+        showNotice(`Invalid backend response (non-JSON). Status: ${resp.status} ${resp.statusText}`);
         return;
     }
 
     if (!resp.ok || !data.ok) {
         console.error("API_FAIL", resp.status, data);
-        alert(`Assessment failed: ${data?.error || resp.status}`);
+        showNotice(`Assessment failed: ${data?.error || resp.status}`);
         return;
     }
 
@@ -920,7 +932,7 @@ async function checkStatus(id) {
     if (data.status === "timeout") {
         clearInterval(pollInterval);
         addLog("Error: Session timed out. No email received.", "error");
-        alert("Session timed out (5 minutes). Please restart the assessment if you wish to try again.");
+        showNotice("Session timed out (5 minutes). Please restart the assessment if you wish to try again.");
         // Optional: Reset UI or stay on log
         return;
     }
@@ -1319,3 +1331,57 @@ document.addEventListener("visibilitychange", () => {
         // Optional: specific pause logic if extended beyond basic requestAnimationFrame behavior
     }
 });
+
+/* --- Custom Notice System Definition --- */
+function showNotice(message) {
+    // Create element if not exists
+    let overlay = document.getElementById('notice-system-overlay');
+    if (!overlay) {
+        const html = `
+        <div id="notice-system-overlay" class="notice-overlay">
+            <div class="notice-box">
+                <div class="notice-header">
+                    <i class="fa-solid fa-terminal"></i> <span data-i18n="common.notice_header">SYSTEM_NOTIFICATION</span>
+                </div>
+                <div id="notice-system-body" class="notice-body"></div>
+                <div class="notice-footer">
+                    <button class="notice-btn" id="btn-notice-ack" data-i18n="common.notice_btn">[ ACKNOWLEDGE ]</button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
+        overlay = document.getElementById('notice-system-overlay');
+
+        // Add Close Handler
+        document.getElementById('btn-notice-ack').addEventListener('click', () => {
+            overlay.classList.remove('show');
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        });
+
+        // Close on Enter key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && overlay.classList.contains('show')) {
+                document.getElementById('btn-notice-ack').click();
+            }
+        });
+    }
+
+    // Set message and show
+    document.getElementById('notice-system-body').textContent = message;
+    overlay.style.display = 'flex';
+    // Trigger reflow for animation
+    void overlay.offsetWidth;
+    overlay.classList.add('show');
+
+    // Update Language for the notice system
+    const currentLang = localStorage.getItem('9sec_lang') || 'en';
+    // We already have updateLanguage, but we only need to update the newly added elements
+    const header = overlay.querySelector('[data-i18n="common.notice_header"]');
+    const btn = overlay.querySelector('[data-i18n="common.notice_btn"]');
+
+    if (translations[currentLang]) {
+        if (header) header.textContent = translations[currentLang].common?.notice_header || "SYSTEM_NOTIFICATION";
+        if (btn) btn.textContent = translations[currentLang].common?.notice_btn || "[ ACKNOWLEDGE ]";
+    }
+}
