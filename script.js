@@ -1226,6 +1226,112 @@ if (btnDownloadReport) {
         document.body.removeChild(a);
     });
 }
+
+// Download Report as PDF (same layout as HTML; requires html2pdf.js on page e.g. smtp-check.html)
+const btnDownloadPdf = document.getElementById('btn-download-pdf');
+if (btnDownloadPdf && typeof html2pdf !== 'undefined') {
+    btnDownloadPdf.addEventListener('click', () => {
+        const data = window.currentReportData;
+        if (!data) return;
+
+        const domain = data.domain || 'unknown';
+        const dns = data.dns_posture || {};
+        const riskScore = data.risk_score || 0;
+
+        const getStatusClass = (val) => {
+            const lower = String(val || '').toLowerCase();
+            if (['pass', 'true', 'low', 'enforce', 'enabled'].includes(lower)) return 'pass';
+            if (['warn', 'none', 'medium', 'missing', 'quarantine/none'].includes(lower)) return 'warn';
+            return 'fail';
+        };
+
+        const reportBody = `
+    <div class="pdf-page pdf-header">
+        <h1>NINE-SECURITY // ASSESSMENT_LOG</h1>
+        <p>Target Domain: <span style="color: var(--green);">${domain}</span></p>
+        <p class="pdf-meta">Generated: ${new Date().toLocaleString()}</p>
+    </div>
+    <div class="pdf-section">
+        <div class="pdf-section-title">> EXECUTIVE_RISK_PROFILE [Score: ${riskScore}/100]</div>
+        <div class="pdf-risk-container">
+            ${(data.risk_breakdown || []).map(r => `
+            <div class="pdf-risk-item" style="border-left: 5px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#444')};">
+                <span>${r.item}</span>
+                <span style="color: var(--green); font-weight: bold;">+${r.score}</span>
+            </div>
+            `).join('')}
+        </div>
+    </div>
+    <div class="pdf-section">
+        <div class="pdf-section-title">> AUTH_INFRASTRUCTURE_PROBE</div>
+        <div class="pdf-grid">
+            <div class="pdf-card"><div class="pdf-label">Origin MTA Node</div><div class="pdf-value">${data.sender_ip || 'Generic MTA'}</div></div>
+            <div class="pdf-card"><div class="pdf-label">Network Latency</div><div class="pdf-value">${data.transport_time || 'N/A'}</div></div>
+            <div class="pdf-card"><div class="pdf-label">SPF Governance</div><div class="pdf-value" style="color: ${getStatusClass(dns.spf) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.spf || 'MISSING').toUpperCase()}</div></div>
+            <div class="pdf-card"><div class="pdf-label">DMARC Enforcement</div><div class="pdf-value" style="color: ${getStatusClass(dns.dmarc) === 'pass' ? 'var(--green)' : 'var(--warn)'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div></div>
+        </div>
+    </div>
+    <div class="pdf-section">
+        <div class="pdf-section-title">> ADVANCED_SECURITY_PROTOCOLS</div>
+        <div class="pdf-grid">
+            <div class="pdf-card"><div class="pdf-label">MTA-STS Handshake</div><div class="pdf-value" style="color: ${getStatusClass(dns.mta_sts) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div></div>
+            <div class="pdf-card"><div class="pdf-label">Transport Encryption</div><div class="pdf-value">${data.smtp_tls?.version || 'TLS 1.3'}</div></div>
+            <div class="pdf-card"><div class="pdf-label">TLS Reporting (RPT)</div><div class="pdf-value" style="color: ${getStatusClass(dns.tls_rpt) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
+            <div class="pdf-card"><div class="pdf-label">Brand Indicator (BIMI)</div><div class="pdf-value" style="color: ${getStatusClass(dns.bimi) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.bimi || 'MISSING').toUpperCase()}</div></div>
+        </div>
+    </div>
+    <div class="pdf-section pdf-cta">
+        <h3 style="color: var(--green); margin: 0 0 8px 0; font-size: 1rem;">FORENSIC DIAGNOSTIC REQUIRED</h3>
+        <p style="margin: 0; font-size: 0.9rem;">Our backend identified RFC violations and policy gaps.</p>
+        <p style="font-weight: bold; margin: 8px 0 0 0;">consult@nine-security.com</p>
+    </div>
+    <div class="pdf-footer">
+        CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
+        &copy; 2026 Nine-Security Team. All Systems Operational.
+    </div>`;
+
+        const reportStyle = `
+        :root { --green: #00ff41; --fail: #ff0055; --warn: #ffaa00; --bg: #0a0a0a; --card: #111; --border: #333; --text: #e0e0e0; }
+        .pdf-root { background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; padding: 28px 32px; max-width: 720px; margin: 0 auto; line-height: 1.5; font-size: 11px; box-sizing: border-box; }
+        .pdf-root * { box-sizing: border-box; }
+        .pdf-page { page-break-inside: avoid; }
+        .pdf-header { border-bottom: 2px solid var(--green); padding-bottom: 14px; margin-bottom: 20px; }
+        .pdf-header h1 { color: var(--green); margin: 0; font-size: 14px; letter-spacing: 1px; }
+        .pdf-header p { margin: 4px 0 0 0; font-size: 11px; }
+        .pdf-meta { color: #666; font-size: 10px !important; }
+        .pdf-section { page-break-inside: avoid; margin-bottom: 20px; }
+        .pdf-section-title { color: var(--green); margin: 18px 0 10px 0; font-size: 11px; border-left: 4px solid var(--green); padding-left: 12px; text-transform: uppercase; page-break-after: avoid; }
+        .pdf-risk-container { margin: 0; }
+        .pdf-risk-item { display: flex; justify-content: space-between; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 6px; page-break-inside: avoid; font-size: 11px; }
+        .pdf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; page-break-inside: avoid; }
+        .pdf-card { background: var(--card); border: 1px solid var(--border); padding: 12px; page-break-inside: avoid; min-height: 0; }
+        .pdf-label { color: #666; font-size: 9px; text-transform: uppercase; margin-bottom: 4px; }
+        .pdf-value { font-size: 11px; font-weight: bold; }
+        .pdf-cta { border: 1px solid var(--green); padding: 18px; text-align: center; background: rgba(0,255,65,0.05); }
+        .pdf-footer { margin-top: 24px; padding-top: 14px; text-align: center; color: #444; font-size: 9px; border-top: 1px solid #222; page-break-inside: avoid; }`;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'pdf-root';
+        wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:720px;background:#0a0a0a;color:#e0e0e0;';
+        wrapper.innerHTML = '<style>' + reportStyle + '</style>' + reportBody;
+        document.body.appendChild(wrapper);
+
+        const opt = {
+            margin: 12,
+            filename: `9Sec_Security_Report_${domain.replace(/[^a-z0-9.-]/gi, '_')}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css'], avoid: ['.pdf-card', '.pdf-risk-item', '.pdf-section', '.pdf-header', '.pdf-cta', '.pdf-footer', '.pdf-grid'] }
+        };
+        html2pdf().set(opt).from(wrapper).save().then(() => {
+            document.body.removeChild(wrapper);
+        }).catch((err) => {
+            document.body.removeChild(wrapper);
+            console.error('PDF generation failed:', err);
+        });
+    });
+}
 // Script loaded
 
 /* --- Promo Modal Logic --- */
