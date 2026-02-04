@@ -709,7 +709,12 @@ function updateLanguage(lang) {
 }
 
 // --- SMTP Check Logic ---
-const API_BASE_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api";
+const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE_URL = IS_LOCAL
+    ? "http://localhost:8787/api"  // Local Staging API
+    : "https://9sec-smtp-backend.nine-security.workers.dev/api"; // Production API
+
+if (IS_LOCAL) console.log(">>> 9SEC_STAGING_MODE: Connected to Local Backend (8787)");
 
 async function submitAssessment() {
     console.log("Starting assessment...");
@@ -1146,140 +1151,84 @@ if (btnDownloadReport) {
             return 'fail';
         };
 
-        const reportHtml = `
-            <div class="pdf-page" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 40px; width: 680px; min-height: 950px; border: 1px solid #333; margin-bottom: 20px;">
-                <div style="background-color: #0a0a0a; border-bottom: 2px solid #00ff41; padding-bottom: 15px; margin-bottom: 20px;">
-                    <h1 style="color: #00ff41; margin: 0; font-size: 24px;">NINE-SECURITY // ASSESSMENT_LOG</h1>
-                    <p style="margin: 8px 0 0; color: #888; font-size: 14px;">Target Domain: <span style="color: #00ff41;">${domain}</span></p>
-                    <p style="margin: 3px 0 0; color: #555; font-size: 11px;">Timestamp: ${new Date().toLocaleString()}</p>
-                </div>
+        // Generate Full HTML Report for Download
+        const fullHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>9Sec Security Report - ${domain}</title>
+    <style>
+        :root { --green: #00ff41; --fail: #ff0055; --warn: #ffaa00; --bg: #0a0a0a; --card: #111; --border: #333; --text: #e0e0e0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; padding: 40px; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+        .header { border-bottom: 2px solid var(--green); padding-bottom: 20px; margin-bottom: 30px; }
+        .header h1 { color: var(--green); margin: 0; letter-spacing: 2px; }
+        .section-title { color: var(--green); margin: 30px 0 15px; font-size: 1.1rem; border-left: 4px solid var(--green); padding-left: 15px; text-transform: uppercase; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 15px; position: relative; }
+        .label { color: #666; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
+        .value { font-size: 1.1rem; font-weight: bold; }
+        .risk-item { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); margin-bottom: 8px; }
+        .cta-box { border: 1px solid var(--green); padding: 25px; margin-top: 40px; text-align: center; background: rgba(0,255,65,0.05); }
+        .footer { margin-top: 50px; text-align: center; color: #444; font-size: 0.8rem; border-top: 1px solid #222; padding-top: 20px; }
+        @media print { body { background: #fff !important; color: #000 !important; } .card, .risk-item { border: 1px solid #ddd !important; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NINE-SECURITY // ASSESSMENT_LOG</h1>
+        <p>Target Domain: <span style="color: var(--green);">${domain}</span></p>
+        <p style="font-size: 11px; color: #666;">Generated: ${new Date().toLocaleString()}</p>
+    </div>
 
-                <div style="background-color: #0a0a0a; color: #00ff41; margin-bottom: 15px; font-size: 16px;">> EXECUTIVE_RISK_PROFILE [Score: ${riskScore}/100]</div>
-                <div style="background-color: #0a0a0a; margin-bottom: 25px;">
-                    ${(data.risk_breakdown || []).map(r => `
-                    <div style="background-color: #111; border: 1px solid #222; border-left: 5px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#444')}; padding: 10px; margin-bottom: 6px;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tr>
-                                <td style="color: #e0e0e0; font-size: 13px;">${r.item}</td>
-                                <td style="text-align: right; color: #00ff41; font-weight: bold; font-size: 13px;">+${r.score}</td>
-                            </tr>
-                        </table>
-                    </div>
-                    `).join('')}
-                </div>
-
-                <div style="background-color: #0a0a0a; color: #00ff41; margin-bottom: 15px; font-size: 16px;">> AUTH_INFRASTRUCTURE_PROBE</div>
-                <table style="width: 100%; border-collapse: separate; border-spacing: 6px; background-color: #0a0a0a;">
-                    <tr>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Origin MTA</div>
-                            <div style="font-size: 14px; font-weight: bold; color: #fff;">${data.sender_ip || 'Generic MTA'}</div>
-                        </td>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Latency</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${parseFloat(data.transport_time) > 5 ? '#ffaa00' : '#00ff41'}">${data.transport_time || 'N/A'}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">SPF Policy</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.spf) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
-                        </td>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">DMARC Status</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.dmarc) === 'pass' ? '#00ff41' : '#ffaa00'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
-                        </td>
-                    </tr>
-                </table>
+    <div class="section-title">> EXECUTIVE_RISK_PROFILE [Score: ${riskScore}/100]</div>
+    <div class="risk-container">
+        ${(data.risk_breakdown || []).map(r => `
+            <div class="risk-item" style="border-left: 5px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#444')};">
+                <span>${r.item}</span>
+                <span style="color: var(--green); font-weight: bold;">+${r.score}</span>
             </div>
+        `).join('')}
+    </div>
 
-            <div class="pdf-page" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 40px; width: 680px; min-height: 950px; border: 1px solid #333; page-break-before: always; html2pdf-page-break-before: always;">
-                <div style="background-color: #0a0a0a; border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px;">
-                    <div style="color: #00ff41; font-size: 16px;">> ADVANCED_SECURITY_PROTOCOLS</div>
-                </div>
+    <div class="section-title">> AUTH_INFRASTRUCTURE_PROBE</div>
+    <div class="grid">
+        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${data.sender_ip || 'Generic MTA'}</div></div>
+        <div class="card"><div class="label">Network Latency</div><div class="value">${data.transport_time || 'N/A'}</div></div>
+        <div class="card"><div class="label">SPF Governance</div><div class="value" style="color: ${getStatusClass(dns.spf) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.spf || 'MISSING').toUpperCase()}</div></div>
+        <div class="card"><div class="label">DMARC Enforcement</div><div class="value" style="color: ${getStatusClass(dns.dmarc) === 'pass' ? 'var(--green)' : 'var(--warn)'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div></div>
+    </div>
 
-                <table style="width: 100%; border-collapse: separate; border-spacing: 6px; background-color: #0a0a0a;">
-                    <tr>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">MTA-STS Handshake</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.mta_sts) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div>
-                        </td>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Transport Encryption</div>
-                            <div style="font-size: 14px; font-weight: bold; color: #00ff41">${data.smtp_tls?.version || 'TLS 1.3'}</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">TLS Reporting (RPT)</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.tls_rpt) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
-                        </td>
-                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
-                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Brand Indicator (BIMI)</div>
-                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.bimi) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.bimi || 'MISSING').toUpperCase()}</div>
-                        </td>
-                    </tr>
-                </table>
+    <div class="section-title">> ADVANCED_SECURITY_PROTOCOLS</div>
+    <div class="grid">
+        <div class="card"><div class="label">MTA-STS Handshake</div><div class="value" style="color: ${getStatusClass(dns.mta_sts) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div></div>
+        <div class="card"><div class="label">Transport Encryption</div><div class="value">${data.smtp_tls?.version || 'TLS 1.3'}</div></div>
+        <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value" style="color: ${getStatusClass(dns.tls_rpt) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
+        <div class="card"><div class="label">Brand Indicator (BIMI)</div><div class="value" style="color: ${getStatusClass(dns.bimi) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.bimi || 'MISSING').toUpperCase()}</div></div>
+    </div>
 
-                <div style="background-color: rgba(0,255,65,0.05); border: 1px solid #00ff41; padding: 20px; margin-top: 40px; text-align: center;">
-                    <div style="color: #00ff41; font-size: 18px; font-weight: bold; margin-bottom: 8px;">FORENSIC DIAGNOSTIC REQUIRED</div>
-                    <p style="margin: 0; color: #ccc; font-size: 13px;">Our backend identified RFC violations and policy gaps.</p>
-                    <p style="margin: 10px 0 0; color: #fff; font-weight: bold; font-size: 14px;">consult@nine-security.com</p>
-                </div>
+    <div class="cta-box">
+        <h3 style="color: var(--green); margin-top: 0;">FORENSIC DIAGNOSTIC REQUIRED</h3>
+        <p>Our backend identified RFC violations and policy gaps.</p>
+        <p style="font-weight: bold;">consult@nine-security.com</p>
+    </div>
 
-                <div style="margin-top: 60px; text-align: center; color: #444; font-size: 10px; border-top: 1px solid #222; padding-top: 20px; background-color: #0a0a0a;">
-                    CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
-                    &copy; 2026 Nine-Security Team. All Systems Operational.
-                </div>
-            </div>
-        `;
+    <div class="footer">
+        CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
+        &copy; 2026 Nine-Security Team. All Systems Operational.
+    </div>
+</body>
+</html>`;
 
-        const tempDiv = document.createElement('div');
-        tempDiv.id = 'pdf-staging-area';
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.top = '0';
-        tempDiv.style.left = '0';
-        tempDiv.style.opacity = '0.01';
-        tempDiv.style.zIndex = '-9999';
-        tempDiv.style.width = '700px';
-        tempDiv.innerHTML = reportHtml;
-        document.body.appendChild(tempDiv);
-
-        const opt = {
-            margin: 0,
-            filename: `9Sec_Report_${domain}.pdf`,
-            image: { type: 'png', quality: 1.0 },
-            html2canvas: {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#0a0a0a',
-                logging: false,
-                allowTaint: true
-            },
-            jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-
-        const originalText = btnDownloadReport.innerHTML;
-        btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
-        btnDownloadReport.disabled = true;
-
-        // Give extra time for complex tables to layout in hidden div
-        setTimeout(() => {
-            html2pdf().from(tempDiv).set(opt).save()
-                .then(() => {
-                    document.body.removeChild(tempDiv);
-                    btnDownloadReport.innerHTML = originalText;
-                    btnDownloadReport.disabled = false;
-                })
-                .catch(err => {
-                    console.error("PDF_FAIL", err);
-                    if (tempDiv.parentNode) document.body.removeChild(tempDiv);
-                    btnDownloadReport.innerHTML = originalText;
-                    btnDownloadReport.disabled = false;
-                    showNotice("PDF Generation Failed.");
-                });
-        }, 500);
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `9Sec_Security_Report_${domain}.html`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     });
 }
 // Script loaded
