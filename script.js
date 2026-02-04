@@ -1310,26 +1310,43 @@ if (btnDownloadPdf && typeof html2pdf !== 'undefined') {
         .pdf-cta { border: 1px solid var(--green); padding: 18px; text-align: center; background: rgba(0,255,65,0.05); }
         .pdf-footer { margin-top: 24px; padding-top: 14px; text-align: center; color: #444; font-size: 9px; border-top: 1px solid #222; page-break-inside: avoid; }`;
 
+        const zoomScale = (window.visualViewport && window.visualViewport.scale) ? window.visualViewport.scale : 1;
+        const baseWidth = 720;
         const wrapper = document.createElement('div');
         wrapper.className = 'pdf-root';
-        wrapper.style.cssText = 'position:absolute;left:-9999px;top:0;width:720px;background:#0a0a0a;color:#e0e0e0;';
+        wrapper.setAttribute('aria-hidden', 'true');
+        wrapper.style.cssText = 'position:fixed;top:0;left:0;width:' + baseWidth + 'px;max-height:100vh;overflow:auto;background:#0a0a0a;color:#e0e0e0;z-index:99999;padding:28px 32px;box-sizing:border-box;';
         wrapper.innerHTML = '<style>' + reportStyle + '</style>' + reportBody;
-        document.body.appendChild(wrapper);
+
+        const isolator = document.createElement('div');
+        isolator.setAttribute('aria-hidden', 'true');
+        isolator.style.cssText = 'position:fixed;top:0;left:0;z-index:99999;transform-origin:0 0;pointer-events:none;';
+        if (zoomScale !== 1) {
+            isolator.style.transform = 'scale(' + (1 / zoomScale) + ')';
+            isolator.style.width = (baseWidth * zoomScale) + 'px';
+            isolator.style.minHeight = (800 * zoomScale) + 'px';
+        }
+        isolator.appendChild(wrapper);
+        document.body.appendChild(isolator);
 
         const opt = {
             margin: 12,
             filename: `9Sec_Security_Report_${domain.replace(/[^a-z0-9.-]/gi, '_')}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, allowTaint: true, logging: false },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css'], avoid: ['.pdf-card', '.pdf-risk-item', '.pdf-section', '.pdf-header', '.pdf-cta', '.pdf-footer', '.pdf-grid'] }
         };
-        html2pdf().set(opt).from(wrapper).save().then(() => {
-            document.body.removeChild(wrapper);
-        }).catch((err) => {
-            document.body.removeChild(wrapper);
-            console.error('PDF generation failed:', err);
-        });
+
+        const doPdf = () => {
+            html2pdf().set(opt).from(wrapper).save().then(() => {
+                if (isolator.parentNode) document.body.removeChild(isolator);
+            }).catch((err) => {
+                if (isolator.parentNode) document.body.removeChild(isolator);
+                console.error('PDF generation failed:', err);
+            });
+        };
+        requestAnimationFrame(() => requestAnimationFrame(doPdf));
     });
 }
 // Script loaded
