@@ -109,6 +109,19 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // --- API 基底（單一來源，方便換環境／staging）---
 const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev";
 
+/** Email 格式與長度驗證（長度 ≤254，單一 @，domain 含點）。回傳 null 表示合法，否則回傳錯誤訊息。 */
+function validateEmail(value) {
+    if (typeof value !== "string") return "Please enter a valid corporate email.";
+    const s = value.trim();
+    if (s.length === 0) return "Please enter a valid corporate email.";
+    if (s.length > 254) return "Email address is too long.";
+    if (/[\x00-\x1F\x7F]/.test(s)) return "Invalid characters in email.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return "Please enter a valid corporate email.";
+    const domain = s.split("@")[1];
+    if (!domain || domain.length < 4) return "Please enter a valid corporate email.";
+    return null;
+}
+
 // --- 資安新聞: 從後端 API 載入 RSS 文章（先顯示 6 篇，其餘「顯示更多」）---
 const ARTICLES_INITIAL = 6;
 const articlesSection = document.querySelector("#security-news");
@@ -704,8 +717,9 @@ async function submitAssessment() {
     const email = emailInput.value.trim();
     const consent = consentCheck.checked;
 
-    if (!email || !email.includes('@')) {
-        showNotice("Please enter a valid corporate email.");
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+        showNotice(emailErr);
         return;
     }
     if (!consent) {
@@ -797,6 +811,11 @@ if (btnCopy) {
 }
 
 async function startAssessment(email) {
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+        showNotice(emailErr);
+        return;
+    }
     // Read consent checkbox (required by backend)
     const consentEl = document.getElementById('consent-check');
     const consent = !!consentEl?.checked;
