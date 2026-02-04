@@ -1147,7 +1147,7 @@ if (btnDownloadReport) {
         };
 
         const reportHtml = `
-            <div id="pdf-export-container" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 35px; width: 680px; border: 1px solid #333; line-height: 1.2;">
+            <div class="pdf-page" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 40px; width: 680px; min-height: 950px; border: 1px solid #333; margin-bottom: 20px;">
                 <div style="background-color: #0a0a0a; border-bottom: 2px solid #00ff41; padding-bottom: 15px; margin-bottom: 20px;">
                     <h1 style="color: #00ff41; margin: 0; font-size: 24px;">NINE-SECURITY // ASSESSMENT_LOG</h1>
                     <p style="margin: 8px 0 0; color: #888; font-size: 14px;">Target Domain: <span style="color: #00ff41;">${domain}</span></p>
@@ -1191,6 +1191,35 @@ if (btnDownloadReport) {
                         </td>
                     </tr>
                 </table>
+            </div>
+
+            <div class="pdf-page" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 40px; width: 680px; min-height: 950px; border: 1px solid #333; page-break-before: always; html2pdf-page-break-before: always;">
+                <div style="background-color: #0a0a0a; border-bottom: 2px solid #00ff41; padding-bottom: 10px; margin-bottom: 20px;">
+                    <div style="color: #00ff41; font-size: 16px;">> ADVANCED_SECURITY_PROTOCOLS</div>
+                </div>
+
+                <table style="width: 100%; border-collapse: separate; border-spacing: 6px; background-color: #0a0a0a;">
+                    <tr>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">MTA-STS Handshake</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.mta_sts) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div>
+                        </td>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Transport Encryption</div>
+                            <div style="font-size: 14px; font-weight: bold; color: #00ff41">${data.smtp_tls?.version || 'TLS 1.3'}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">TLS Reporting (RPT)</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.tls_rpt) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div>
+                        </td>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Brand Indicator (BIMI)</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.bimi) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.bimi || 'MISSING').toUpperCase()}</div>
+                        </td>
+                    </tr>
+                </table>
 
                 <div style="background-color: rgba(0,255,65,0.05); border: 1px solid #00ff41; padding: 20px; margin-top: 40px; text-align: center;">
                     <div style="color: #00ff41; font-size: 18px; font-weight: bold; margin-bottom: 8px;">FORENSIC DIAGNOSTIC REQUIRED</div>
@@ -1198,15 +1227,15 @@ if (btnDownloadReport) {
                     <p style="margin: 10px 0 0; color: #fff; font-weight: bold; font-size: 14px;">consult@nine-security.com</p>
                 </div>
 
-                <div style="margin-top: 50px; text-align: center; color: #444; font-size: 10px; border-top: 1px solid #222; padding-top: 20px; background-color: #0a0a0a;">
+                <div style="margin-top: 60px; text-align: center; color: #444; font-size: 10px; border-top: 1px solid #222; padding-top: 20px; background-color: #0a0a0a;">
                     CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
                     &copy; 2026 Nine-Security Team. All Systems Operational.
                 </div>
             </div>
         `;
 
-        // Temporarily append to body
         const tempDiv = document.createElement('div');
+        tempDiv.id = 'pdf-staging-area';
         tempDiv.style.position = 'fixed';
         tempDiv.style.left = '-2000px';
         tempDiv.style.top = '0';
@@ -1227,14 +1256,15 @@ if (btnDownloadReport) {
                 scrollY: 0,
                 scrollX: 0
             },
-            jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
 
         const originalText = btnDownloadReport.innerHTML;
         btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
         btnDownloadReport.disabled = true;
 
-        html2pdf().from(target).set(opt).save()
+        html2pdf().from(tempDiv).set(opt).save()
             .then(() => {
                 document.body.removeChild(tempDiv);
                 btnDownloadReport.innerHTML = originalText;
