@@ -709,12 +709,7 @@ function updateLanguage(lang) {
 }
 
 // --- SMTP Check Logic ---
-const IS_LOCAL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = IS_LOCAL
-    ? "http://localhost:8787/api"  // Local Staging API
-    : "https://9sec-smtp-backend.nine-security.workers.dev/api"; // Production API
-
-if (IS_LOCAL) console.log(">>> 9SEC_STAGING_MODE: Connected to Local Backend (8787)");
+const API_BASE_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api";
 
 async function submitAssessment() {
     console.log("Starting assessment...");
