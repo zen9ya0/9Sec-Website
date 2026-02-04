@@ -1121,12 +1121,12 @@ if (btnResetCheck) {
     });
 }
 
-// Shared: generate full HTML report (與後端 Admin / Discord 同一樣板)，供 Download HTML 使用
+// Shared: generate full HTML report (與後端 Admin / Discord 同一樣板)，供 Download HTML 使用；動態欄位皆經 escapeHtml 防 XSS
 function getReportHtml(data) {
     if (!data) return '';
-    const domain = data.domain || 'unknown';
+    const domain = escapeHtml(String(data.domain || 'unknown'));
     const dns = data.dns_posture || {};
-    const riskScore = data.risk_score || 0;
+    const riskScore = Number(data.risk_score) || 0;
     return `
 <!DOCTYPE html>
 <html>
@@ -1160,16 +1160,16 @@ function getReportHtml(data) {
     <div class="risk-container">
         ${(data.risk_breakdown || []).map(r => `
             <div class="risk-item" style="border-left: 5px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#444')};">
-                <span>${r.item}</span>
-                <span style="color: var(--green); font-weight: bold;">+${r.score}</span>
+                <span>${escapeHtml(String(r.item != null ? r.item : ''))}</span>
+                <span style="color: var(--green); font-weight: bold;">+${Number(r.score) || 0}</span>
             </div>
         `).join('')}
     </div>
 
     <div class="section-title">> AUTH_INFRASTRUCTURE_PROBE</div>
     <div class="grid">
-        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${data.sender_ip || 'Generic MTA'}</div></div>
-        <div class="card"><div class="label">Network Latency</div><div class="value">${data.transport_time || 'N/A'}</div></div>
+        <div class="card"><div class="label">Origin MTA Node</div><div class="value">${escapeHtml(String(data.sender_ip || 'Generic MTA'))}</div></div>
+        <div class="card"><div class="label">Network Latency</div><div class="value">${escapeHtml(String(data.transport_time || 'N/A'))}</div></div>
         <div class="card"><div class="label">SPF Governance</div><div class="value" style="color: ${getStatusClass(dns.spf) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.spf || 'MISSING').toUpperCase()}</div></div>
         <div class="card"><div class="label">DMARC Enforcement</div><div class="value" style="color: ${getStatusClass(dns.dmarc) === 'pass' ? 'var(--green)' : 'var(--warn)'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div></div>
     </div>
@@ -1177,7 +1177,7 @@ function getReportHtml(data) {
     <div class="section-title">> ADVANCED_SECURITY_PROTOCOLS</div>
     <div class="grid">
         <div class="card"><div class="label">MTA-STS Handshake</div><div class="value" style="color: ${getStatusClass(dns.mta_sts) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.mta_sts || 'MISSING').toUpperCase()}</div></div>
-        <div class="card"><div class="label">Transport Encryption</div><div class="value">${data.smtp_tls?.version || 'TLS 1.3'}</div></div>
+        <div class="card"><div class="label">Transport Encryption</div><div class="value">${escapeHtml(String(data.smtp_tls?.version || 'TLS 1.3'))}</div></div>
         <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value" style="color: ${getStatusClass(dns.tls_rpt) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
         <div class="card"><div class="label">Brand Indicator (BIMI)</div><div class="value" style="color: ${getStatusClass(dns.bimi) === 'pass' ? 'var(--green)' : 'var(--fail)'}">${String(dns.bimi || 'MISSING').toUpperCase()}</div></div>
     </div>
