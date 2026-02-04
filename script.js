@@ -397,6 +397,11 @@ const translations = {
             desc: "Enhance your defense. Check your Email Security (SMTP/MX) status with our free forensic tool.",
             accept: "SCAN NOW",
             close: "CONTINUE BROWSING"
+        },
+        arsenal: {
+            host_witness_title: "HostWitness",
+            host_witness_desc: "Windows single-host live forensics and activity correlation tool. Collects and correlates processes, network, and timeline events.",
+            host_witness_btn: "View on GitHub"
         }
     },
     tw: {
@@ -487,6 +492,11 @@ const translations = {
             desc: "強化您的防禦。使用我們的免費鑑識工具檢查您的電子郵件安全 (SMTP/MX) 狀況。",
             accept: "立即檢測",
             close: "繼續瀏覽網站"
+        },
+        arsenal: {
+            host_witness_title: "HostWitness",
+            host_witness_desc: "Windows 單機即時鑑識與活動關聯分析工具。採集並關聯進程、網路與時間軸事件。",
+            host_witness_btn: "前往 GitHub"
         }
     },
     jp: {
@@ -577,6 +587,11 @@ const translations = {
             desc: "防御を強化しましょう。無料のフォレンジックツールでメールセキュリティ（SMTP/MX）の状態をチェックします。",
             accept: "今すぐスキャン",
             close: "サイトの閲覧を続ける"
+        },
+        arsenal: {
+            host_witness_title: "HostWitness",
+            host_witness_desc: "Windows ホスト型ライブフォレンジックおよびアクティビティ相関分析ツール。プロセス、ネットワーク、タイムラインイベントを収集・相関分析します。",
+            host_witness_btn: "GitHub で見る"
         }
     }
 };
