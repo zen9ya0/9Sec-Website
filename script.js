@@ -1137,9 +1137,7 @@ if (btnDownloadReport) {
 
         const domain = data.domain || 'unknown';
         const dns = data.dns_posture || {};
-        const tls = data.smtp_tls || {};
         const riskScore = data.risk_score || 0;
-        const rblStatus = data.rbl_status || 'unchecked';
 
         const getStatusClass = (val) => {
             const lower = String(val || '').toLowerCase();
@@ -1149,93 +1147,105 @@ if (btnDownloadReport) {
         };
 
         const reportHtml = `
-            <div id="pdf-render-target" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 40px; width: 700px; line-height: 1.4; border: 1px solid #333;">
-                <div style="border-bottom: 2px solid #00ff41; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="color: #00ff41; margin: 0; font-size: 24px; letter-spacing: 2px;">9SEC // ASSESSMENT_LOG</h1>
-                    <p style="margin: 10px 0 0; color: #888;">Target Domain: <strong style="color: #00ff41;">${domain}</strong></p>
-                    <p style="margin: 5px 0 0; font-size: 12px; color: #666;">Report ID: ${data.assessment_id || 'LOCAL-LOG-' + Date.now()}</p>
+            <div id="pdf-export-container" style="background-color: #0a0a0a; color: #e0e0e0; font-family: 'Courier New', Courier, monospace; padding: 35px; width: 680px; border: 1px solid #333; line-height: 1.2;">
+                <div style="background-color: #0a0a0a; border-bottom: 2px solid #00ff41; padding-bottom: 15px; margin-bottom: 20px;">
+                    <h1 style="color: #00ff41; margin: 0; font-size: 24px;">NINE-SECURITY // ASSESSMENT_LOG</h1>
+                    <p style="margin: 8px 0 0; color: #888; font-size: 14px;">Target Domain: <span style="color: #00ff41;">${domain}</span></p>
+                    <p style="margin: 3px 0 0; color: #555; font-size: 11px;">Timestamp: ${new Date().toLocaleString()}</p>
                 </div>
 
-                <div style="color: #00ff41; margin: 30px 0 15px; font-size: 16px; border-left: 4px solid #00ff41; padding-left: 15px;">> EXECUTIVE_RISK_PROFILE [Score: ${riskScore}/100]</div>
-                <div style="margin-bottom: 30px;">
+                <div style="background-color: #0a0a0a; color: #00ff41; margin-bottom: 15px; font-size: 16px;">> EXECUTIVE_RISK_PROFILE [Score: ${riskScore}/100]</div>
+                <div style="background-color: #0a0a0a; margin-bottom: 25px;">
                     ${(data.risk_breakdown || []).map(r => `
-                    <div style="display: block; padding: 10px; background: #111; border: 1px solid #333; margin-bottom: 6px; border-left: 4px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666')}; clear: both; overflow: hidden;">
-                        <span style="float: left; color: #e0e0e0;">${r.item}</span>
-                        <span style="float: right; color: #00ff41; font-weight: bold;">+${r.score}</span>
+                    <div style="background-color: #111; border: 1px solid #222; border-left: 5px solid ${r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#444')}; padding: 10px; margin-bottom: 6px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="color: #e0e0e0; font-size: 13px;">${r.item}</td>
+                                <td style="text-align: right; color: #00ff41; font-weight: bold; font-size: 13px;">+${r.score}</td>
+                            </tr>
+                        </table>
                     </div>
                     `).join('')}
                 </div>
 
-                <div style="color: #00ff41; margin: 30px 0 15px; font-size: 16px; border-left: 4px solid #00ff41; padding-left: 15px;">> AUTH_INFRASTRUCTURE_PROBE</div>
-                <div style="display: block; width: 100%; margin-bottom: 30px;">
-                    <div style="display: inline-block; width: 48%; background: #111; border: 1px solid #333; padding: 12px; margin-bottom: 10px; vertical-align: top;">
-                        <div style="color: #666; font-size: 10px; text-transform: uppercase;">Origin MTA</div>
-                        <div style="font-size: 14px; font-weight: bold; color: #fff;">${data.sender_ip || 'Generic MTA'}</div>
-                    </div>
-                    <div style="display: inline-block; width: 48%; background: #111; border: 1px solid #333; padding: 12px; margin-bottom: 10px; margin-left: 5px; vertical-align: top;">
-                        <div style="color: #666; font-size: 10px; text-transform: uppercase;">Latency</div>
-                        <div style="font-size: 14px; font-weight: bold; color: ${parseFloat(data.transport_time) > 5 ? '#ffaa00' : '#00ff41'}">${data.transport_time || 'N/A'}</div>
-                    </div>
-                    <div style="display: inline-block; width: 48%; background: #111; border: 1px solid #333; padding: 12px; vertical-align: top;">
-                        <div style="color: #666; font-size: 10px; text-transform: uppercase;">SPF Policy</div>
-                        <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.spf) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
-                    </div>
-                    <div style="display: inline-block; width: 48%; background: #111; border: 1px solid #333; padding: 12px; margin-left: 5px; vertical-align: top;">
-                        <div style="color: #666; font-size: 10px; text-transform: uppercase;">DMARC Status</div>
-                        <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.dmarc) === 'pass' ? '#00ff41' : '#ffaa00'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
-                    </div>
+                <div style="background-color: #0a0a0a; color: #00ff41; margin-bottom: 15px; font-size: 16px;">> AUTH_INFRASTRUCTURE_PROBE</div>
+                <table style="width: 100%; border-collapse: separate; border-spacing: 6px; background-color: #0a0a0a;">
+                    <tr>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Origin MTA</div>
+                            <div style="font-size: 14px; font-weight: bold; color: #fff;">${data.sender_ip || 'Generic MTA'}</div>
+                        </td>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">Latency</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${parseFloat(data.transport_time) > 5 ? '#ffaa00' : '#00ff41'}">${data.transport_time || 'N/A'}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">SPF Policy</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.spf) === 'pass' ? '#00ff41' : '#ff0055'}">${String(dns.spf || 'MISSING').toUpperCase()}</div>
+                        </td>
+                        <td style="width: 50%; background-color: #111; border: 1px solid #222; padding: 12px; vertical-align: top;">
+                            <div style="color: #666; font-size: 10px; text-transform: uppercase; margin-bottom: 4px;">DMARC Status</div>
+                            <div style="font-size: 14px; font-weight: bold; color: ${getStatusClass(dns.dmarc) === 'pass' ? '#00ff41' : '#ffaa00'}">${String(dns.dmarc || 'NONE').toUpperCase()}</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div style="background-color: rgba(0,255,65,0.05); border: 1px solid #00ff41; padding: 20px; margin-top: 40px; text-align: center;">
+                    <div style="color: #00ff41; font-size: 18px; font-weight: bold; margin-bottom: 8px;">FORENSIC DIAGNOSTIC REQUIRED</div>
+                    <p style="margin: 0; color: #ccc; font-size: 13px;">Our backend identified RFC violations and policy gaps.</p>
+                    <p style="margin: 10px 0 0; color: #fff; font-weight: bold; font-size: 14px;">consult@nine-security.com</p>
                 </div>
 
-                <div style="background: rgba(0,255,65,0.05); border: 1px solid #00ff41; padding: 20px; margin-top: 40px; text-align: center;">
-                    <h3 style="color: #00ff41; margin: 0 0 10px 0; font-size: 18px;">FORENSIC DIAGNOSTIC REQUIRED</h3>
-                    <p style="margin: 0; color: #ccc; font-size: 14px;">Backend identified RFC violations and transport security gaps.</p>
-                    <p style="margin: 10px 0 0; color: #fff; font-weight: bold;">consult@nine-security.com</p>
-                </div>
-
-                <div style="margin-top: 50px; text-align: center; color: #444; font-size: 10px; border-top: 1px solid #222; padding-top: 20px;">
-                    CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC - ${new Date().toISOString()}<br>
+                <div style="margin-top: 50px; text-align: center; color: #444; font-size: 10px; border-top: 1px solid #222; padding-top: 20px; background-color: #0a0a0a;">
+                    CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
                     &copy; 2026 Nine-Security Team. All Systems Operational.
                 </div>
             </div>
         `;
 
-        // Temporarily append to body (off-screen)
+        // Temporarily append to body
         const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.left = '-9999px';
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.left = '-2000px';
         tempDiv.style.top = '0';
+        tempDiv.style.width = '1000px';
         tempDiv.innerHTML = reportHtml;
         document.body.appendChild(tempDiv);
 
+        const target = document.getElementById('pdf-export-container');
+
         const opt = {
-            margin: [10, 10, 10, 10],
-            filename: `9Sec_Security_Report_${domain}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
+            margin: 0,
+            filename: `9Sec_Report_${domain}.pdf`,
+            image: { type: 'jpeg', quality: 1.0 },
             html2canvas: {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#0a0a0a',
-                removeContainer: true
+                scrollY: 0,
+                scrollX: 0
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' }
         };
 
         const originalText = btnDownloadReport.innerHTML;
-        btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING_PDF...';
+        btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
         btnDownloadReport.disabled = true;
 
-        html2pdf().from(tempDiv.firstChild).set(opt).save()
+        html2pdf().from(target).set(opt).save()
             .then(() => {
                 document.body.removeChild(tempDiv);
                 btnDownloadReport.innerHTML = originalText;
                 btnDownloadReport.disabled = false;
             })
             .catch(err => {
-                console.error("PDF_ERROR", err);
+                console.error("PDF_FAIL", err);
                 document.body.removeChild(tempDiv);
                 btnDownloadReport.innerHTML = originalText;
                 btnDownloadReport.disabled = false;
-                showNotice("PDF Generation Failed. Using fallback download...");
+                showNotice("PDF Generation Failed.");
             });
     });
 }
