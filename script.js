@@ -601,12 +601,11 @@ langOptions.forEach(option => {
 
 /* --- Theme Toggle Support --- */
 const themeToggleBtn = document.getElementById('theme-toggle');
-const themeIcon = themeToggleBtn ? themeToggleBtn.querySelector('i') : null;
 
 // Initialize Theme
 const savedTheme = localStorage.getItem('9sec_theme') || 'dark';
 document.documentElement.setAttribute('data-theme', savedTheme);
-updateThemeIcon(savedTheme);
+updateThemeLabel(savedTheme);
 
 if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
@@ -615,16 +614,14 @@ if (themeToggleBtn) {
 
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('9sec_theme', newTheme);
-        updateThemeIcon(newTheme);
+        updateThemeLabel(newTheme);
     });
 }
 
-function updateThemeIcon(theme) {
-    if (!themeIcon) return;
-    if (theme === 'light') {
-        themeIcon.className = 'fa-solid fa-sun';
-    } else {
-        themeIcon.className = 'fa-solid fa-moon';
+function updateThemeLabel(theme) {
+    if (themeToggleBtn) {
+        // Button shows CURRENT status
+        themeToggleBtn.textContent = theme.toUpperCase();
     }
 }
 
