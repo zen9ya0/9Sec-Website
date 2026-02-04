@@ -1202,14 +1202,15 @@ if (btnDownloadReport) {
     btnDownloadReport.addEventListener('click', () => {
         const data = window.currentReportData;
         if (!data) return;
-        const domain = data.domain || 'unknown';
+        const rawDomain = data.domain || 'unknown';
+        const safeFilename = String(rawDomain).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'domain';
         const fullHtml = getReportHtml(data);
         if (!fullHtml) return;
         const blob = new Blob([fullHtml], { type: 'text/html' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `9Sec_Security_Report_${domain}.html`;
+        a.download = `9Sec_Security_Report_${safeFilename}.html`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
