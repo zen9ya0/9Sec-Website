@@ -1129,7 +1129,7 @@ if (btnResetCheck) {
 }
 
 // Shared: generate full HTML report (與後端 Admin / Discord 同一樣板)，供 Download HTML 與 Print→PDF 使用
-function getReportHtml(data, opts) {
+function getReportHtml(data) {
     if (!data) return '';
     const domain = data.domain || 'unknown';
     const dns = data.dns_posture || {};
@@ -1140,12 +1140,6 @@ function getReportHtml(data, opts) {
         if (['warn', 'none', 'medium', 'missing', 'quarantine/none'].includes(lower)) return 'warn';
         return 'fail';
     };
-    const printHint = (opts && opts.forPrint) ? `
-    <p id="print-hint" style="margin-top:24px;padding:12px;background:#f0f0f0;color:#333;font-size:14px;border-radius:6px;">
-        <strong>Save as PDF:</strong> In the print dialog, choose &quot;Save as PDF&quot; or &quot;Print to PDF&quot; as the destination.
-    </p>
-    <style>@media print { #print-hint { display: none !important; } }</style>
-    <script>window.onload = function() { window.print(); }<\/script>` : '';
     return `
 <!DOCTYPE html>
 <html>
@@ -1210,7 +1204,7 @@ function getReportHtml(data, opts) {
     <div class="footer">
         CONFIDENTIAL - CUSTODIAN: NINE-SECURITY.INC CLUSTER<br>
         &copy; 2026 Nine-Security Team. All Systems Operational.
-    </div>${printHint}
+    </div>
 </body>
 </html>`;
 }
@@ -1236,21 +1230,6 @@ if (btnDownloadReport) {
     });
 }
 
-// Download Report as PDF：開啟報告 HTML 並觸發列印，使用者於列印對話框選擇「另存為 PDF」可得到有內容的 PDF（html2pdf 會 clone 節點導致空白）
-const btnDownloadPdf = document.getElementById('btn-download-pdf');
-if (btnDownloadPdf) {
-    btnDownloadPdf.addEventListener('click', () => {
-        const data = window.currentReportData;
-        if (!data) return;
-        const fullHtml = getReportHtml(data, { forPrint: true });
-        if (!fullHtml) return;
-        const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const w = window.open(url, '_blank', 'noopener,noreferrer');
-        if (w) w.focus();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
-    });
-}
 // Script loaded
 
 /* --- Promo Modal Logic --- */
