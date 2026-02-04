@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine-Security | Our Services</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .services-hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .service-card {
+            border-top: 4px solid var(--accent-color);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 255, 65, 0.15);
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .service-status {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+        }
+
+        .status-beta {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--accent-secondary);
+            border: 1px solid var(--accent-secondary);
+        }
+
+        .status-planned {
+            background: rgba(255, 255, 255, 0.05);
+            color: #888;
+            border: 1px solid #333;
+        }
+
+        .service-cta {
+            margin-top: 2rem;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Canvas for Particles -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Overlay Scanline Effect -->
+    <div class="scanlines"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html"
+                    style="text-decoration: none; display: flex; align-items: center; gap: 1rem; color: inherit;">
+                    <img src="assets/logo_v2.png" alt="Nine-Security Logo" class="logo-img">
+                    <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" data-i18n="nav.home">/Home</a></li>
+                <li><a href="services.html" class="active" data-i18n="nav.services">/Services</a></li>
+                <li><a href="arsenal.html" data-i18n="nav.tools">/Arsenal</a></li>
+                <li><a href="index.html#contact" data-i18n="nav.contact">/Contact</a></li>
+            </ul>
+            <div class="lang-selector">
+                <button id="current-lang" class="lang-btn">EN</button>
+                <ul class="lang-menu">
+                    <li data-lang="tw">TW [繁體中文]</li>
+                    <li data-lang="en">EN [English]</li>
+                    <li data-lang="jp">JP [日本語]</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="services-hero">
+            <h1 class="glitch-title" data-text="9SEC_SERVICES">9SEC_SERVICES</h1>
+            <p class="subtitle" data-i18n="services.subtitle">Specialized Security Inspection & Forensic Probes</p>
+        </section>
+
+        <section class="services-grid">
+            <!-- SMTP Check -->
+            <div class="card service-card">
+                <div class="service-status status-active">MOD_ACTIVE</div>
+                <i class="fa-solid fa-envelope-shield service-icon"></i>
+                <h3 data-i18n="services.smtp_title">SMTP Security Check</h3>
+                <p data-i18n="services.smtp_desc">Verify your email infrastructure health. Checks SPF, DMARC, MTA-STS,
+                    and transport encryption with deep forensic logs.</p>
+                <div class="service-cta">
+                    <a href="smtp-check.html" class="link-btn"><span data-i18n="services.cta_launch">LAUNCH_PROBE</span>
+                        <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+
+            <!-- AD Audit (Placeholder) -->
+            <div class="card service-card" style="opacity: 0.7;">
+                <div class="service-status status-beta">MOD_BETA</div>
+                <i class="fa-solid fa-users-gear service-icon"></i>
+                <h3 data-i18n="services.ad_title">AD / Azure Identity Audit</h3>
+                <p data-i18n="services.ad_desc">Scan for over-privileged accounts, shadow admins, and insecure
+                    authentication paths in your directory services.</p>
+                <div class="service-cta">
+                    <span class="terminal-text" data-i18n="services.limited_access">LIMITED_ACCESS</span>
+                </div>
+            </div>
+
+            <!-- Endpoint Hygiene (Placeholder) -->
+            <div class="card service-card" style="opacity: 0.5;">
+                <div class="service-status status-planned">MOD_PLANNED</div>
+                <i class="fa-solid fa-shield-virus service-icon"></i>
+                <h3 data-i18n="services.edr_title">Endpoint EDR Hygiene</h3>
+                <p data-i18n="services.edr_desc">Identify gaps in EDR coverage and behavioral monitoring across your
+                    workstation fleet.</p>
+                <div class="service-cta">
+                    <span class="terminal-text" data-i18n="services.coming_soon">COMING_SOON</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dynamic Content Section -->
+        <section style="margin-top: 6rem; padding-bottom: 6rem;">
+            <div class="section-header">
+                <h2><span class="hash">#</span> <span data-i18n="services.custom_probe">Custom_Forensic_Probes</span>
+                </h2>
+                <div class="line"></div>
+            </div>
+            <p class="subtitle" data-i18n="services.custom_desc">Need a specialized inspection for a proprietary
+                protocol or high-value asset? Our team builds custom forensic probes tailored to your environment.</p>
+            <a href="index.html#contact" class="btn primary-btn"
+                data-i18n="services.cta_consult">REQUEST_CUSTOM_AUDIT</a>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="brand">
+                <h4>Nine-Security.INC</h4>
+                <p data-i18n="footer.tagline">Securing the digital frontier.</p>
+            </div>
+            <div class="copyright">
+                <p data-i18n="footer.copyright">&copy; 2026 Nine-Security. All Systems Operational.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=20260204_SERVICES"></script>
+</body>
+
+</html>

@@ -87,10 +87,15 @@ animate();
 // --- Smooth Scroll for Anchor Links ---
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-        });
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        const targetElem = document.querySelector(targetId);
+        if (targetElem) {
+            e.preventDefault();
+            targetElem.scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
     });
 });
 
@@ -305,11 +310,12 @@ const translations = {
     en: {
         nav: {
             home: "/Home",
+            services: "/Services",
             model: "/9SEC_Model",
             tools: "/Arsenal",
             news: "/Security_News",
             threat_intel: "/Threat_Intel",
-            smtp: "/SMTP_Check"
+            contact: "/Contact"
         },
         hero: {
             init: "Initializing 9SEC Defense Protocol... <span class='status-ok'>[ACTIVE]</span>",
@@ -325,7 +331,23 @@ const translations = {
             news: "Security_News",
             intelligence: "Threat_Intelligence",
             threat_intel_coming: "Threat intelligence feed will be integrated here.",
-            smtp: "SMTP_Security_Check"
+            smtp: "SMTP_Security_Check",
+            services: "9SEC_SERVICES"
+        },
+        services: {
+            subtitle: "Specialized Security Inspection & Forensic Probes",
+            smtp_title: "SMTP Security Check",
+            smtp_desc: "Verify your email infrastructure health. Checks SPF, DMARC, MTA-STS, and transport encryption with deep forensic logs.",
+            ad_title: "AD / Azure Identity Audit",
+            ad_desc: "Scan for over-privileged accounts, shadow admins, and insecure authentication paths in your directory services.",
+            edr_title: "Endpoint EDR Hygiene",
+            edr_desc: "Identify gaps in EDR coverage and behavioral monitoring across your workstation fleet.",
+            cta_launch: "LAUNCH_PROBE",
+            limited_access: "LIMITED_ACCESS",
+            coming_soon: "COMING_SOON",
+            custom_probe: "Custom_Forensic_Probes",
+            custom_desc: "Need a specialized inspection for a proprietary protocol or high-value asset? Our team builds custom forensic probes tailored to your environment.",
+            cta_consult: "REQUEST_CUSTOM_AUDIT"
         },
         model: {
             intro1: "> OSI is for Communication. 9SEC is for Operations.",
@@ -365,11 +387,12 @@ const translations = {
     tw: {
         nav: {
             home: "/首頁",
+            services: "/服務項目",
             model: "/九層防護模型",
             tools: "/軍火庫",
             news: "/資安新聞",
             threat_intel: "/威脅情資",
-            smtp: "/SMTP_檢測"
+            contact: "/聯絡我們"
         },
         hero: {
             init: "正在初始化 9SEC 防護協定... <span class='status-ok'>[運作中]</span>",
@@ -385,7 +408,23 @@ const translations = {
             news: "資安新聞",
             intelligence: "威脅情資",
             threat_intel_coming: "威脅情資來源將整合於此。",
-            smtp: "SMTP_安全檢測"
+            smtp: "SMTP_安全檢測",
+            services: "9SEC_服務項目"
+        },
+        services: {
+            subtitle: "專業安全檢測與鑑識探針",
+            smtp_title: "SMTP 郵件安全檢測",
+            smtp_desc: "驗證您的郵件基礎設施健康狀況。檢查 SPF、DMARC、MTA-STS 以及包含深度鑑識日誌的傳輸加密。",
+            ad_title: "AD / Azure 身分稽核",
+            ad_desc: "掃描目錄服務中的過度權限帳戶、影子管理員以及不安全的驗證路徑。",
+            edr_title: "端點 EDR 健康檢查",
+            edr_desc: "識別端點 EDR 覆蓋範圍與行為監控在您工作站群中的缺口。",
+            cta_launch: "啟動探測",
+            limited_access: "權限受限",
+            coming_soon: "即將推出",
+            custom_probe: "客製化鑑識探針",
+            custom_desc: "需要針對專有協定或高價值資產進行專門檢查嗎？我們的團隊可為您的環境量身打造客製化鑑識探針。",
+            cta_consult: "申請客製化稽核"
         },
         model: {
             intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
@@ -425,11 +464,12 @@ const translations = {
     jp: {
         nav: {
             home: "/ホーム",
+            services: "/サービス",
             model: "/9層防御モデル",
             tools: "/アーセナル",
             news: "/セキュリティニュース",
             threat_intel: "/脅威インテリジェンス",
-            smtp: "/SMTP_チェック"
+            contact: "/お問い合わせ"
         },
         hero: {
             init: "9SEC 防御プロトコルを初期化中... <span class='status-ok'>[アクティブ]</span>",
@@ -445,7 +485,23 @@ const translations = {
             news: "セキュリティニュース",
             intelligence: "脅威インテリジェンス",
             threat_intel_coming: "脅威情資フィードはここに統合予定です。",
-            smtp: "SMTP_セキュリティ診断"
+            smtp: "SMTP_セキュリティ認斷",
+            services: "9SEC_サービス"
+        },
+        services: {
+            subtitle: "専門的なセキュリティ検査とフォレンジックプロ法ブ",
+            smtp_title: "SMTP メールセキュリティ診断",
+            smtp_desc: "メールインフラの健全性を検証します。SPF、DMARC、MTA-STS、および詳細なフォレンジックログを含むトランスポート暗号化をチェックします。",
+            ad_title: "AD / Azure アイデンティティ監査",
+            ad_desc: "ディレクトリサービス内の過剰な権限アカウント、シャドウ管理者、および安全でない認証パスをスキャンします。",
+            edr_title: "エンドポイント EDR ハイジーン",
+            edr_desc: "ワークステーションフリート全体での EDR カバレッジと動作監視のギャップを特定します。",
+            cta_launch: "プロ法ブを起動",
+            limited_access: "アクセス制限あり",
+            coming_soon: "近日公開",
+            custom_probe: "カスタム・フォレンジック・プロ法ブ",
+            custom_desc: "独自のプロトコルや高価値資産に対する専門的な検査が必要ですか？私たちのチームは、お客様の環境に合わせたカスタムフォレンジックプロ法ブを構築します。",
+            cta_consult: "カスタム監査を依頼"
         },
         model: {
             intro1: "> OSIは通信のため、9SECは運用のために。",

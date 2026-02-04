@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9SEC | SMTP Security Check</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .check-container {
+            padding-top: 8rem;
+            min-height: 80vh;
+        }
+
+        .tool-header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        .tool-header .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-secondary);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Canvas for Particles -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Overlay Scanline Effect -->
+    <div class="scanlines"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html"
+                    style="text-decoration: none; display: flex; align-items: center; gap: 1rem; color: inherit;">
+                    <img src="assets/logo_v2.png" alt="Nine-Security Logo" class="logo-img">
+                    <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" data-i18n="nav.home">/Home</a></li>
+                <li><a href="services.html" class="active" data-i18n="nav.services">/Services</a></li>
+                <li><a href="arsenal.html" data-i18n="nav.tools">/Arsenal</a></li>
+                <li><a href="index.html#contact" data-i18n="nav.contact">/Contact</a></li>
+            </ul>
+            <div class="lang-selector">
+                <button id="current-lang" class="lang-btn">EN</button>
+                <ul class="lang-menu">
+                    <li data-lang="tw">TW [繁體中文]</li>
+                    <li data-lang="en">EN [English]</li>
+                    <li data-lang="jp">JP [日本語]</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container check-container">
+        <div class="tool-header">
+            <a href="services.html" class="back-link"><i class="fa-solid fa-chevron-left"></i> RETURN_TO_SERVICES</a>
+            <h1 class="glitch-title" data-text="SMTP_SECURITY_CHECK" data-i18n="section.smtp">SMTP_Security_Check</h1>
+        </div>
+
+        <div class="card check-interface">
+            <!-- State 1: Input -->
+            <div id="smtp-step-input" class="smtp-step">
+                <div class="smtp-intro">
+                    <h3 data-i18n="smtp.title">Free Inbound Mail Security Assessment</h3>
+                    <p data-i18n="smtp.desc">Non-intrusive. Evidence-based. Verifies your domain control and checks MX
+                        health.</p>
+                </div>
+                <form id="smtp-form">
+                    <div class="form-group">
+                        <label for="email-input" data-i18n="smtp.email_label">Enter Work Email:</label>
+                        <input type="email" id="email-input" placeholder="user@company.com" required>
+                    </div>
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="consent-check" required>
+                        <label for="consent-check" data-i18n="smtp.consent">I authorize scanning of this domain's
+                            inbound MX.</label>
+                    </div>
+                    <button type="button" class="btn primary-btn" id="btn-start-check">
+                        <i class="fa-solid fa-radar"></i> <span data-i18n="smtp.btn_start">Start Assessment</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- State 2: Verification -->
+            <div id="smtp-step-verify" class="smtp-step hidden">
+                <div class="verify-content">
+                    <div class="step-icon">
+                        <i class="fa-solid fa-envelope-circle-check fa-beat"></i>
+                    </div>
+                    <h3 data-i18n="smtp.verify_title">Verification Required</h3>
+                    <p data-i18n="smtp.verify_desc">To prove domain control, please send an empty email from your
+                        address to:</p>
+
+                    <div class="copy-box">
+                        <code id="verification-email">loading...</code>
+                        <button class="copy-btn" id="btn-copy-email"><i class="fa-regular fa-copy"></i></button>
+                    </div>
+
+                    <div class="loader-box">
+                        <div class="loader-text" data-i18n="smtp.waiting">Waiting for inbound email...</div>
+                        <div class="progress-bar">
+                            <div class="bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- New Terminal Log -->
+                    <div class="terminal-log" id="scan-log">
+                        <div class="log-line">> Daemon initialized. Listening on port 25...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- State 3: Report -->
+            <div id="smtp-step-report" class="smtp-step hidden">
+                <div class="report-header">
+                    <div class="report-status status-ok">[COMPLETED]</div>
+                    <h3 id="report-domain">example.com</h3>
+                </div>
+                <div class="report-grid" id="report-content">
+                    <!-- Report details injected via JS -->
+                </div>
+                <div class="report-actions"
+                    style="margin-top: 2rem; display: flex; justify-content: center; gap: 1rem;">
+                    <button id="btn-download-report" class="btn secondary-btn"><i class="fa-solid fa-download"></i>
+                        Download Report</button>
+                    <button id="btn-reset-check" class="btn primary-btn">Done</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="brand">
+                <h4>Nine-Security.INC</h4>
+                <p data-i18n="footer.tagline">Securing the digital frontier.</p>
+            </div>
+            <div class="copyright">
+                <p data-i18n="footer.copyright">&copy; 2026 Nine-Security. All Systems Operational.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=20260204_SMTP_PAGED"></script>
+</body>
+
+</html>
