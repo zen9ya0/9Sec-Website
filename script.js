@@ -599,6 +599,35 @@ langOptions.forEach(option => {
     });
 });
 
+/* --- Theme Toggle Support --- */
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeIcon = themeToggleBtn ? themeToggleBtn.querySelector('i') : null;
+
+// Initialize Theme
+const savedTheme = localStorage.getItem('9sec_theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+updateThemeIcon(savedTheme);
+
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('9sec_theme', newTheme);
+        updateThemeIcon(newTheme);
+    });
+}
+
+function updateThemeIcon(theme) {
+    if (!themeIcon) return;
+    if (theme === 'light') {
+        themeIcon.className = 'fa-solid fa-sun';
+    } else {
+        themeIcon.className = 'fa-solid fa-moon';
+    }
+}
+
 function updateLanguage(lang) {
     // Update Button Text
     if (langBtn) langBtn.textContent = lang.toUpperCase();

@@ -10,6 +10,22 @@
     --font-mono: 'JetBrains Mono', monospace;
     --font-sans: 'Inter', sans-serif;
     --border-color: rgba(0, 255, 65, 0.3);
+    --header-bg: rgba(5, 5, 5, 0.8);
+    --scanline-opacity: 0.15;
+}
+
+[data-theme="light"] {
+    --bg-color: #f0f2f5;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    --accent-color: #008f24;
+    /* Darker Green for visibility */
+    --accent-secondary: #007bb5;
+    /* Darker Blue for visibility */
+    --border-color: rgba(0, 143, 36, 0.3);
+    --header-bg: rgba(240, 242, 245, 0.9);
+    --scanline-opacity: 0.05;
 }
 
 * {
@@ -57,8 +73,8 @@ body {
     width: 100%;
     height: 100%;
     background: repeating-linear-gradient(0deg,
-            rgba(0, 0, 0, 0.15),
-            rgba(0, 0, 0, 0.15) 1px,
+            rgba(0, 0, 0, var(--scanline-opacity)),
+            rgba(0, 0, 0, var(--scanline-opacity)) 1px,
             transparent 1px,
             transparent 2px);
     pointer-events: none;
@@ -82,7 +98,7 @@ header {
     top: 0;
     width: 100%;
     z-index: 100;
-    background: rgba(5, 5, 5, 0.8);
+    background: var(--header-bg);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -450,6 +466,7 @@ h1.glitch-title {
     max-height: 80vh;
     overflow-y: auto;
 }
+
 #articles .list-layout,
 #security-news .list-layout {
     max-height: 65vh;
@@ -461,34 +478,42 @@ h1.glitch-title {
     max-height: 80vh;
     overflow-y: auto;
 }
+
 #threat-intel .list-layout {
     max-height: 50vh;
     overflow-y: auto;
 }
+
 .threat-intel-content.threat-intel-placeholder {
     padding: 2rem;
     text-align: center;
 }
+
 #threat-intel .placeholder-text {
     color: var(--text-secondary);
     font-size: 0.95rem;
 }
+
 .threat-intel-split-inner {
     display: grid;
     gap: 2rem;
     align-items: start;
 }
+
 .threat-intel-split-two .threat-intel-split-inner {
     grid-template-columns: 1fr 1fr;
 }
+
 @media (max-width: 768px) {
     .threat-intel-split-two .threat-intel-split-inner {
         grid-template-columns: 1fr;
     }
 }
+
 .threat-intel-group {
     min-width: 0;
 }
+
 .threat-intel-group-title {
     font-family: var(--font-mono);
     font-size: 0.95rem;
@@ -497,14 +522,22 @@ h1.glitch-title {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.threat-intel-group-title[data-i18n="threat_intel.heading_cisa"] { color: var(--accent-secondary); }
-.threat-intel-group-title[data-i18n="threat_intel.heading_otx"] { color: var(--accent-color); }
+
+.threat-intel-group-title[data-i18n="threat_intel.heading_cisa"] {
+    color: var(--accent-secondary);
+}
+
+.threat-intel-group-title[data-i18n="threat_intel.heading_otx"] {
+    color: var(--accent-color);
+}
+
 #threat-intel .list-item .content h3 {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
+
 .severity-badge {
     font-size: 0.65rem;
     text-transform: uppercase;
@@ -513,11 +546,13 @@ h1.glitch-title {
     font-weight: 600;
     white-space: nowrap;
 }
+
 .severity-badge.severity-high {
     background: rgba(255, 0, 85, 0.2);
     color: #ff0055;
     border: 1px solid rgba(255, 0, 85, 0.5);
 }
+
 .source-badge {
     font-size: 0.6rem;
     text-transform: uppercase;
@@ -527,21 +562,25 @@ h1.glitch-title {
     white-space: nowrap;
     margin-right: 0.35rem;
 }
+
 .source-badge.source-cisa {
     background: rgba(0, 229, 255, 0.15);
     color: var(--accent-secondary);
     border: 1px solid rgba(0, 229, 255, 0.4);
 }
+
 .source-badge.source-otx {
     background: rgba(0, 255, 65, 0.15);
     color: var(--accent-color);
     border: 1px solid rgba(0, 255, 65, 0.4);
 }
+
 .articles-more-wrap,
 .threat-intel-more-wrap {
     margin-top: 1rem;
     text-align: center;
 }
+
 .articles-more-btn {
     font-family: var(--font-mono);
     font-size: 0.9rem;
@@ -552,6 +591,7 @@ h1.glitch-title {
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
 .articles-more-btn:hover {
     background: rgba(0, 229, 255, 0.1);
 }
@@ -718,7 +758,30 @@ footer {
     }
 }
 
-/* Language Switcher (Custom Cyber Style) */
+/* Language Switcher & Theme Toggle */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: 1rem;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle:hover {
+    color: var(--accent-color);
+}
+
 .lang-selector {
     position: relative;
     margin-left: 1rem;
@@ -1151,12 +1214,14 @@ footer {
     padding-bottom: 20px;
     margin-bottom: 30px;
 }
+
 #report-content .report-header h1 {
     color: #00ff41;
     margin: 0;
     font-family: monospace;
     letter-spacing: 2px;
 }
+
 #report-content .section-title {
     color: #00ff41;
     font-family: monospace;
@@ -1166,40 +1231,55 @@ footer {
     padding-left: 15px;
     text-transform: uppercase;
 }
+
 #report-content .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
 }
+
 #report-content .card {
     background: #111;
     border: 1px solid #333;
     padding: 15px;
     border-radius: 4px;
 }
+
 #report-content .label {
     color: #888;
     font-size: 0.75rem;
     text-transform: uppercase;
     margin-bottom: 5px;
 }
+
 #report-content .value {
     font-size: 1.1rem;
     font-weight: bold;
     font-family: 'JetBrains Mono', monospace;
 }
-#report-content .value.pass { color: #00ff41; }
-#report-content .value.fail { color: #ff0055; }
-#report-content .value.warn { color: #ffaa00; }
+
+#report-content .value.pass {
+    color: #00ff41;
+}
+
+#report-content .value.fail {
+    color: #ff0055;
+}
+
+#report-content .value.warn {
+    color: #ffaa00;
+}
+
 #report-content .risk-item {
     display: flex;
     justify-content: space-between;
     padding: 12px;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid #333;
     margin-bottom: 8px;
     border-left: 4px solid #ff0055;
 }
+
 #report-content .gap-warning {
     font-size: 0.7rem;
     color: #ff0055;
@@ -1208,18 +1288,21 @@ footer {
     border-top: 1px solid #222;
     padding-top: 5px;
 }
+
 #report-content .cta-box {
-    background: rgba(0,255,65,0.05);
+    background: rgba(0, 255, 65, 0.05);
     border: 1px solid #00ff41;
     padding: 25px;
     margin-top: 40px;
     text-align: center;
 }
+
 #report-content .cta-box h3 {
     color: #00ff41;
     margin-top: 0;
     font-family: monospace;
 }
+
 #report-content .report-footer {
     margin-top: 50px;
     text-align: center;
