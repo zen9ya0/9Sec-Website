@@ -683,7 +683,9 @@ footer {
 .copyright p {
     font-family: var(--font-mono);
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--text-secondary);
+    /* Use theme variable instead of fixed rgba */
+    opacity: 0.7;
 }
 
 /* Responsive */
@@ -1469,6 +1471,7 @@ footer {
         text-shadow: 0 0 10px rgba(0, 86, 179, 0.5);
     }
 }
+
 /* Back to Top Button */
 .back-to-top {
     position: fixed;
@@ -1481,7 +1484,8 @@ footer {
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
@@ -1501,14 +1505,22 @@ footer {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 [data-theme="light"] .back-to-top {
     color: white;
     box-shadow: 0 0 20px rgba(0, 86, 179, 0.4);
 }
+
 [data-theme="light"] .back-to-top:hover {
     box-shadow: 0 0 30px rgba(0, 86, 179, 0.6);
 }
