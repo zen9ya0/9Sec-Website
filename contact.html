@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine-Security | Contact Us</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .contact-hero {
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 8rem;
+        }
+
+        .contact-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contact-card {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .contact-icon {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-value {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .contact-label {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Background Canvas for Particles -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Overlay Scanline Effect -->
+    <div class="scanlines"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html"
+                    style="text-decoration: none; display: flex; align-items: center; gap: 1rem; color: inherit;">
+                    <img src="assets/logo_v2.png" alt="Nine-Security Logo" class="logo-img">
+                    <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html" data-i18n="nav.home">/Home</a></li>
+                <li><a href="services.html" data-i18n="nav.services">/Services</a></li>
+                <li><a href="arsenal.html" data-i18n="nav.tools">/Arsenal</a></li>
+                <li><a href="index.html#model" data-i18n="nav.model">/9SEC_Model</a></li>
+                <li><a href="index.html#threat-intel" data-i18n="nav.threat_intel">/Threat_Intel</a></li>
+                <li><a href="contact.html" class="active" data-i18n="nav.contact">/Contact</a></li>
+            </ul>
+            <div class="lang-selector">
+                <button id="current-lang" class="lang-btn">EN</button>
+                <ul class="lang-menu">
+                    <li data-lang="tw">TW [繁體中文]</li>
+                    <li data-lang="en">EN [English]</li>
+                    <li data-lang="jp">JP [日本語]</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container contact-container">
+        <section class="contact-hero">
+            <h1 class="glitch-title" data-text="ESTABLISH_COMMUNICATION">ESTABLISH_COMMUNICATION</h1>
+            <p class="subtitle" data-i18n="contact.subtitle">Connect with our Forensic Consultants</p>
+        </section>
+
+        <div class="contact-methods">
+            <!-- Email -->
+            <div class="card contact-card">
+                <i class="fa-solid fa-envelope contact-icon"></i>
+                <div class="contact-label" data-i18n="contact.email_label">Email_Channel</div>
+                <div class="contact-value">consult@nine-security.com</div>
+            </div>
+
+            <!-- Discord/Chat placeholder or another method -->
+            <div class="card contact-card">
+                <i class="fa-solid fa-shield-halved contact-icon"></i>
+                <div class="contact-label" data-i18n="contact.availability_label">Duty_Status</div>
+                <div class="contact-value" data-i18n="contact.availability_value">24/7 Forensic Response</div>
+            </div>
+        </div>
+
+        <section style="margin-top: 4rem; text-align: center;">
+            <p class="terminal-text">> Waiting for secure handshake...</p>
+            <p data-i18n="contact.desc">For custom audits, incident response, or forensic inquiries, please reach out
+                via email. Our team typically responds within 4 standard operation hours.</p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="brand">
+                <h4>Nine-Security.INC</h4>
+                <p data-i18n="footer.tagline">Securing the digital frontier.</p>
+            </div>
+            <div class="copyright">
+                <p data-i18n="footer.copyright">&copy; 2026 Nine-Security. All Systems Operational.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js?v=20260204_CONTACT"></script>
+</body>
+
+</html>

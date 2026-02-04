@@ -359,6 +359,13 @@ const translations = {
             tagline: "Securing the digital frontier.",
             copyright: "&copy; 2026 Nine-Security. All Systems Operational."
         },
+        contact: {
+            subtitle: "Connect with our Forensic Consultants",
+            email_label: "Email_Channel",
+            availability_label: "Duty_Status",
+            availability_value: "24/7 Forensic Response",
+            desc: "For custom audits, incident response, or forensic inquiries, please reach out via email. Our team typically responds within 4 standard operation hours."
+        },
         smtp: {
             title: "Free Inbound Mail Security Assessment",
             desc: "Non-intrusive. Evidence-based. Verifies your domain control and checks MX health.",
@@ -436,6 +443,13 @@ const translations = {
             tagline: "捍衛數位邊疆。",
             copyright: "&copy; 2026 Nine-Security. 系統正常運作中。"
         },
+        contact: {
+            subtitle: "與我們的鑑識專家聯繫",
+            email_label: "電子郵件頻道",
+            availability_label: "值班狀態",
+            availability_value: "24/7 全年無休鑑識響應",
+            desc: "對於客製化稽核項目、緊急應變或鑑識諮詢，請透過電子郵件與我們聯繫。我們的團隊通常會在 4 個標準工作小時內回覆。"
+        },
         smtp: {
             title: "免費 Inbound 郵件安全健診",
             desc: "低侵入、證據導向。驗證網域控制權並檢查 MX 健康狀況。",
@@ -512,6 +526,13 @@ const translations = {
         footer: {
             tagline: "デジタルフロンティアを守る。",
             copyright: "&copy; 2026 Nine-Security. 全システム正常稼働中。"
+        },
+        contact: {
+            subtitle: "フォレンジックコンサルタントに接続",
+            email_label: "Eメールチャンネル",
+            availability_label: "勤務状況",
+            availability_value: "24時間365日のフォレンジックレスポンス",
+            desc: "カスタム監査、インシデント対応、またはフォレンジックに関するお問い合わせは、メールにてご連絡ください。通常、標準業務時間内の4時間以内に返信いたします。"
         },
         smtp: {
             title: "無料 Inbound メールセキュリティ診断",
