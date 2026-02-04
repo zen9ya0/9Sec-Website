@@ -16,16 +16,16 @@
 
 [data-theme="light"] {
     --bg-color: #f0f2f5;
-    --card-bg: rgba(255, 255, 255, 0.9);
-    --text-primary: #1a1a1a;
-    --text-secondary: #555555;
-    --accent-color: #008f24;
-    /* Darker Green for visibility */
-    --accent-secondary: #007bb5;
-    /* Darker Blue for visibility */
-    --border-color: rgba(0, 143, 36, 0.3);
-    --header-bg: rgba(240, 242, 245, 0.9);
-    --scanline-opacity: 0.05;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --text-primary: #050505;
+    --text-secondary: #444444;
+    --accent-color: #0056b3;
+    /* Professional Blue */
+    --accent-secondary: #004494;
+    /* Darker Blue */
+    --border-color: rgba(0, 86, 179, 0.3);
+    --header-bg: rgba(240, 242, 245, 0.95);
+    --scanline-opacity: 0.03;
 }
 
 * {
@@ -126,6 +126,12 @@ nav {
     width: auto;
     filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.6));
     /* Enhanced glow */
+    transition: filter 0.3s ease;
+}
+
+[data-theme="light"] .logo-img {
+    filter: hue-rotate(180deg) drop-shadow(0 0 5px rgba(0, 86, 179, 0.4));
+    /* Green to Blue shift */
 }
 
 .logo .prompt {
