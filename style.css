@@ -1038,13 +1038,20 @@ footer {
 .copy-box {
     display: flex;
     align-items: center;
-    background: #000;
+    background: rgba(0, 0, 0, 0.3);
+    /* Semi-transparent black compatible with both */
     border: 1px solid var(--border-color);
     padding: 0.5rem;
     border-radius: 4px;
     gap: 1rem;
     max-width: 100%;
     overflow-x: auto;
+}
+
+[data-theme="light"] .copy-box {
+    background: rgba(255, 255, 255, 0.5);
+    /* Lighter bg for light mode */
+    border-color: var(--accent-secondary);
 }
 
 .copy-box code {
@@ -1526,4 +1533,13 @@ footer {
 
 [data-theme="light"] .back-to-top:hover {
     box-shadow: 0 0 30px rgba(0, 86, 179, 0.6);
+}
+/* Force update copy-box for Light Mode */
+[data-theme="light"] .copy-box {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: var(--accent-secondary);
+}
+[data-theme="light"] .form-group input {
+    background: rgba(255, 255, 255, 0.8);
+    color: #000;
 }
