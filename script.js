@@ -1236,25 +1236,25 @@ if (btnDownloadReport) {
 
         const tempDiv = document.createElement('div');
         tempDiv.id = 'pdf-staging-area';
-        tempDiv.style.position = 'fixed';
-        tempDiv.style.left = '-2000px';
+        tempDiv.style.position = 'absolute';
         tempDiv.style.top = '0';
-        tempDiv.style.width = '1000px';
+        tempDiv.style.left = '0';
+        tempDiv.style.opacity = '0.01';
+        tempDiv.style.zIndex = '-9999';
+        tempDiv.style.width = '700px';
         tempDiv.innerHTML = reportHtml;
         document.body.appendChild(tempDiv);
-
-        const target = document.getElementById('pdf-export-container');
 
         const opt = {
             margin: 0,
             filename: `9Sec_Report_${domain}.pdf`,
-            image: { type: 'jpeg', quality: 1.0 },
+            image: { type: 'png', quality: 1.0 },
             html2canvas: {
                 scale: 2,
                 useCORS: true,
                 backgroundColor: '#0a0a0a',
-                scrollY: 0,
-                scrollX: 0
+                logging: false,
+                allowTaint: true
             },
             jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -1264,19 +1264,22 @@ if (btnDownloadReport) {
         btnDownloadReport.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> GENERATING...';
         btnDownloadReport.disabled = true;
 
-        html2pdf().from(tempDiv).set(opt).save()
-            .then(() => {
-                document.body.removeChild(tempDiv);
-                btnDownloadReport.innerHTML = originalText;
-                btnDownloadReport.disabled = false;
-            })
-            .catch(err => {
-                console.error("PDF_FAIL", err);
-                document.body.removeChild(tempDiv);
-                btnDownloadReport.innerHTML = originalText;
-                btnDownloadReport.disabled = false;
-                showNotice("PDF Generation Failed.");
-            });
+        // Give extra time for complex tables to layout in hidden div
+        setTimeout(() => {
+            html2pdf().from(tempDiv).set(opt).save()
+                .then(() => {
+                    document.body.removeChild(tempDiv);
+                    btnDownloadReport.innerHTML = originalText;
+                    btnDownloadReport.disabled = false;
+                })
+                .catch(err => {
+                    console.error("PDF_FAIL", err);
+                    if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+                    btnDownloadReport.innerHTML = originalText;
+                    btnDownloadReport.disabled = false;
+                    showNotice("PDF Generation Failed.");
+                });
+        }, 500);
     });
 }
 // Script loaded
