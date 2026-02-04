@@ -1,85 +1,87 @@
 const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
+if (canvas) {
+    const ctx = canvas.getContext('2d');
 
-let particlesArray;
+    let particlesArray;
 
-// responsive canvas
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-class Particle {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 1; // Size between 1 and 3
-        this.speedX = (Math.random() * 1.5 - 0.75) * 0.5; // Slow speed
-        this.speedY = (Math.random() * 1.5 - 0.75) * 0.5;
-        this.color = '#00ff41'; // Hacker Green
-    }
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        // Boundary check
-        if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
-        if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
-    }
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-}
-
-function init() {
-    particlesArray = [];
-    let numberOfParticles = (canvas.height * canvas.width) / 25000; // Density
-    for (let i = 0; i < numberOfParticles; i++) {
-        particlesArray.push(new Particle());
-    }
-}
-
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Low opacity background for trail effect (optional, currently strictly clear)
-    // ctx.fillStyle = 'rgba(0,0,0,0.1)';
-    // ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-        particlesArray[i].draw();
-
-        // Connect particles
-        for (let j = i; j < particlesArray.length; j++) {
-            const dx = particlesArray[i].x - particlesArray[j].x;
-            const dy = particlesArray[i].y - particlesArray[j].y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance < 150) {
-                ctx.beginPath();
-                ctx.strokeStyle = `rgba(0, 255, 65, ${1 - distance / 150})`;
-                ctx.lineWidth = 0.5;
-                ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
-                ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
-                ctx.stroke();
-            }
-        }
-    }
-    requestAnimationFrame(animate);
-}
-
-// Handle resize
-window.addEventListener('resize', () => {
+    // responsive canvas
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    init();
-});
 
-// Init
-init();
-animate();
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1; // Size between 1 and 3
+            this.speedX = (Math.random() * 1.5 - 0.75) * 0.5; // Slow speed
+            this.speedY = (Math.random() * 1.5 - 0.75) * 0.5;
+            this.color = '#00ff41'; // Hacker Green
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            // Boundary check
+            if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
+            if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function init() {
+        particlesArray = [];
+        let numberOfParticles = (canvas.height * canvas.width) / 25000; // Density
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Low opacity background for trail effect (optional, currently strictly clear)
+        // ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < particlesArray.length; i++) {
+            particlesArray[i].update();
+            particlesArray[i].draw();
+
+            // Connect particles
+            for (let j = i; j < particlesArray.length; j++) {
+                const dx = particlesArray[i].x - particlesArray[j].x;
+                const dy = particlesArray[i].y - particlesArray[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 150) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(0, 255, 65, ${1 - distance / 150})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                    ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    // Handle resize
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        init();
+    });
+
+    // Init
+    init();
+    animate();
+}
 
 // --- Glitch Title Typo Effect (Optional Add-on) ---
 // Currently using CSS only, but JS could add random character swapping if requested later.
@@ -683,8 +685,6 @@ async function submitAssessment() {
 const btnStartCheck = document.getElementById('btn-start-check');
 if (btnStartCheck) {
     btnStartCheck.addEventListener('click', submitAssessment);
-} else {
-    console.error("Critical: Start Assessment button not found in DOM");
 }
 
 const smtpForm = document.getElementById('smtp-form');
@@ -998,43 +998,55 @@ function renderReport(report) {
 }
 // --- Report Action Handlers ---
 
-document.getElementById('btn-reset-check').addEventListener('click', () => {
-    // Reset UI State
-    document.getElementById('smtp-step-report').classList.add('hidden');
-    document.getElementById('smtp-step-verify').classList.add('hidden');
-    document.getElementById('smtp-step-input').classList.remove('hidden');
+const btnResetCheck = document.getElementById('btn-reset-check');
+if (btnResetCheck) {
+    btnResetCheck.addEventListener('click', () => {
+        // Reset UI State
+        const reportStep = document.getElementById('smtp-step-report');
+        const verifyStep = document.getElementById('smtp-step-verify');
+        const inputStep = document.getElementById('smtp-step-input');
+        const emailInput = document.getElementById('email-input');
+        const scanLog = document.getElementById('scan-log');
+        const reportContent = document.getElementById('report-content');
 
-    // Clean up data
-    currentAssessmentId = null;
-    if (pollInterval) clearInterval(pollInterval);
-    document.getElementById('email-input').value = '';
-    document.getElementById('scan-log').innerHTML = '';
-    document.getElementById('report-content').innerHTML = ''; // Clear report
+        if (reportStep) reportStep.classList.add('hidden');
+        if (verifyStep) verifyStep.classList.add('hidden');
+        if (inputStep) inputStep.classList.remove('hidden');
 
-    // Uncheck consent
-    const consent = document.getElementById('consent-check');
-    if (consent) consent.checked = false;
-});
+        // Clean up data
+        currentAssessmentId = null;
+        if (pollInterval) clearInterval(pollInterval);
+        if (emailInput) emailInput.value = '';
+        if (scanLog) scanLog.innerHTML = '';
+        if (reportContent) reportContent.innerHTML = ''; // Clear report
+
+        // Uncheck consent
+        const consent = document.getElementById('consent-check');
+        if (consent) consent.checked = false;
+    });
+}
 
 // Download Aligned Executive Report (與網頁 / 後端 Admin / Discord 連結 同一樣板)
-document.getElementById('btn-download-report').addEventListener('click', () => {
-    const data = window.currentReportData;
-    if (!data) return;
+const btnDownloadReport = document.getElementById('btn-download-report');
+if (btnDownloadReport) {
+    btnDownloadReport.addEventListener('click', () => {
+        const data = window.currentReportData;
+        if (!data) return;
 
-    const domain = data.domain || 'unknown';
-    const dns = data.dns_posture || {};
-    const tls = data.smtp_tls || {};
-    const riskScore = data.risk_score || 0;
-    const rblStatus = data.rbl_status || 'unchecked';
+        const domain = data.domain || 'unknown';
+        const dns = data.dns_posture || {};
+        const tls = data.smtp_tls || {};
+        const riskScore = data.risk_score || 0;
+        const rblStatus = data.rbl_status || 'unchecked';
 
-    const getStatusClass = (val) => {
-        const lower = String(val || '').toLowerCase();
-        if (['pass', 'true', 'low', 'enforce', 'enabled'].includes(lower)) return 'pass';
-        if (['warn', 'none', 'medium', 'missing', 'quarantine/none'].includes(lower)) return 'warn';
-        return 'fail';
-    };
+        const getStatusClass = (val) => {
+            const lower = String(val || '').toLowerCase();
+            if (['pass', 'true', 'low', 'enforce', 'enabled'].includes(lower)) return 'pass';
+            if (['warn', 'none', 'medium', 'missing', 'quarantine/none'].includes(lower)) return 'warn';
+            return 'fail';
+        };
 
-    const fullHtml = `<!DOCTYPE html>
+        const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -1115,14 +1127,15 @@ document.getElementById('btn-download-report').addEventListener('click', () => {
 </body>
 </html>`;
 
-    const blob = new Blob([fullHtml], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `9Sec_Security_Log_${domain}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-});
+        const blob = new Blob([fullHtml], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `9Sec_Security_Log_${domain}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    });
+}
 // Script loaded
