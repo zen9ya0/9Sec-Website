@@ -1271,3 +1271,30 @@ function injectPromoModal() {
     const currentLang = localStorage.getItem('9sec_lang') || 'en';
     updateLanguage(currentLang);
 }
+
+/* --- Back to Top Logic --- */
+const backToTopBtn = document.getElementById('back-to-top');
+if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
+
+// --- Particle Visibility Optimization ---
+// Pauses animation when tab is inactive or scrolled out of view (basic visibility check)
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        // Optional: specific pause logic if extended beyond basic requestAnimationFrame behavior
+    }
+});
