@@ -1330,6 +1330,7 @@ footer {
     border-top: 1px solid #333;
     padding-top: 20px;
 }
+
 /* Promo Modal */
 .modal-overlay {
     position: fixed;
@@ -1337,10 +1338,14 @@ footer {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85); /* Darker backdrop */
-    backdrop-filter: blur(8px);
-    z-index: 2000; /* Highest priority */
-    display: none; /* Hidden by default */
+    background: rgba(0, 0, 0, 0.5);
+    /* More transparent backdrop */
+    backdrop-filter: blur(4px);
+    /* Reduced blur for visibility */
+    z-index: 2000;
+    /* Highest priority */
+    display: none;
+    /* Hidden by default */
     justify-content: center;
     align-items: center;
     opacity: 0;
@@ -1353,7 +1358,8 @@ footer {
 }
 
 .modal-content {
-    background: var(--card-bg); /* Use theme variable */
+    background: var(--card-bg);
+    /* Use theme variable */
     border: 1px solid var(--accent-color);
     padding: 2.5rem;
     max-width: 500px;
@@ -1378,7 +1384,8 @@ footer {
 
 .modal-title {
     font-family: var(--font-mono);
-    color: var(--text-primary); /* Theme aware */
+    color: var(--text-primary);
+    /* Theme aware */
     font-size: 1.5rem;
     margin-bottom: 1rem;
     text-transform: uppercase;
@@ -1397,37 +1404,68 @@ footer {
     gap: 1rem;
 }
 
-.modal-close-btn {
+.modal-close-x {
+    position: absolute;
+    top: 15px;
+    right: 15px;
     background: transparent;
-    border: 1px solid var(--text-secondary);
+    border: none;
     color: var(--text-secondary);
-    padding: 0.8rem;
+    font-size: 1.5rem;
     cursor: pointer;
-    font-family: var(--font-mono);
     transition: all 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
-.modal-close-btn:hover {
-    border-color: var(--text-primary);
+.modal-close-x:hover {
     color: var(--text-primary);
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Pulse animation for icon */
 @keyframes pulse-glow {
-    0% { transform: scale(1); text-shadow: 0 0 10px rgba(0,255,65,0.5); }
-    50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(0,255,65,0.8); }
-    100% { transform: scale(1); text-shadow: 0 0 10px rgba(0,255,65,0.5); }
+    0% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
+
+    50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 25px rgba(0, 255, 65, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+    }
 }
 
 [data-theme="light"] .modal-content {
     box-shadow: 0 0 50px rgba(0, 86, 179, 0.2);
 }
+
 [data-theme="light"] .modal-icon {
     animation: pulse-glow-blue 2s infinite;
 }
+
 @keyframes pulse-glow-blue {
-    0% { transform: scale(1); text-shadow: 0 0 10px rgba(0,86,179,0.5); }
-    50% { transform: scale(1.1); text-shadow: 0 0 25px rgba(0,86,179,0.8); }
-    100% { transform: scale(1); text-shadow: 0 0 10px rgba(0,86,179,0.5); }
+    0% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 86, 179, 0.5);
+    }
+
+    50% {
+        transform: scale(1.1);
+        text-shadow: 0 0 25px rgba(0, 86, 179, 0.8);
+    }
+
+    100% {
+        transform: scale(1);
+        text-shadow: 0 0 10px rgba(0, 86, 179, 0.5);
+    }
 }

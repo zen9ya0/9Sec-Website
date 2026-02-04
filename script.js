@@ -1213,7 +1213,7 @@ if (btnDownloadReport) {
 document.addEventListener("DOMContentLoaded", () => {
     // Check if seen in this session
     const hasSeenPromo = sessionStorage.getItem("9sec_promo_seen");
-    
+
     // Don't show if already on the tool page
     if (window.location.pathname.includes("smtp-check.html")) return;
 
@@ -1227,6 +1227,7 @@ function injectPromoModal() {
     const modalHtml = `
     <div id="promo-modal" class="modal-overlay">
         <div class="modal-content">
+            <button class="modal-close-x" id="btn-promo-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             <i class="fa-solid fa-envelope-shield modal-icon"></i>
             <h2 class="modal-title" data-i18n="promo_modal.title">FREE SECURITY ASSESSMENT</h2>
             <p class="modal-desc" data-i18n="promo_modal.desc">Check your Email Security (SMTP/MX) status for free.</p>
@@ -1234,7 +1235,6 @@ function injectPromoModal() {
                 <a href="smtp-check.html" class="btn primary-btn" id="btn-promo-accept">
                     <i class="fa-solid fa-radar"></i> <span data-i18n="promo_modal.accept">Check Now</span>
                 </a>
-                <button class="modal-close-btn" id="btn-promo-close" data-i18n="promo_modal.close">Continue Browsing</button>
             </div>
         </div>
     </div>
@@ -1248,7 +1248,7 @@ function injectPromoModal() {
     // Force display flex then add show class for opacity
     modal.style.display = 'flex';
     // Trigger reflow
-    void modal.offsetWidth; 
+    void modal.offsetWidth;
     modal.classList.add('show');
 
     // Handlers
@@ -1262,7 +1262,7 @@ function injectPromoModal() {
     };
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    
+
     if (acceptBtn) acceptBtn.addEventListener('click', () => {
         sessionStorage.setItem("9sec_promo_seen", "true");
     });
