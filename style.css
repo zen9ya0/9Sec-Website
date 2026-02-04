@@ -1543,3 +1543,12 @@ footer {
     background: rgba(255, 255, 255, 0.8);
     color: #000;
 }
+
+/* Language Menu Fix for Light Mode */
+.lang-menu {
+    background: var(--bg-color) !important;
+}
+.lang-menu li:hover {
+    background: var(--card-hover-bg) !important;
+    color: var(--text-primary) !important;
+}
