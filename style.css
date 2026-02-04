@@ -790,7 +790,7 @@ footer {
 
 .lang-selector {
     position: relative;
-    margin-left: 1rem;
+    /* margin-left: 1rem; (Removed for alignment in .header-controls) */
     font-family: var(--font-mono);
 }
 
@@ -802,8 +802,15 @@ footer {
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    min-width: 60px;
+    min-width: 80px;
+    /* Match theme toggle */
     text-align: center;
+    font-family: var(--font-mono);
+    height: 100%;
+    /* Ensure full height alignment */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .lang-btn:hover {
