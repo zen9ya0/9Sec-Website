@@ -391,6 +391,12 @@ const translations = {
             heading_otx: "OTX Pulses",
             show_more: "Show more ({n})",
             collapse: "Collapse"
+        },
+        promo_modal: {
+            title: "FREE SECURITY ASSESSMENT",
+            desc: "Enhance your defense. Check your Email Security (SMTP/MX) status with our free forensic tool.",
+            accept: "SCAN NOW",
+            close: "CONTINUE BROWSING"
         }
     },
     tw: {
@@ -475,6 +481,12 @@ const translations = {
             heading_otx: "OTX 脈動",
             show_more: "顯示更多 ({n} 筆)",
             collapse: "收起"
+        },
+        promo_modal: {
+            title: "免費郵件安全健診",
+            desc: "強化您的防禦。使用我們的免費鑑識工具檢查您的電子郵件安全 (SMTP/MX) 狀況。",
+            accept: "立即檢測",
+            close: "繼續瀏覽網站"
         }
     },
     jp: {
@@ -559,6 +571,12 @@ const translations = {
             heading_otx: "OTX パルス",
             show_more: "もっと見る ({n} 件)",
             collapse: "閉じる"
+        },
+        promo_modal: {
+            title: "無料セキュリティ診断",
+            desc: "防御を強化しましょう。無料のフォレンジックツールでメールセキュリティ（SMTP/MX）の状態をチェックします。",
+            accept: "今すぐスキャン",
+            close: "サイトの閲覧を続ける"
         }
     }
 };
@@ -1190,3 +1208,66 @@ if (btnDownloadReport) {
     });
 }
 // Script loaded
+
+/* --- Promo Modal Logic --- */
+document.addEventListener("DOMContentLoaded", () => {
+    // Check if seen in this session
+    const hasSeenPromo = sessionStorage.getItem("9sec_promo_seen");
+    
+    // Don't show if already on the tool page
+    if (window.location.pathname.includes("smtp-check.html")) return;
+
+    if (!hasSeenPromo) {
+        // Short delay to ensure DOM is ready and styling loaded
+        setTimeout(injectPromoModal, 500);
+    }
+});
+
+function injectPromoModal() {
+    const modalHtml = `
+    <div id="promo-modal" class="modal-overlay">
+        <div class="modal-content">
+            <i class="fa-solid fa-envelope-shield modal-icon"></i>
+            <h2 class="modal-title" data-i18n="promo_modal.title">FREE SECURITY ASSESSMENT</h2>
+            <p class="modal-desc" data-i18n="promo_modal.desc">Check your Email Security (SMTP/MX) status for free.</p>
+            <div class="modal-actions">
+                <a href="smtp-check.html" class="btn primary-btn" id="btn-promo-accept">
+                    <i class="fa-solid fa-radar"></i> <span data-i18n="promo_modal.accept">Check Now</span>
+                </a>
+                <button class="modal-close-btn" id="btn-promo-close" data-i18n="promo_modal.close">Continue Browsing</button>
+            </div>
+        </div>
+    </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    const modal = document.getElementById('promo-modal');
+    const closeBtn = document.getElementById('btn-promo-close');
+    const acceptBtn = document.getElementById('btn-promo-accept');
+
+    // Force display flex then add show class for opacity
+    modal.style.display = 'flex';
+    // Trigger reflow
+    void modal.offsetWidth; 
+    modal.classList.add('show');
+
+    // Handlers
+    const closeModal = () => {
+        modal.classList.remove('show');
+        setTimeout(() => {
+            modal.style.display = 'none';
+            modal.remove();
+        }, 300);
+        sessionStorage.setItem("9sec_promo_seen", "true");
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    
+    if (acceptBtn) acceptBtn.addEventListener('click', () => {
+        sessionStorage.setItem("9sec_promo_seen", "true");
+    });
+
+    // Update language for the injected modal
+    const currentLang = localStorage.getItem('9sec_lang') || 'en';
+    updateLanguage(currentLang);
+}
