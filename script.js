@@ -997,7 +997,7 @@ function renderReport(report) {
         const reportContent = document.getElementById('report-content');
         const btnDownload = document.getElementById('btn-download-report');
 
-        if (reportDomain) reportDomain.textContent = report.domain || 'Unknown Domain';
+        if (reportDomain) reportDomain.textContent = report.domain || "Unknown Domain";
 
         const dns = report.dns_posture || {};
         const tls = report.smtp_tls || {};
@@ -1012,7 +1012,7 @@ function renderReport(report) {
             <div class="risk-container">
                 ${riskBreakdown.map(r => `
                     <div class="risk-item" style="border-left-color: ${riskItemBorder(r)};">
-                        <span>${r.item}</span>
+                        <span>${escapeHtml(String(r.item != null ? r.item : ''))}</span>
                         <span class="value pass">+${r.score}</span>
                     </div>
                 `).join('')}
@@ -1020,8 +1020,8 @@ function renderReport(report) {
 
             <div class="section-title">> Authentication Infrastructure</div>
             <div class="grid">
-                <div class="card"><div class="label">Origin MTA Node</div><div class="value">${report.sender_ip || 'Generic Postfix/Exim'}</div></div>
-                <div class="card"><div class="label">Network Latency</div><div class="value ${parseFloat(report.transport_time) > 5 ? 'warn' : 'pass'}">${report.transport_time || 'N/A'}</div></div>
+                <div class="card"><div class="label">Origin MTA Node</div><div class="value">${escapeHtml(String(report.sender_ip || 'Generic Postfix/Exim'))}</div></div>
+                <div class="card"><div class="label">Network Latency</div><div class="value ${parseFloat(report.transport_time) > 5 ? 'warn' : 'pass'}">${escapeHtml(String(report.transport_time || 'N/A'))}</div></div>
                 <div class="card">
                     <div class="label">SPF Governance</div>
                     <div class="value ${getStatusClass(dns.spf)}">${(dns.spf || 'MISSING').toUpperCase()}</div>
@@ -1045,7 +1045,7 @@ function renderReport(report) {
                 </div>
                 <div class="card"><div class="label">TLS Reporting (RPT)</div><div class="value ${getStatusClass(dns.tls_rpt)}">${(dns.tls_rpt || 'MISSING').toUpperCase()}</div></div>
                 <div class="card"><div class="label">BIMI Brand Indicator</div><div class="value ${getStatusClass(dns.bimi)}">${(dns.bimi || 'MISSING').toUpperCase()}</div></div>
-                <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${tls.version || 'TLS 1.3 (Verified)'}</div></div>
+                <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${escapeHtml(String(tls.version || 'TLS 1.3 (Verified)'))}</div></div>
             </div>
 
             <div class="cta-box">
@@ -1069,7 +1069,7 @@ function renderReport(report) {
     } catch (e) {
         console.error("Rendering failed:", e);
         const reportContent = document.getElementById('report-content');
-        if (reportContent) reportContent.innerHTML = `<div class="error">Report rendering error: ${e.message}</div>`;
+        if (reportContent) reportContent.innerHTML = `<div class="error">Report rendering error: ${escapeHtml(String(e && e.message || "Unknown error"))}</div>`;
     }
 }
 // --- Report Action Handlers ---
