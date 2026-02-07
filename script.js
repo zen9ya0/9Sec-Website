@@ -126,48 +126,63 @@ function validateEmail(value) {
 const ARTICLES_INITIAL = 6;
 const articlesSection = document.querySelector("#security-news");
 const articlesContainer = document.querySelector("#security-news .list-layout");
+
+let globalNewsList = [];
+let newsShowingCount = ARTICLES_INITIAL;
+
+function renderNews(list, count) {
+    if (!articlesContainer) return;
+    newsShowingCount = count;
+    const countToShow = Math.min(count, list.length);
+    const slice = list.slice(0, countToShow);
+
+    articlesContainer.innerHTML = slice.map((a) => {
+        const lang = localStorage.getItem("9sec_lang") || "en";
+        const content = (lang === "tw") ? (a.tw || a) : (lang === "jp" ? (a.jp || a) : (a.en || a));
+        const aiBadge = a.is_ai ? `<span class="ai-badge">AI Summary</span>` : "";
+
+        return `
+        <article class="list-item">
+            <div class="date">${escapeHtml(a.date || "")} ${aiBadge}</div>
+            <div class="content">
+                <h3>${escapeHtml(content.title || "")}</h3>
+                <p>${escapeHtml(content.excerpt || "")}</p>
+            </div>
+            <div class="action">
+                <a href="${escapeHtml(a.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">READ</a>
+            </div>
+        </article>
+        `;
+    }).join("");
+
+    let btnWrap = articlesSection.querySelector(".articles-more-wrap");
+    if (list.length > ARTICLES_INITIAL) {
+        if (!btnWrap) {
+            btnWrap = document.createElement("div");
+            btnWrap.className = "articles-more-wrap";
+            articlesSection.querySelector(".container").appendChild(btnWrap);
+        }
+        const isAll = countToShow >= list.length;
+        const remaining = list.length - countToShow;
+        const btnText = getArticlesButtonLabel(isAll, remaining);
+        btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(btnText)}</button>`;
+        btnWrap.querySelector("button").onclick = () => {
+            renderNews(list, isAll ? ARTICLES_INITIAL : list.length);
+        };
+    } else if (btnWrap) btnWrap.remove();
+}
+
 if (articlesContainer && articlesSection) {
     fetch(`${API_BASE}/api/articles`)
         .then((r) => r.ok ? r.json() : [])
         .then((list) => {
             if (!Array.isArray(list) || list.length === 0) return;
-            let showing = ARTICLES_INITIAL;
-            const render = (count) => {
-                showing = count;
-                const countToShow = Math.min(count, list.length);
-                const slice = list.slice(0, countToShow);
-                articlesContainer.innerHTML = slice.map((a) => `
-                    <article class="list-item">
-                        <div class="date">${escapeHtml(a.date || "")}</div>
-                        <div class="content">
-                            <h3>${escapeHtml(a.title || "")}</h3>
-                            <p>${escapeHtml(a.excerpt || "")}</p>
-                        </div>
-                        <div class="action">
-                            <a href="${escapeHtml(a.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">READ</a>
-                        </div>
-                    </article>
-                `).join("");
-                let btnWrap = articlesSection.querySelector(".articles-more-wrap");
-                if (list.length > ARTICLES_INITIAL) {
-                    if (!btnWrap) {
-                        btnWrap = document.createElement("div");
-                        btnWrap.className = "articles-more-wrap";
-                        articlesSection.querySelector(".container").appendChild(btnWrap);
-                    }
-                    const isAll = countToShow >= list.length;
-                    const remaining = list.length - countToShow;
-                    const btnText = getArticlesButtonLabel(isAll, remaining);
-                    btnWrap.innerHTML = `<button type="button" class="articles-more-btn" data-expanded="${isAll}" data-remaining="${remaining}">${escapeHtml(btnText)}</button>`;
-                    btnWrap.querySelector("button").onclick = () => {
-                        render(isAll ? ARTICLES_INITIAL : list.length);
-                    };
-                } else if (btnWrap) btnWrap.remove();
-            };
-            render(showing);
+            globalNewsList = list;
+            renderNews(list, ARTICLES_INITIAL);
         })
         .catch(() => { /* 失敗時保留靜態文章 */ });
 }
+
 
 // --- 威脅情資: 從後端 API 載入，CISA / OTX 分開顯示（各預設 8 / 5 筆，其餘「顯示更多」）---
 const THREAT_INTEL_CISA_INITIAL = 8;
@@ -190,6 +205,10 @@ if (threatIntelContent && threatIntelSection) {
             const headingOtx = getThreatIntelHeadingOtx();
 
             const renderOneItem = (t, showSourceBadge) => {
+                const lang = localStorage.getItem("9sec_lang") || "en";
+                const content = (lang === "tw") ? (t.tw || t) : (lang === "jp" ? (t.jp || t) : (t.en || t));
+                const aiBadge = t.is_ai ? `<span class="ai-badge ai-badge-small">AI</span>` : "";
+
                 const severityBadge = (t.severity === "high")
                     ? `<span class="severity-badge severity-high" data-i18n="threat_intel.ransomware">Ransomware</span>`
                     : "";
@@ -199,10 +218,10 @@ if (threatIntelContent && threatIntelSection) {
                 const detailLabel = getThreatIntelDetailLabel();
                 return `
                     <article class="list-item threat-intel-item">
-                        <div class="date">${sourceBadge}${escapeHtml(t.date || "")}</div>
+                        <div class="date">${sourceBadge}${escapeHtml(t.date || "")} ${aiBadge}</div>
                         <div class="content">
-                            <h3>${severityBadge}${escapeHtml(t.title || "")}</h3>
-                            <p>${escapeHtml(t.excerpt || "")}</p>
+                            <h3>${severityBadge}${escapeHtml(content.title || "")}</h3>
+                            <p>${escapeHtml(content.excerpt || "")}</p>
                         </div>
                         <div class="action">
                             <a href="${escapeHtml(t.url || "#")}" class="read-btn" target="_blank" rel="noopener noreferrer">${escapeHtml(detailLabel)}</a>
@@ -367,6 +386,14 @@ const translations = {
             show_more: "Show more ({n})",
             collapse: "Collapse"
         },
+        news: {
+            item1_title: "China-Linked DKnife AitM Framework Targets Routers",
+            item1_desc: "Researchers uncover DKnife, a long-active AitM toolkit used by China-nexus actors to hijack edge device traffic.",
+            item2_title: "CISA Orders Removal of Unsupported Edge Devices",
+            item2_desc: "CISA directs federal agencies to replace end-of-life edge network devices to mitigate critical infrastructure risks.",
+            item3_title: "Claude Opus 4.6 Finds 500+ High-Severity Flaws",
+            item3_desc: "Anthropic reports Claude Opus 4.6 discovered over 500 unknown high-severity flaws in major open-source libraries."
+        },
         threat_intel: {
             detail: "CVE",
             empty: "No threat intel entries yet.",
@@ -468,6 +495,14 @@ const translations = {
             show_more: "顯示更多 ({n} 篇)",
             collapse: "收起"
         },
+        news: {
+            item1_title: "中國駭客開發 DKnife 工具組，針對路由器進行流量劫持與監控",
+            item1_desc: "研究人員揭露活躍多年的 DKnife 框架，中國駭客利用其攻擊邊緣設備並實施中間人攻擊。",
+            item2_title: "CISA 要求聯邦機構撤換淘汰中的邊緣設備以降低網路風險",
+            item2_desc: "美 CISA 發布指令，要求各機構加強設備生命週期管理，移除不再受支援的新網路設備。",
+            item3_title: "Anthropic 揭露 Claude Opus 4.6 在主流開源庫中發現逾 500 個高風險漏洞",
+            item3_desc: "AI 模型 Claude Opus 4.6 展現強大程式碼審計能力，成功識別出數百個先前未知的安全缺陷。"
+        },
         threat_intel: {
             detail: "CVE",
             empty: "暫無威脅情資。",
@@ -568,6 +603,14 @@ const translations = {
         articles: {
             show_more: "もっと見る ({n} 件)",
             collapse: "閉じる"
+        },
+        news: {
+            item1_title: "中国系ハッカーがDKnifeツールキットを開発、ルーターを標的に通信を傍受",
+            item1_desc: "長年活動しているDKnifeフレームワークが公開。エッジデバイスを攻撃し、中間者攻撃を実行します。",
+            item2_title: "CISA、連邦機関にサポート終了のエッジデバイスの撤去を命令",
+            item2_desc: "米CISA、ネットワークエッジデバイスのライフサイクル管理を強化し、リスクを低減するよう指示。",
+            item3_title: "Claude Opus 4.6、主要なオープンソースライブラリで500以上の高深刻度脆弱性を発見",
+            item3_desc: "Anthropicの最新AIモデル、コード監査能力を発揮し、多数の未知の脆弱性を特定。"
         },
         threat_intel: {
             detail: "CVE",
@@ -703,6 +746,11 @@ function updateLanguage(lang) {
         const remaining = parseInt(btn.dataset.remaining, 10) || 0;
         btn.textContent = getThreatIntelButtonLabel(isAll, remaining);
     });
+
+    // Re-render News with new language if data exists
+    if (globalNewsList && globalNewsList.length > 0) {
+        renderNews(globalNewsList, newsShowingCount);
+    }
 }
 
 // --- SMTP Check Logic ---

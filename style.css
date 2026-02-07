@@ -1534,11 +1534,13 @@ footer {
 [data-theme="light"] .back-to-top:hover {
     box-shadow: 0 0 30px rgba(0, 86, 179, 0.6);
 }
+
 /* Force update copy-box for Light Mode */
 [data-theme="light"] .copy-box {
     background: rgba(255, 255, 255, 0.5);
     border-color: var(--accent-secondary);
 }
+
 [data-theme="light"] .form-group input {
     background: rgba(255, 255, 255, 0.8);
     color: #000;
@@ -1548,6 +1550,7 @@ footer {
 .lang-menu {
     background: var(--bg-color) !important;
 }
+
 .lang-menu li:hover {
     background: var(--card-hover-bg) !important;
     color: var(--text-primary) !important;
@@ -1682,4 +1685,25 @@ footer {
     background: var(--accent-secondary);
     color: #fff;
     box-shadow: 0 0 15px var(--accent-secondary);
+}
+
+/* --- AI Badges --- */
+.ai-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(0, 255, 65, 0.1);
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    font-size: 0.65rem;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ai-badge-small {
+    padding: 1px 4px;
+    font-size: 0.55rem;
 }
