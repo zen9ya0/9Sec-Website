@@ -345,7 +345,7 @@ const translations = {
         services: {
             subtitle: "Specialized Security Inspection & Forensic Probes",
             smtp_title: "SMTP Security Check",
-            smtp_desc: "Verify your email infrastructure health. Checks SPF, DMARC, MTA-STS, and transport encryption with deep forensic logs.",
+            smtp_desc: "Verify your email infrastructure health. Checks SPF, DMARC, MTA-STS, and transport encryption. Now includes real-time brand impersonation and lookalike domain monitoring.",
             ad_title: "AD / Azure Identity Audit",
             ad_desc: "Scan for over-privileged accounts, shadow admins, and insecure authentication paths in your directory services.",
             edr_title: "Endpoint EDR Hygiene",
@@ -374,7 +374,7 @@ const translations = {
         },
         smtp: {
             title: "Free Inbound Mail Security Assessment",
-            desc: "Non-intrusive. Evidence-based. Verifies your domain control and checks MX health.",
+            desc: "Non-intrusive. Evidence-based. Checks MX health, encryption, and performs deep scans for lookalike domains used in phishing.",
             email_label: "Enter Work Email:",
             consent: "I authorize scanning of this domain's inbound MX.",
             btn_start: "Start Assessment",
@@ -454,7 +454,7 @@ const translations = {
         services: {
             subtitle: "專業安全檢測與鑑識探針",
             smtp_title: "SMTP 郵件安全檢測",
-            smtp_desc: "驗證您的郵件基礎設施健康狀況。檢查 SPF、DMARC、MTA-STS 以及包含深度鑑識日誌的傳輸加密。",
+            smtp_desc: "驗證您的郵件基礎設施健康狀況。檢查 SPF、DMARC、MTA-STS 以及傳輸加密，現已整合即時品牌偽冒網域監控與情資分析。",
             ad_title: "AD / Azure 身分稽核",
             ad_desc: "掃描目錄服務中的過度權限帳戶、影子管理員以及不安全的驗證路徑。",
             edr_title: "端點 EDR 健康檢查",
@@ -483,7 +483,7 @@ const translations = {
         },
         smtp: {
             title: "免費 Inbound 郵件安全健診",
-            desc: "低侵入、證據導向。驗證網域控制權並檢查 MX 健康狀況。",
+            desc: "低侵入、證據導向。驗證 MX 健康狀況與加密層級，並針對釣魚攻擊常用的偽冒網域進行深度情資對比。",
             email_label: "輸入公司信箱：",
             consent: "我授權對此網域的 Inbound MX 進行掃描。",
             btn_start: "開始健診",
@@ -563,7 +563,7 @@ const translations = {
         services: {
             subtitle: "専門的なセキュリティ検査とフォレンジックプロ法ブ",
             smtp_title: "SMTP メールセキュリティ診断",
-            smtp_desc: "メールインフラの健全性を検証します。SPF、DMARC、MTA-STS、および詳細なフォレンジックログを含むトランスポート暗号化をチェックします。",
+            smtp_desc: "メールインフラの健全性を検証。SPF、DMARC、MTA-STS、暗号化を検査し、リアルタイムのブランドなりすまし・類似ドメイン監視機能を搭載しました。",
             ad_title: "AD / Azure アイデンティティ監査",
             ad_desc: "ディレクトリサービス内の過剰な権限アカウント、シャドウ管理者、および安全でない認証パスをスキャンします。",
             edr_title: "エンドポイント EDR ハイジーン",
@@ -592,7 +592,7 @@ const translations = {
         },
         smtp: {
             title: "無料 Inbound メールセキュリティ診断",
-            desc: "低侵襲。証拠ベース。ドメイン管理権を確認し、MXの健全性をチェックします。",
+            desc: "低侵襲。証拠ベース。MXの健全性と暗号化を確認し、フィッシングに使用される類似ドメインのディープスキャンを実行します。",
             email_label: "会社のメールアドレス：",
             consent: "このドメインの Inbound MX スキャンを許可します。",
             btn_start: "診断を開始",
