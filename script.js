@@ -358,8 +358,8 @@ const translations = {
             custom_probe: "Custom_Forensic_Probes",
             custom_desc: "Need a specialized inspection for a proprietary protocol or high-value asset? Our team builds custom forensic probes tailored to your environment.",
             cta_consult: "REQUEST_CUSTOM_AUDIT",
-            dmarc_title: "DMARC Analysis & Monitor",
-            dmarc_desc: "Instant XML report visualization and continuous brand protection monitoring. Identify unauthorized senders and improve your authentication pass rates."
+            dmarc_title: "DMARC Intelligence Monitor",
+            dmarc_desc: "Professional-grade brand protection that goes beyond manual parsing. <ul><li><i class='fa-solid fa-check'></i> <strong>Consolidated Dashboard</strong>: Single portal for all your sending domains.</li><li><i class='fa-solid fa-check'></i> <strong>Continuous Tracking</strong>: 24/7 automated report collection via RUA.</li><li><i class='fa-solid fa-check'></i> <strong>Forensic Insights</strong>: Identify unauthorized spoofing attempts in real-time.</li></ul>"
         },
         model: {
             intro1: "> OSI is for Communication. 9SEC is for Operations.",
@@ -471,8 +471,8 @@ const translations = {
             custom_probe: "客製化鑑識探針",
             custom_desc: "需要針對專有協定或高價值資產進行專門檢查嗎？我們的團隊可為您的環境量身打造客製化鑑識探針。",
             cta_consult: "申請客製化稽核",
-            dmarc_title: "DMARC 分析與監控",
-            dmarc_desc: "即時 XML 報告視覺化與持續性品牌保護監控。識別未授權的寄件者並提升您的驗證通過率。"
+            dmarc_title: "DMARC 智慧監控系統",
+            dmarc_desc: "超越手動分析的專業級品牌保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>單一整合儀表板</strong>：全域網域發信狀況一目瞭然。</li><li><i class='fa-solid fa-check'></i> <strong>持續性自動追蹤</strong>：透過 RUA 進行每週 7x24 自動化報告採集。</li><li><i class='fa-solid fa-check'></i> <strong>鑑識級深度洞察</strong>：即時識別非法冒名發信來源與地理分佈。</li></ul>"
         },
         model: {
             intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
@@ -584,8 +584,8 @@ const translations = {
             custom_probe: "カスタム・フォレンジック・プロ法ブ",
             custom_desc: "独自のプロトコルや高価値資産に対する専門的な検査が必要ですか？私たちのチームは、お客様の環境に合わせたカスタムフォレンジックプロ法ブを構築します。",
             cta_consult: "カスタム監査を依頼",
-            dmarc_title: "DMARC 分析と監視",
-            dmarc_desc: "即時のXMLレポート可視化と持続的なブランド保護監視。未承認の送信者を特定し、認証通過率を向上させます。"
+            dmarc_title: "DMARC インテリジェンス・モニタ",
+            dmarc_desc: "手動解析を超えたプロフェッショナルなブランド保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>統合ダッシュボード</strong>：全ドメインの送信状態を一元管理。</li><li><i class='fa-solid fa-check'></i> <strong>継続的自動追跡</strong>：RUA経由の24時間365日自動レポート収集。</li><li><i class='fa-solid fa-check'></i> <strong>フォレンジック分析</strong>：不正ななりすまし送信をリアルタイムで特定。</li></ul>"
         },
         model: {
             intro1: "> OSIは通信のため、9SECは運用のために。",

@@ -1707,3 +1707,32 @@ footer {
     padding: 1px 4px;
     font-size: 0.55rem;
 }
+
+/* Service Card Feature Lists */
+.service-card p ul {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.service-card p ul li {
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    line-height: 1.4;
+}
+
+.service-card p ul li i {
+    color: var(--accent-color);
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+}
+
+.service-card p ul li strong {
+    color: var(--text-color);
+    display: block;
+}
