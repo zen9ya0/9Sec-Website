@@ -359,7 +359,14 @@ const translations = {
             custom_desc: "Need a specialized inspection for a proprietary protocol or high-value asset? Our team builds custom forensic probes tailored to your environment.",
             cta_consult: "REQUEST_CUSTOM_AUDIT",
             dmarc_title: "DMARC Intelligence Monitor",
-            dmarc_desc: "Professional-grade brand protection that goes beyond manual parsing. <ul><li><i class='fa-solid fa-check'></i> <strong>Consolidated Dashboard</strong>: Single portal for all your sending domains.</li><li><i class='fa-solid fa-check'></i> <strong>Continuous Tracking</strong>: 24/7 automated report collection via RUA.</li><li><i class='fa-solid fa-check'></i> <strong>Forensic Insights</strong>: Identify unauthorized spoofing attempts in real-time.</li></ul>"
+            dmarc_desc: "Professional-grade brand protection that goes beyond manual parsing. <ul><li><i class='fa-solid fa-check'></i> <strong>Consolidated Dashboard</strong>: Single portal for all your sending domains.</li><li><i class='fa-solid fa-check'></i> <strong>Continuous Tracking</strong>: 24/7 automated report collection via RUA.</li><li><i class='fa-solid fa-check'></i> <strong>Forensic Insights</strong>: Identify unauthorized spoofing attempts in real-time.</li></ul>",
+            dmarc_trial_tag: "Free Manual Tool",
+            dmarc_pro_title: "Switch to Automated Monitoring",
+            dmarc_pro_desc: "Don't waste time on manual uploads. Our subscription tier offers hands-off automation and professional expert interpretation.",
+            dmarc_benefit_automated: "<strong>Automated Pipeline</strong>: No manual file uploading needed.",
+            dmarc_benefit_continuous: "<strong>24/7 Monitoring</strong>: We track your domain reputation around the clock.",
+            dmarc_benefit_expert: "<strong>Expert Interpretation</strong>: We don't just show charts; we help you decode the forensic data.",
+            dmarc_benefit_consolidated: "<strong>Unified Portal</strong>: Manage all domains in one dashboard."
         },
         model: {
             intro1: "> OSI is for Communication. 9SEC is for Operations.",
@@ -472,7 +479,14 @@ const translations = {
             custom_desc: "需要針對專有協定或高價值資產進行專門檢查嗎？我們的團隊可為您的環境量身打造客製化鑑識探針。",
             cta_consult: "申請客製化稽核",
             dmarc_title: "DMARC 智慧監控系統",
-            dmarc_desc: "超越手動分析的專業級品牌保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>單一整合儀表板</strong>：全域網域發信狀況一目瞭然。</li><li><i class='fa-solid fa-check'></i> <strong>持續性自動追蹤</strong>：透過 RUA 進行每週 7x24 自動化報告採集。</li><li><i class='fa-solid fa-check'></i> <strong>鑑識級深度洞察</strong>：即時識別非法冒名發信來源與地理分佈。</li></ul>"
+            dmarc_desc: "超越手動分析的專業級品牌保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>單一整合儀表板</strong>：全域網域發信狀況一目瞭裝。</li><li><i class='fa-solid fa-check'></i> <strong>持續性自動追蹤</strong>：透過 RUA 進行每週 7x24 自動化報告採集。</li><li><i class='fa-solid fa-check'></i> <strong>鑑識級深度洞察</strong>：即時識別非法冒名發信來源與地理分佈。</li></ul>",
+            dmarc_trial_tag: "免費試用工具",
+            dmarc_pro_title: "升級至自動化全時監控",
+            dmarc_pro_desc: "不再浪費時間手動上傳。訂閱方案提供全自動採集與專業資安專家解讀服務。",
+            dmarc_benefit_automated: "<strong>全自動化管道</strong>：無需再手動處理 XML 檔案。",
+            dmarc_benefit_continuous: "<strong>7x24 全時監測</strong>：我們晝夜不停地追蹤您的網域信譽。",
+            dmarc_benefit_expert: "<strong>專家深度解讀</strong>：我們不只給您圖表，更幫您解讀鑑識數據背後的風險。",
+            dmarc_benefit_consolidated: "<strong>統合管理中心</strong>：在單一入口管理所有發信網域。"
         },
         model: {
             intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
@@ -585,7 +599,14 @@ const translations = {
             custom_desc: "独自のプロトコルや高価値資産に対する専門的な検査が必要ですか？私たちのチームは、お客様の環境に合わせたカスタムフォレンジックプロ法ブを構築します。",
             cta_consult: "カスタム監査を依頼",
             dmarc_title: "DMARC インテリジェンス・モニタ",
-            dmarc_desc: "手動解析を超えたプロフェッショナルなブランド保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>統合ダッシュボード</strong>：全ドメインの送信状態を一元管理。</li><li><i class='fa-solid fa-check'></i> <strong>継続的自動追跡</strong>：RUA経由の24時間365日自動レポート収集。</li><li><i class='fa-solid fa-check'></i> <strong>フォレンジック分析</strong>：不正ななりすまし送信をリアルタイムで特定。</li></ul>"
+            dmarc_desc: "手動解析を超えたプロフェッショナルなブランド保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>統合ダッシュボード</strong>：全ドメインの送信状態を一元管理。</li><li><i class='fa-solid fa-check'></i> <strong>継続的自動追跡</strong>：RUA経由の24時間365日自動レポート収集。</li><li><i class='fa-solid fa-check'></i> <strong>フォレンジック分析</strong>：不正ななりすまし送信をリアルタイムで特定。</li></ul>",
+            dmarc_trial_tag: "無料試用ツール",
+            dmarc_pro_title: "自動監視プランへの移行",
+            dmarc_pro_desc: "手動アップロードに時間を費やす必要はありません。自動収集と専門家による解析レポートを提供します。",
+            dmarc_benefit_automated: "<strong>自動パイプライン</strong>：XMLファイルの手動処理は不要です。",
+            dmarc_benefit_continuous: "<strong>24時間全時監視</strong>：お客様のドメインの評判を常時追跡します。",
+            dmarc_benefit_expert: "<strong>専門家による解読</strong>：単なるグラフではなく、フォレンジックデータの真意を解説します。",
+            dmarc_benefit_consolidated: "<strong>統合ポータル</strong>：すべてのドメインを一箇所で管理します。"
         },
         model: {
             intro1: "> OSIは通信のため、9SECは運用のために。",
