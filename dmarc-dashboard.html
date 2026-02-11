@@ -321,11 +321,11 @@
                 const json = await res.json();
                 if (!json.ok) throw new Error(json.error || "Failed to fetch data");
 
-                rts = json.data;
+                const reports = json.data;
                 renderStats(reports);
                 renderTable(reports);
                 // Charts depend on detail view or aggregate logic
-                renderCharts(reports); // Placeholder
+                if (reports.length > 0) renderCharts(reports);
 
             } catch (e) {
                 console.error(e);
@@ -443,6 +443,10 @@
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { grid: { display: false } }, y: { grid: { color: '#333' } } } }
             });
+        }
+        function renderCharts(reports) {
+            console.log("Aggregate charts placeholder for", reports.length, "reports");
+            // Placeholder for top-level stats charts if needed
         }
 
 
