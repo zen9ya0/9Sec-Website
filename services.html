@@ -12,7 +12,8 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211-1">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211-1">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css?v=20260211-1">
     <style>
@@ -140,32 +141,16 @@
                 </div>
             </div>
 
-            <!-- DMARC Analyzer (Utility) -->
+            <!-- DMARC Service (Analyzer + Monitor) -->
             <div class="card service-card">
                 <div class="service-status status-active">MOD_ACTIVE</div>
                 <i class="fa-solid fa-file-code service-icon"></i>
-                <h3 data-i18n="services.dmarc_util_title">DMARC XML Analyzer</h3>
-                <p data-i18n="services.dmarc_util_desc">Instant, one-off visualization for DMARC aggregate reports.
-                    Drag-and-drop your XML files to identify unauthorized senders.</p>
+                <h3 data-i18n="services.dmarc_title">DMARC Analysis & Monitor</h3>
+                <p data-i18n="services.dmarc_desc">Instant XML report visualization and continuous brand protection
+                    monitoring.</p>
                 <div class="service-cta">
                     <a href="dmarc-analyzer.html" class="link-btn">ANALYZE_LOGS <i
                             class="fa-solid fa-arrow-right"></i></a>
-                </div>
-            </div>
-
-            <!-- DMARC Intelligence (SaaS) -->
-            <div class="card service-card" style="border-top-color: var(--accent-secondary);">
-                <div class="service-status status-new"
-                    style="background: rgba(112, 0, 255, 0.1); color: var(--accent-secondary); border-color: var(--accent-secondary);">
-                    MOD_NEW_SAAS</div>
-                <i class="fa-solid fa-satellite-dish service-icon" style="color: var(--accent-secondary);"></i>
-                <h3 data-i18n="services.dmarc_saas_title">DMARC Intelligence Monitor</h3>
-                <p data-i18n="services.dmarc_saas_desc">Continuous brand protection. Automated report collection via
-                    dedicated email routing, historical dashboards, and threat alerts.</p>
-                <div class="service-cta">
-                    <a href="dmarc-dashboard.html" class="link-btn"
-                        style="color: var(--accent-secondary);">ACCESS_DASHBOARD <i
-                            class="fa-solid fa-chart-line"></i></a>
                 </div>
             </div>
 

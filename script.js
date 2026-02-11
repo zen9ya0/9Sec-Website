@@ -355,7 +355,9 @@ const translations = {
             coming_soon: "COMING_SOON",
             custom_probe: "Custom_Forensic_Probes",
             custom_desc: "Need a specialized inspection for a proprietary protocol or high-value asset? Our team builds custom forensic probes tailored to your environment.",
-            cta_consult: "REQUEST_CUSTOM_AUDIT"
+            cta_consult: "REQUEST_CUSTOM_AUDIT",
+            dmarc_title: "DMARC Analysis & Monitor",
+            dmarc_desc: "Instant XML report visualization and continuous brand protection monitoring. Identify unauthorized senders and improve your authentication pass rates."
         },
         model: {
             intro1: "> OSI is for Communication. 9SEC is for Operations.",
@@ -464,7 +466,9 @@ const translations = {
             coming_soon: "即將推出",
             custom_probe: "客製化鑑識探針",
             custom_desc: "需要針對專有協定或高價值資產進行專門檢查嗎？我們的團隊可為您的環境量身打造客製化鑑識探針。",
-            cta_consult: "申請客製化稽核"
+            cta_consult: "申請客製化稽核",
+            dmarc_title: "DMARC 分析與監控",
+            dmarc_desc: "即時 XML 報告視覺化與持續性品牌保護監控。識別未授權的寄件者並提升您的驗證通過率。"
         },
         model: {
             intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
@@ -573,7 +577,9 @@ const translations = {
             coming_soon: "近日公開",
             custom_probe: "カスタム・フォレンジック・プロ法ブ",
             custom_desc: "独自のプロトコルや高価値資産に対する専門的な検査が必要ですか？私たちのチームは、お客様の環境に合わせたカスタムフォレンジックプロ法ブを構築します。",
-            cta_consult: "カスタム監査を依頼"
+            cta_consult: "カスタム監査を依頼",
+            dmarc_title: "DMARC 分析と監視",
+            dmarc_desc: "即時のXMLレポート可視化と持続的なブランド保護監視。未承認の送信者を特定し、認証通過率を向上させます。"
         },
         model: {
             intro1: "> OSIは通信のため、9SECは運用のために。",
