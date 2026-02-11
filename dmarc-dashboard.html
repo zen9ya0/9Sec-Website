@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nine-Security | DMARC Intelligence Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211-1">
-    <script src="https://cdn.js?v=20260211-1"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211-1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-dark: #0f1115;
@@ -287,9 +288,7 @@
             // For SaaS UX, we just proceed and let the dashboard fail if invalid.
             localStorage.setItem("dmarc_token", token);
             document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("userBadge").innerText = "Authorized User";
-
-            loadDashboard(token);
+            document.getElementById("userBadge").innerText = "Authorized User"; loadDashboard(token);
         }
 
         // Auto-login check
@@ -319,10 +318,10 @@
                     return;
                 }
 
-                const json = await res.js?v=20260211-1on();
+                const json = await res.json();
                 if (!json.ok) throw new Error(json.error || "Failed to fetch data");
 
-                const reports = json.data;
+                rts = json.data;
                 renderStats(reports);
                 renderTable(reports);
                 // Charts depend on detail view or aggregate logic
@@ -381,7 +380,7 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) throw new Error("Failed to load report");
-                const json = await res.js?v=20260211-1on();
+                const json = await res.json();
                 const data = json.data; // { meta, stats, sources } from analyzeDmarcReport helper
 
                 // Update Stats Cards
