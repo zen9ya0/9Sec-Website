@@ -1732,7 +1732,22 @@ footer {
     font-size: 0.8rem;
 }
 
-.service-card p ul li strong {
-    color: var(--text-color);
-    display: block;
+@keyframes flowLight {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.flow-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-secondary), transparent);
+    animation: flowLight 3s linear infinite;
 }
