@@ -369,7 +369,7 @@ const translations = {
             dmarc_benefit_consolidated: "<strong>Unified Portal</strong>: Manage all domains in one dashboard."
         },
         model: {
-            intro1: "> OSI is for Communication. 9SEC is for Operations.",
+            intro1: "> Beyond Protection. 9 Dimensions of Verifiable Truth.",
             intro2: "A practical framework covering Governance, Protection, Detection, Response, and Evolution.",
             l1_title: "Governance & Risk",
             l1_desc: "Building the correct security foundation from decision-making and risk perspectives.",
@@ -534,7 +534,7 @@ const translations = {
             dmarc_benefit_consolidated: "<strong>統合管理中心</strong>：在單一入口管理所有發信網域。"
         },
         model: {
-            intro1: "> OSI 是為了通訊而生，9SEC 是為了作戰而生。",
+            intro1: "> 超越防護：九個維度的資安可驗證真相。",
             intro2: "一個涵蓋治理、防護、偵測、應變與演進的實戰框架。",
             l1_title: "治理與風險",
             l1_desc: "從決策與風險角度建立正確的資安基礎。",
@@ -699,7 +699,7 @@ const translations = {
             dmarc_benefit_consolidated: "<strong>統合ポータル</strong>：すべてのドメインを一箇所で管理します。"
         },
         model: {
-            intro1: "> OSIは通信のため、9SECは運用のために。",
+            intro1: "> 単なる防御を超えて：検証可能な真実を追求する9つの次元。",
             intro2: "ガバナンス、保護、検知、対応、そして進化をカバーする実践的なフレームワーク。",
             l1_title: "ガバナンス & リスク",
             l1_desc: "意思決定とリスクの観点から正しいセキュリティ基盤を構築する。",
