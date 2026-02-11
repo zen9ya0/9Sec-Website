@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nine-Security | DMARC Intelligence Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211">
-    <script src="https://cdn.js?v=20260211delivr.net/npm/chart.js?v=20260211"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260211-1">
+    <script src="https://cdn.js?v=20260211-1"></script>
     <style>
         :root {
             --bg-dark: #0f1115;
@@ -197,8 +197,8 @@
     <div class="login-overlay" id="loginScreen">
         <div class="login-card">
             <h2><i class="fa-solid fa-shield-halved"></i> DMARC Intel</h2>
-            <p style="color:#888; font-size:0.9rem;">Sign in with your Organization ID</p>
-            <input type="text" id="accountIdInput" placeholder="Enter Organization ID (e.g. client1)">
+            <p style="color:#888; font-size:0.9rem;">Sign in with your Organization Token</p>
+            <input type="password" id="authTokenInput" placeholder="Enter Secure Access Token">
             <button onclick="login()">Access Dashboard</button>
         </div>
     </div>
@@ -280,34 +280,53 @@
         const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev"; // Replace if needed
 
         async function login() {
-            const accountId = document.getElementById("accountIdInput").value.trim();
-            if (!accountId) return alert("Please enter an ID");
+            const token = document.getElementById("authTokenInput").value.trim();
+            if (!token) return alert("Please enter a token");
 
-            localStorage.setItem("dmarc_account", accountId);
+            // Verify if token is valid via simple API call (or just store and try)
+            // For SaaS UX, we just proceed and let the dashboard fail if invalid.
+            localStorage.setItem("dmarc_token", token);
             document.getElementById("loginScreen").style.display = "none";
-            document.getElementById("userBadge").innerText = accountId;
+            document.getElementById("userBadge").innerText = "Authorized User";
 
-            loadDashboard(accountId);
+            loadDashboard(token);
         }
 
         // Auto-login check
-        const storedAccount = localStorage.getItem("dmarc_account");
-        if (storedAccount) {
-            document.getElementById("accountIdInput").value = storedAccount;
-            // login(); // Auto-login optional
+        const storedToken = localStorage.getItem("dmarc_token");
+        if (storedToken) {
+            document.getElementById("authTokenInput").value = storedToken;
+            // Auto login off by default for security, or keep it.
+            // document.getElementById("loginScreen").style.display = "none";
+            // loadDashboard(storedToken);
         }
 
-        async function loadDashboard(accountId) {
+        async function loadDashboard(token) {
             try {
-                const res = await fetch(`${API_BASE}/api/dmarc/reports?account_id=${accountId}`);
-                const json = await res.js?v=20260211on();
+                // API Call with Bearer Token
+                const res = await fetch(`${API_BASE}/api/dmarc/reports`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
+                // Handle Auth Error
+                if (res.status === 401) {
+                    localStorage.removeItem("dmarc_token");
+                    alert("Unauthorized: Invalid Token");
+                    location.reload();
+                    return;
+                }
+
+                const json = await res.js?v=20260211-1on();
                 if (!json.ok) throw new Error(json.error || "Failed to fetch data");
 
                 const reports = json.data;
                 renderStats(reports);
-                renderCharts(reports);
                 renderTable(reports);
+                // Charts depend on detail view or aggregate logic
+                renderCharts(reports); // Placeholder
 
             } catch (e) {
                 console.error(e);
@@ -357,9 +376,12 @@
                 // Show loading state
                 document.getElementById("volumeChart").parentElement.innerHTML = '<canvas id="volumeChart"></canvas><div style="position:absolute;top:45%;left:45%;color:#888;">Loading...</div>';
 
-                const res = await fetch(`${API_BASE}/api/dmarc/report/${id}`);
+                const token = localStorage.getItem("dmarc_token");
+                const res = await fetch(`${API_BASE}/api/dmarc/report/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (!res.ok) throw new Error("Failed to load report");
-                const json = await res.js?v=20260211on();
+                const json = await res.js?v=20260211-1on();
                 const data = json.data; // { meta, stats, sources } from analyzeDmarcReport helper
 
                 // Update Stats Cards
