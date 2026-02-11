@@ -126,17 +126,38 @@
                 </a>
             </div>
             <ul class="nav-links">
-                <li><a href="index.html">/Home</a></li>
-                <li><a href="services.html">/Services</a></li>
-                <li><a href="arsenal.html">/Arsenal</a></li>
-                <li><a href="#" class="active">/DMARC_Analyzer</a></li>
+                <li><a href="index.html" data-i18n="nav.home">/Home</a></li>
+                <li><a href="services.html" class="active" data-i18n="nav.services">/Services</a></li>
+                <li><a href="arsenal.html" data-i18n="nav.tools">/Arsenal</a></li>
+                <li><a href="index.html#model" data-i18n="nav.model">/9SEC_Model</a></li>
+                <li><a href="index.html#threat-intel" data-i18n="nav.threat_intel">/Threat_Intel</a></li>
+                <li><a href="contact.html" data-i18n="nav.contact">/Contact</a></li>
             </ul>
+            <div class="header-controls">
+                <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+                    DARK
+                </button>
+                <div class="lang-selector">
+                    <button id="current-lang" class="lang-btn">EN</button>
+                    <ul class="lang-menu">
+                        <li data-lang="tw">TW [繁體中文]</li>
+                        <li data-lang="en">EN [English]</li>
+                        <li data-lang="jp">JP [日本語]</li>
+                    </ul>
+                </div>
+            </div>
         </nav>
     </header>
 
     <main class="analyzer-container">
         <section style="text-align: center; margin-bottom: 3rem; margin-top: 4rem;">
-            <h1 class="glitch-title" data-text="DMARC_INTELLIGENCE">DMARC_INTELLIGENCE</h1>
+            <a href="services.html" class="back-link"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent-secondary); text-decoration: none; font-family: var(--font-mono); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-chevron-left"></i> <span
+                    data-i18n="nav.back_to_services">RETURN_TO_SERVICES</span>
+            </a>
+            <h1 class="glitch-title" data-text="DMARC_INTELLIGENCE" data-i18n="section.dmarc_intel">DMARC_INTELLIGENCE
+            </h1>
             <p class="subtitle">Turn raw XML reports into actionable defense insights.</p>
         </section>
 

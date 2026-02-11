@@ -323,7 +323,8 @@ const translations = {
             tools: "/Arsenal",
             news: "/Security_News",
             threat_intel: "/Threat_Intel",
-            contact: "/Contact"
+            contact: "/Contact",
+            back_to_services: "RETURN_TO_SERVICES"
         },
         hero: {
             init: "Initializing 9SEC Defense Protocol... <span class='status-ok'>[ACTIVE]</span>",
@@ -340,6 +341,7 @@ const translations = {
             intelligence: "Threat_Intelligence",
             threat_intel_coming: "Threat intelligence feed will be integrated here.",
             smtp: "SMTP_Security_Check",
+            dmarc_intel: "DMARC_Intelligence",
             services: "9SEC_SERVICES"
         },
         services: {
@@ -434,7 +436,8 @@ const translations = {
             tools: "/軍火庫",
             news: "/資安新聞",
             threat_intel: "/威脅情資",
-            contact: "/聯絡我們"
+            contact: "/聯絡我們",
+            back_to_services: "回到服務項目"
         },
         hero: {
             init: "正在初始化 9SEC 防護協定... <span class='status-ok'>[運作中]</span>",
@@ -451,6 +454,7 @@ const translations = {
             intelligence: "威脅情資",
             threat_intel_coming: "威脅情資來源將整合於此。",
             smtp: "SMTP_安全檢測",
+            dmarc_intel: "DMARC_智能分析",
             services: "9SEC_服務項目"
         },
         services: {
@@ -545,7 +549,8 @@ const translations = {
             tools: "/アーセナル",
             news: "/セキュリティニュース",
             threat_intel: "/脅威インテリジェンス",
-            contact: "/お問い合わせ"
+            contact: "/お問い合わせ",
+            back_to_services: "サービス一覧に戻る"
         },
         hero: {
             init: "9SEC 防御プロトコルを初期化中... <span class='status-ok'>[アクティブ]</span>",
@@ -562,6 +567,7 @@ const translations = {
             intelligence: "脅威インテリジェンス",
             threat_intel_coming: "脅威情資フィードはここに統合予定です。",
             smtp: "SMTP_セキュリティ認斷",
+            dmarc_intel: "DMARC_インテリジェンス",
             services: "9SEC_サービス"
         },
         services: {
