@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine-Security | DMARC XML Analyzer</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .analyzer-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .upload-box {
+            border: 2px dashed var(--accent-color);
+            background: rgba(0, 255, 65, 0.05);
+            padding: 4rem 2rem;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 3rem;
+        }
+
+        .upload-box:hover,
+        .upload-box.dragover {
+            background: rgba(0, 255, 65, 0.1);
+            transform: scale(1.01);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #333;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid #222;
+        }
+
+        .data-table th {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .pass {
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            border: 1px solid #00ff41;
+        }
+
+        .fail {
+            background: rgba(255, 0, 85, 0.1);
+            color: #ff0055;
+            border: 1px solid #ff0055;
+        }
+
+        .loading {
+            display: none;
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="scanlines"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html"
+                    style="text-decoration: none; display: flex; align-items: center; gap: 1rem; color: inherit;">
+                    <img src="assets/logo_v2.png" alt="Nine-Security Logo" class="logo-img">
+                    <span class="logo-text">Nine<span class="accent">Security</span><span class="blink">_</span></span>
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">/Home</a></li>
+                <li><a href="services.html">/Services</a></li>
+                <li><a href="arsenal.html">/Arsenal</a></li>
+                <li><a href="#" class="active">/DMARC_Analyzer</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="analyzer-container">
+        <section style="text-align: center; margin-bottom: 3rem; margin-top: 4rem;">
+            <h1 class="glitch-title" data-text="DMARC_INTELLIGENCE">DMARC_INTELLIGENCE</h1>
+            <p class="subtitle">Turn raw XML reports into actionable defense insights.</p>
+        </section>
+
+        <!-- UDPATE: Added API endpoint to script logic -->
+        <div class="upload-box" id="drop-zone">
+            <i class="fa-solid fa-file-shield upload-icon"></i>
+            <h3>Drag & Drop DMARC Report</h3>
+            <p style="color: #666; margin: 1rem 0;">Supports .xml, .xml.gz, or .zip</p>
+            <input type="file" id="file-input" accept=".xml,.gz,.zip" style="display: none;">
+            <button class="btn primary-btn"
+                onclick="document.getElementById('file-input').click()">BROWSE_FILES</button>
+            <div class="loading" id="loading-indicator">
+                <i class="fa-solid fa-spinner fa-spin"></i> PROCESSING_DATA...
+            </div>
+        </div>
+
+        <div id="results" class="results-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <div>
+                    <h2 class="section-title">> Executive Summary</h2>
+                    <p style="color: #888;" id="report-meta">Org: Google | Date: 2024-02-10</p>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--accent-color);" id="pass-rate">98%
+                    </div>
+                    <div style="font-size: 0.8rem; letter-spacing: 1px;">COMPLIANCE_RATE</div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <h3>> Authentication Breakdown</h3>
+                    <canvas id="authChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>> Top Sending Sources</h3>
+                    <canvas id="sourceChart"></canvas>
+                </div>
+            </div>
+
+            <h2 class="section-title">> Forensic Detail (Top 50 Sources)</h2>
+            <div style="overflow-x: auto;">
+                <table class="data-table" id="data-table">
+                    <thead>
+                        <tr>
+                            <th>SOURCE_IP</th>
+                            <th>VOLUME</th>
+                            <th>DKIM</th>
+                            <th>SPF</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div
+                style="margin-top: 4rem; text-align: center; padding: 3rem; border: 1px solid var(--accent-secondary); background: rgba(0, 229, 255, 0.05);">
+                <i class="fa-solid fa-satellite-dish"
+                    style="font-size: 3rem; color: var(--accent-secondary); margin-bottom: 1rem;"></i>
+                <h3>Need Continuous Monitoring?</h3>
+                <p style="max-width: 600px; margin: 1rem auto; color: #aaa;">
+                    Don't manually upload files every day. Get a dedicated <strong>rua@dmarc.nine-security.com</strong>
+                    address and let our automated infrastructure track your brand reputation 24/7.
+                </p>
+                <a href="contact.html" class="btn secondary-btn">START_SUBSCRIPTION</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Visual Effects -->
+    <script src="script.js"></script>
+
+    <script>
+        // Logic
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const loading = document.getElementById('loading-indicator');
+        const results = document.getElementById('results');
+
+        // Drag & Drop Events
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', handleDrop, false);
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files), false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                uploadFile(files[0]);
+            }
+        }
+
+        async function uploadFile(file) {
+            loading.style.display = 'block';
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Determine API URL (Local vs Prod)
+                // Use relative path if on same domain, or full URL to worker
+                const API_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api/dmarc/analyze";
+
+                const resp = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!resp.ok) throw new Error("Analysis failed");
+
+                const json = await resp.json();
+                renderReport(json.data);
+
+                // Show results
+                loading.style.display = 'none';
+                dropZone.style.display = 'none'; // Hide upload box on success? Or keep at top?
+                results.style.display = 'block';
+
+            } catch (e) {
+                alert("Error processing file: " + e.message);
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderReport(data) {
+            // 1. Meta
+            document.getElementById('report-meta').innerText = `Org: ${data.meta.org} | Messages: ${data.meta.total_messages}`;
+            document.getElementById('pass-rate').innerText = `${data.stats.pass_rate}%`;
+
+            // 2. Charts
+            const ctxAuth = document.getElementById('authChart').getContext('2d');
+            new Chart(ctxAuth, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Fully Aligned', 'Auth Failed', 'Partial'],
+                    datasets: [{
+                        data: [data.stats.fully_aligned, data.stats.auth_failed, data.stats.partially_aligned],
+                        backgroundColor: ['#00ff41', '#ff0055', '#ffaa00'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom', labels: { color: '#ccc' } } } }
+            });
+
+            const ctxSource = document.getElementById('sourceChart').getContext('2d');
+            new Chart(ctxSource, {
+                type: 'bar',
+                data: {
+                    labels: data.sources.slice(0, 5).map(s => s.ip),
+                    datasets: [{
+                        label: 'Volume',
+                        data: data.sources.slice(0, 5).map(s => s.count),
+                        backgroundColor: '#00e5ff'
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { ticks: { color: '#888' } },
+                        y: { ticks: { color: '#888' } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // 3. Table
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = data.sources.map(s => {
+                const status = (s.dkim_fail === 0 && s.spf_fail === 0) ? 'pass' : 'fail';
+                return `
+                    <tr>
+                        <td>${s.ip}</td>
+                        <td>${s.count}</td>
+                        <td><span class="badge ${s.dkim_fail > 0 ? 'fail' : 'pass'}">${s.dkim_fail > 0 ? 'FAIL' : 'PASS'}</span></td>
+                        <td><span class="badge ${s.spf_fail > 0 ? 'fail' : 'pass'}">${s.spf_fail > 0 ? 'FAIL' : 'PASS'}</span></td>
+                        <td><span class="badge ${status}">${status.toUpperCase()}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>
