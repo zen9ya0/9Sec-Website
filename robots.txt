@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /9sec-p6x-portal.html
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /config/
+Disallow: /*.bak$
+Disallow: /*.old$
 
 Sitemap: https://nine-security.com/sitemap.xml

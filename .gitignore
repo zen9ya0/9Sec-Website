@@ -1,0 +1,16 @@
+# Backups
+*.bak
+*.old
+*.tmp
+
+# Dependencies
+node_modules/
+.npm/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Minified artifacts (the deploy script handles these)
+script_min.js
+style_min.css
