@@ -566,12 +566,12 @@
             </div>
             <label class="stat-label">Environment Name</label>
             <input type="text" id="targetEnv" placeholder="e.g. Factory-A_Subnet">
+
+            <button class="btn-primary" id="btnGenerateTask" onclick="createTask()">AUTHORIZE & GENERATE ZIP</button>
+            <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 15px; text-align: center;">
+                Generated ZIP will expire in 12 hours according to protocol.
+            </p>
         </div>
-        <button class="btn-primary" id="btnGenerateTask" onclick="createTask()">AUTHORIZE & GENERATE ZIP</button>
-        <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 15px; text-align: center;">
-            Generated ZIP will expire in 12 hours according to protocol.
-        </p>
-    </div>
     </div>
 
     <script>
