@@ -390,7 +390,7 @@
     <!-- Login Overlay -->
     <div class="login-overlay" id="loginScreen">
         <div class="login-card">
-            <div style="font-size: 3rem, color: var(--primary), margin-bottom: 20px;"><i
+            <div style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"><i
                     class="fa-solid fa-microchip"></i></div>
             <h2>GOVERNANCE PORTAL</h2>
             <p style="color:var(--text-dim); font-size:0.9rem;">Technical Evidence & Compliance Engine</p>
@@ -639,11 +639,16 @@
                 // Add to table (UI only for now)
                 addTableRow(json.data);
 
-                // Start Simulated Download
-                downloadDummyZip(json.data);
+                // Start Backend-Generated ZIP Download
+                const a = document.createElement('a');
+                a.href = json.data.download_url;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
 
                 closeTaskModal();
-                alert("Task Authorized! Downloading Bundle ZIP...");
+                alert("Task Authorized! Downloading Official Bundle ZIP...");
 
             } catch (e) {
                 alert("Error: " + e.message);
