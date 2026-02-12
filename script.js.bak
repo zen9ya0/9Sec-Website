@@ -353,6 +353,10 @@ const translations = {
             edr_title: "Endpoint EDR Hygiene",
             edr_desc: "Identify gaps in EDR coverage and behavioral monitoring across your workstation fleet.",
             cta_launch: "LAUNCH_PROBE",
+            gov_title: "Governance Automation",
+            gov_desc: "Enterprise-grade compliance engine designed for rapid audit readiness. <ul><li><i class='fa-solid fa-check'></i> <strong>Automated Evidence</strong>: One-click local collection & cloud correlation.</li><li><i class='fa-solid fa-check'></i> <strong>Maturity Scoring</strong>: Real-time tracking of ISO27001/NIST compliance gaps.</li><li><i class='fa-solid fa-check'></i> <strong>Audit-Ready Reports</strong>: Instant forensic evidence package generation.</li></ul>",
+            cta_trial: "START_TRIAL",
+            cta_portal: "OPEN_PORTAL",
             limited_access: "LIMITED_ACCESS",
             coming_soon: "COMING_SOON",
             custom_probe: "Custom_Forensic_Probes",
@@ -518,6 +522,10 @@ const translations = {
             edr_title: "端點 EDR 健康檢查",
             edr_desc: "識別端點 EDR 覆蓋範圍與行為監控在您工作站群中的缺口。",
             cta_launch: "啟動探測",
+            gov_title: "合規治理自動化",
+            gov_desc: "專為企業稽核準備設計的自動化合規引擎。 <ul><li><i class='fa-solid fa-check'></i> <strong>自動化證據採集</strong>：一鍵完成本地蒐集與雲端關聯分析。</li><li><i class='fa-solid fa-check'></i> <strong>成熟度實時評分</strong>：即時追蹤 ISO27001/NIST 合規缺口。</li><li><i class='fa-solid fa-check'></i> <strong>稽核專用報告</strong>：瞬間生成完整的鑑識級數位證據包。</li></ul>",
+            cta_trial: "開始試用",
+            cta_portal: "進入控制台",
             limited_access: "權限受限",
             coming_soon: "即將推出",
             custom_probe: "客製化鑑識探針",
@@ -683,6 +691,10 @@ const translations = {
             edr_title: "エンドポイント EDR ハイジーン",
             edr_desc: "ワークステーションフリート全体での EDR カバレッジと動作監視のギャップを特定します。",
             cta_launch: "プロ法ブを起動",
+            gov_title: "ガバナンス自動化",
+            gov_desc: "監査対応を迅速化するために設計されたエンタープライズ級のコンプライアンスエンジン。 <ul><li><i class='fa-solid fa-check'></i> <strong>証拠収集の自動化</strong>：ワンクリックでローカル収集とクラウド相関分析を実行。</li><li><i class='fa-solid fa-check'></i> <strong>成熟度スコアリング</strong>：ISO27001/NISTの遵守状況をリアルタイムで追跡。</li><li><i class='fa-solid fa-check'></i> <strong>監査用レポート</strong>：フォレンジック級の証拠パッケージを即座に生成。</li></ul>",
+            cta_trial: "トライアル開始",
+            cta_portal: "コンソールを開く",
             limited_access: "アクセス制限あり",
             coming_soon: "近日公開",
             custom_probe: "カスタム・フォレンジック・プロ法ブ",
@@ -1579,3 +1591,23 @@ function showNotice(message) {
         if (btn) btn.textContent = translations[currentLang].common?.notice_btn || "[ ACKNOWLEDGE ]";
     }
 }
+
+// --- Global Session Check (for Governance Portal) ---
+async function checkGlobalSession() {
+    try {
+        const res = await fetch(`${API_BASE}/api/governance/me`, { credentials: 'include' });
+        if (res.ok) {
+            const json = await res.json();
+            // If logged in, update any "START_TRIAL" buttons for Governance
+            document.querySelectorAll('[data-i18n="services.cta_trial"]').forEach(el => {
+                el.setAttribute('data-i18n', 'services.cta_portal');
+            });
+            // Trigger language update to apply the new key
+            const currentLang = localStorage.getItem('9sec_lang') || 'en';
+            updateLanguage(currentLang);
+        }
+    } catch (e) {
+        console.error("Global session check failed", e);
+    }
+}
+checkGlobalSession();
