@@ -866,13 +866,28 @@
                     if (task.status === 'completed') statusClass = "status-completed";
                     if (task.status === 'superceded' || task.status === 'expired') statusClass = "status-pending"; // reuse pending style or add new one? Let's use pending but maybe red text? simplified for MVP.
 
+                    let actionHtml = `<button class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" disabled>View Log</button>`;
+
+                    // Allow re-download for Pending (if token exists)
+                    if (task.status === 'pending' && task.token) {
+                        const downloadUrl = `${API_BASE}/api/governance/download/${task.id}?token=${task.token}`;
+                        actionHtml = `
+                            <a href="${downloadUrl}" class="btn-primary" style="padding:4px 8px; font-size:0.7rem; text-decoration:none;">Download ZIP</a>
+                            <button onclick="deleteTask('${task.id}')" style="padding:4px 8px; font-size:0.7rem; background:var(--error); border:none; color:white; border-radius:4px; cursor:pointer; margin-left:5px;">Delete</button>
+                        `;
+                    } else {
+                        // For completed/others, permit delete
+                        actionHtml = `<button style="padding:4px 8px; font-size:0.7rem;" disabled>View Log</button> 
+                                       <button onclick="deleteTask('${task.id}')" style="padding:4px 8px; font-size:0.7rem; background:var(--surface-light); border:none; color:var(--text-dim); border-radius:4px; cursor:pointer; margin-left:5px;">🗑️</button>`;
+                    }
+
                     const row = `
                         <tr>
                             <td>${new Date(task.created_at).toLocaleString()}</td>
                             <td>${task.env_name || task.environment_id}</td>
                             <td style="font-family:monospace; font-size: 0.8rem; color:var(--primary);">${task.id.slice(0, 8)}...</td>
                             <td><span class="status-badge ${statusClass}">${task.status.toUpperCase()}</span></td>
-                            <td><button style="padding:4px 8px; font-size:0.7rem;" disabled>View Log</button></td>
+                            <td>${actionHtml}</td>
                         </tr>
                     `;
                     tbody.innerHTML += row;
@@ -882,13 +897,31 @@
             }
         }
 
+        async function deleteTask(sessionId) {
+            if (!confirm("Are you sure you want to delete this task? The download link will become invalid.")) return;
+            try {
+                const res = await fetch(`${API_BASE} /api/governance / session / ${sessionId} `, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${currentToken} ` }
+                });
+                const json = await res.json();
+                if (json.ok) {
+                    loadTasks(); // Refresh list
+                } else {
+                    alert("Delete failed: " + json.error);
+                }
+            } catch (e) {
+                alert("Network Error");
+            }
+        }
+
         // --- DEPRECATED: Old UI-only addTableRow ---
         // Replacing with real data loader.
         // --- Simulated Task 2.2: Dynamic ZIP Wrapper ---
         function downloadDummyZip(sessionData) {
             // In a real scenario, this would be a BLOB from the server
             // Here we simulate the ZIP content with a text file for POC
-            const readme = `NINE-SECURITY GOVERNANCE COLLECTOR\n================================\nOrg: ${sessionData.organization_id}\nEnv: ${sessionData.environment_id}\n\n1. Extract all files.\n2. Run collector.exe (Simulated)\n3. Result will be uploaded to ${sessionData.ingest_url}`;
+            const readme = `NINE - SECURITY GOVERNANCE COLLECTOR\n ================================\nOrg: ${sessionData.organization_id} \nEnv: ${sessionData.environment_id} \n\n1.Extract all files.\n2.Run collector.exe(Simulated) \n3.Result will be uploaded to ${sessionData.ingest_url} `;
 
             const sessionFile = JSON.stringify({
                 upload_session_id: sessionData.upload_session_id,
