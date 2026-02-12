@@ -388,14 +388,37 @@
 <body>
 
     <!-- Login Overlay -->
+    <!-- Login Overlay -->
     <div class="login-overlay" id="loginScreen">
         <div class="login-card">
             <div style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"><i
                     class="fa-solid fa-microchip"></i></div>
             <h2>GOVERNANCE PORTAL</h2>
             <p style="color:var(--text-dim); font-size:0.9rem;">Technical Evidence & Compliance Engine</p>
-            <input type="password" id="adminKeyInput" placeholder="System Access Key">
-            <button class="btn-primary" onclick="login()">INITIALIZE SESSION</button>
+
+            <div id="authTabs"
+                style="display:flex; justify-content:center; gap:20px; margin-bottom:20px; font-size: 0.9rem;">
+                <span onclick="setAuthMode('login')" id="tabLogin"
+                    style="cursor:pointer; color:var(--primary); font-weight:bold;">LOGIN</span>
+                <span onclick="setAuthMode('signup')" id="tabSignup"
+                    style="cursor:pointer; color:var(--text-dim);">APPLY TRIAL</span>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Email Address">
+                <input type="password" id="loginPwd" placeholder="Password">
+                <button class="btn-primary" onclick="doLogin()">SECURE LOGIN</button>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" style="display:none;">
+                <input type="text" id="signupOrg" placeholder="Organization Name">
+                <input type="email" id="signupEmail" placeholder="Email Address">
+                <input type="password" id="signupPwd" placeholder="Create Password">
+                <button class="btn-primary" onclick="doSignup()">START 7-DAY TRIAL</button>
+            </div>
+
             <p style="font-size: 10px; color: #444; margin-top: 30px;">SECURE ACCESS PROTOCOL 9SEC-V2</p>
         </div>
     </div>
@@ -541,48 +564,110 @@
                 <h2 style="margin:0; color:var(--primary);">New Collection Task</h2>
                 <span class="close-modal" onclick="closeTaskModal()">&times;</span>
             </div>
-            <div style="margin-bottom: 20px;">
-                <label class="stat-label">Organization ID (Target Account)</label>
-                <input type="text" id="targetOrg" placeholder="e.g. Org-101">
-
-                <label class="stat-label">Environment Name</label>
-                <input type="text" id="targetEnv" placeholder="e.g. Factory-A_Subnet">
-            </div>
-            <button class="btn-primary" id="btnGenerateTask" onclick="createTask()">AUTHORIZE & GENERATE ZIP</button>
-            <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 15px; text-align: center;">
-                Generated ZIP will expire in 12 hours according to protocol.
-            </p>
+            <label class="stat-label">Environment Name</label>
+            <input type="text" id="targetEnv" placeholder="e.g. Factory-A_Subnet">
         </div>
+        <button class="btn-primary" id="btnGenerateTask" onclick="createTask()">AUTHORIZE & GENERATE ZIP</button>
+        <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 15px; text-align: center;">
+            Generated ZIP will expire in 12 hours according to protocol.
+        </p>
+    </div>
     </div>
 
     <script>
         const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev";
-        let currentAdminKey = localStorage.getItem("gov_admin_key");
+        let currentToken = localStorage.getItem("gov_token");
+        let currentUser = JSON.parse(localStorage.getItem("gov_user") || "{}");
 
-        if (currentAdminKey) {
+        if (currentToken) {
             document.getElementById("loginScreen").style.display = "none";
             initPortal();
         }
 
-        function login() {
-            const key = document.getElementById("adminKeyInput").value.trim();
-            if (!key) return alert("System Key Required");
-            localStorage.setItem("gov_admin_key", key);
-            currentAdminKey = key;
-            window.location.reload();
+        function setAuthMode(mode) {
+            if (mode === 'login') {
+                document.getElementById("loginForm").style.display = "block";
+                document.getElementById("signupForm").style.display = "none";
+                document.getElementById("tabLogin").style.color = "var(--primary)";
+                document.getElementById("tabLogin").style.fontWeight = "bold";
+                document.getElementById("tabSignup").style.color = "var(--text-dim)";
+                document.getElementById("tabSignup").style.fontWeight = "normal";
+            } else {
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("signupForm").style.display = "block";
+                document.getElementById("tabSignup").style.color = "var(--primary)";
+                document.getElementById("tabSignup").style.fontWeight = "bold";
+                document.getElementById("tabLogin").style.color = "var(--text-dim)";
+                document.getElementById("tabLogin").style.fontWeight = "normal";
+            }
+        }
+
+        async function doLogin() {
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPwd").value.trim();
+            if (!email || !password) return alert("Please fill all fields");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const json = await res.json();
+                if (json.ok) {
+                    localStorage.setItem("gov_token", json.token);
+                    localStorage.setItem("gov_user", JSON.stringify(json.user));
+                    currentToken = json.token;
+                    currentUser = json.user;
+                    window.location.reload();
+                } else {
+                    alert("Login Failed: " + json.error);
+                }
+            } catch (e) {
+                alert("Network Error");
+            }
+        }
+
+        async function doSignup() {
+            const org = document.getElementById("signupOrg").value.trim();
+            const email = document.getElementById("signupEmail").value.trim();
+            const password = document.getElementById("signupPwd").value.trim();
+            if (!org || !email || !password) return alert("Please fill all fields");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ org_name: org, email, password })
+                });
+                const json = await res.json();
+                if (json.ok) {
+                    alert("Account Created! Please Login.");
+                    setAuthMode('login');
+                } else {
+                    alert("Signup Failed: " + json.error);
+                }
+            } catch (e) {
+                alert("Network Error");
+            }
         }
 
         function logout() {
-            localStorage.removeItem("gov_admin_key");
+            localStorage.removeItem("gov_token");
+            localStorage.removeItem("gov_user");
             window.location.reload();
         }
 
         function initPortal() {
-            document.getElementById("adminIdDisplay").innerText = "ADMIN_" + currentAdminKey.slice(0, 4) + "...";
-            document.getElementById("currentOrg").innerText = "Nine-Security Corp (Global)";
+            document.getElementById("adminIdDisplay").innerText = currentUser.email || "USER";
+            document.getElementById("currentOrg").innerText = currentUser.org_name || "Organization";
 
             // Load Real Data
             loadInsights();
+        }
+
+        // Load Real Data
+        loadInsights();
         }
 
         let radarChart = null;
@@ -590,7 +675,7 @@
         async function loadInsights() {
             try {
                 const res = await fetch(`${API_BASE}/api/governance/insights`, {
-                    headers: { 'Authorization': `Bearer ${currentAdminKey}` }
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
                 const json = await res.json();
 
@@ -690,11 +775,11 @@
         }
 
         async function createTask() {
-            const org = document.getElementById("targetOrg").value.trim();
+            // const org = document.getElementById("targetOrg").value.trim(); // No longer needed
             const envName = document.getElementById("targetEnv").value.trim();
             const btn = document.getElementById("btnGenerateTask");
 
-            if (!org || !envName) return alert("All fields required");
+            if (!envName) return alert("Environment Name required");
 
             btn.disabled = true;
             btn.innerText = "SIGNING PROTOCOL...";
@@ -703,13 +788,17 @@
                 const res = await fetch(`${API_BASE}/api/governance/session`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${currentAdminKey}`,
+                        'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ organization_id: org, environment_id: envName })
+                    // Send organization_id from current session if needed, but backend handles it from token
+                    body: JSON.stringify({ organization_id: "SELF", environment_id: envName })
                 });
 
-                if (!res.ok) throw new Error("Auth Failure or API unavailable");
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error || "Auth Failure");
+                }
                 const json = await res.json();
 
                 // Add to table (UI only for now)
