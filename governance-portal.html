@@ -900,9 +900,9 @@
         async function deleteTask(sessionId) {
             if (!confirm("Are you sure you want to delete this task? The download link will become invalid.")) return;
             try {
-                const res = await fetch(`${API_BASE} /api/governance / session / ${sessionId} `, {
+                const res = await fetch(`${API_BASE}/api/governance/session/${sessionId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${currentToken} ` }
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
                 });
                 const json = await res.json();
                 if (json.ok) {
