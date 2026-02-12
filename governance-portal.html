@@ -664,6 +664,7 @@
 
             // Load Real Data
             loadInsights();
+            loadTasks();
         }
 
 
@@ -846,6 +847,43 @@
             tbody.innerHTML = row + tbody.innerHTML;
         }
 
+        async function loadTasks() {
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/tasks`, {
+                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                });
+                const json = await res.json();
+
+                const tbody = document.querySelector("#tasksTable tbody");
+                if (!json.ok || !json.data || json.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-dim); padding:40px;">No active tasks. Initialized systems check...</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = "";
+                json.data.forEach(task => {
+                    let statusClass = "status-pending";
+                    if (task.status === 'completed') statusClass = "status-completed";
+                    if (task.status === 'superceded' || task.status === 'expired') statusClass = "status-pending"; // reuse pending style or add new one? Let's use pending but maybe red text? simplified for MVP.
+
+                    const row = `
+                        <tr>
+                            <td>${new Date(task.created_at).toLocaleString()}</td>
+                            <td>${task.env_name || task.environment_id}</td>
+                            <td style="font-family:monospace; font-size: 0.8rem; color:var(--primary);">${task.id.slice(0, 8)}...</td>
+                            <td><span class="status-badge ${statusClass}">${task.status.toUpperCase()}</span></td>
+                            <td><button style="padding:4px 8px; font-size:0.7rem;" disabled>View Log</button></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (e) {
+                console.error("Load tasks failed", e);
+            }
+        }
+
+        // --- DEPRECATED: Old UI-only addTableRow ---
+        // Replacing with real data loader.
         // --- Simulated Task 2.2: Dynamic ZIP Wrapper ---
         function downloadDummyZip(sessionData) {
             // In a real scenario, this would be a BLOB from the server
