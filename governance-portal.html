@@ -576,13 +576,26 @@
 
     <script>
         const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev";
-        let currentToken = localStorage.getItem("gov_token");
-        let currentUser = JSON.parse(localStorage.getItem("gov_user") || "{}");
+        let currentUser = JSON.parse(localStorage.getItem("gov_user") || "null");
 
-        if (currentToken) {
-            document.getElementById("loginScreen").style.display = "none";
-            initPortal();
+        // Initial Session Check
+        async function checkSession() {
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/me`, { credentials: 'include' });
+                if (res.ok) {
+                    const json = await res.json();
+                    currentUser = json.user;
+                    localStorage.setItem("gov_user", JSON.stringify(currentUser));
+                    document.getElementById("loginScreen").style.display = "none";
+                    initPortal();
+                } else {
+                    document.getElementById("loginScreen").style.display = "flex";
+                }
+            } catch (e) {
+                console.error("Session check failed", e);
+            }
         }
+        checkSession();
 
         function setAuthMode(mode) {
             if (mode === 'login') {
@@ -611,20 +624,19 @@
                 const res = await fetch(`${API_BASE}/api/governance/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ email, password }),
+                    credentials: 'include'
                 });
                 const json = await res.json();
                 if (json.ok) {
-                    localStorage.setItem("gov_token", json.token);
                     localStorage.setItem("gov_user", JSON.stringify(json.user));
-                    currentToken = json.token;
                     currentUser = json.user;
                     window.location.reload();
                 } else {
                     alert("Login Failed: " + json.error);
                 }
             } catch (e) {
-                alert("Network Error");
+                alert("Network Error: " + e.message);
             }
         }
 
@@ -652,8 +664,10 @@
             }
         }
 
-        function logout() {
-            localStorage.removeItem("gov_token");
+        async function logout() {
+            try {
+                await fetch(`${API_BASE}/api/governance/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) { }
             localStorage.removeItem("gov_user");
             window.location.reload();
         }
@@ -673,7 +687,7 @@
         async function loadInsights() {
             try {
                 const res = await fetch(`${API_BASE}/api/governance/insights`, {
-                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                    credentials: 'include'
                 });
                 const json = await res.json();
 
@@ -796,9 +810,9 @@
                 const res = await fetch(`${API_BASE}/api/governance/session`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${currentToken}`,
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     // Send organization_id from current session if needed, but backend handles it from token
                     body: JSON.stringify({ organization_id: "SELF", environment_id: envName })
                 });
@@ -850,7 +864,7 @@
         async function loadTasks() {
             try {
                 const res = await fetch(`${API_BASE}/api/governance/tasks`, {
-                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                    credentials: 'include'
                 });
                 const json = await res.json();
 
@@ -902,7 +916,7 @@
             try {
                 const res = await fetch(`${API_BASE}/api/governance/session/${sessionId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${currentToken}` }
+                    credentials: 'include'
                 });
                 const json = await res.json();
                 if (json.ok) {
