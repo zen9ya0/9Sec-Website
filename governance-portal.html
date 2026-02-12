@@ -579,17 +579,87 @@
 
         function initPortal() {
             document.getElementById("adminIdDisplay").innerText = "ADMIN_" + currentAdminKey.slice(0, 4) + "...";
-            document.getElementById("currentOrg").innerText = "Nine-Security Corp (Demo)";
+            document.getElementById("currentOrg").innerText = "Nine-Security Corp (Global)";
 
-            // Render Radar Chart for fun
+            // Load Real Data
+            loadInsights();
+        }
+
+        let radarChart = null;
+
+        async function loadInsights() {
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/insights`, {
+                    headers: { 'Authorization': `Bearer ${currentAdminKey}` }
+                });
+                const json = await res.json();
+
+                if (!json.ok || !json.data) {
+                    // Initialize empty chart if no data
+                    updateChart(['No Data'], [0]);
+                    return;
+                }
+
+                const { report, domains } = json.data;
+                if (!report) return;
+
+                // Update KPIs
+                document.getElementById("overallScore").innerText = report.overall_score + "%";
+                document.getElementById("riskLevel").innerText = report.risk_level;
+
+                // Risk Colors
+                const riskEl = document.getElementById("riskLevel");
+                riskEl.className = `stat-value risk-${report.risk_level.toLowerCase()}`;
+
+                const scoreEl = document.getElementById("overallScore");
+                if (report.overall_score >= 85) scoreEl.className = "stat-value risk-a";
+                else if (report.overall_score >= 70) scoreEl.className = "stat-value risk-b";
+                else scoreEl.className = "stat-value risk-c";
+
+                // Update Domain List
+                const domainContainer = document.getElementById("domainList");
+                domainContainer.innerHTML = "";
+
+                const labels = [];
+                const data = [];
+
+                domains.forEach(d => {
+                    labels.push(d.domain_name);
+                    data.push(d.score);
+
+                    let colorVar = "var(--error)";
+                    if (d.score >= 85) colorVar = "var(--success)";
+                    else if (d.score >= 70) colorVar = "var(--secondary)";
+                    else if (d.score >= 50) colorVar = "var(--warning)";
+
+                    const row = `
+                    <div class="domain-row">
+                        <div class="domain-info"><h4>${d.domain_name}</h4></div>
+                        <div class="domain-progress"><div class="progress-bar" style="width: ${d.score}%; background: ${colorVar};"></div></div>
+                        <div style="font-weight:bold; color:${colorVar};">${d.score}%</div>
+                    </div>`;
+                    domainContainer.innerHTML += row;
+                });
+
+                updateChart(labels, data);
+
+            } catch (e) {
+                console.error("Load failed", e);
+            }
+        }
+
+        function updateChart(labels, data) {
             const ctx = document.getElementById('maturityChart').getContext('2d');
-            new Chart(ctx, {
+
+            if (radarChart) radarChart.destroy();
+
+            radarChart = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: ['Endpoints', 'Logs', 'Backup', 'Privilege', 'Network', 'Identity'],
+                    labels: labels,
                     datasets: [{
                         label: 'Current Maturity',
-                        data: [85, 90, 45, 72, 60, 88],
+                        data: data,
                         backgroundColor: 'rgba(0, 255, 157, 0.2)',
                         borderColor: '#00ff9d',
                         borderWidth: 2,
@@ -598,9 +668,15 @@
                 },
                 options: {
                     scales: {
-                        r: { grid: { color: '#262c35' }, angleLines: { color: '#262c35' }, pointLabels: { color: '#888' }, ticks: { display: false } }
+                        r: {
+                            grid: { color: '#262c35' },
+                            angleLines: { color: '#262c35' },
+                            pointLabels: { color: '#888', font: { size: 11 } },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
                 }
             });
         }
