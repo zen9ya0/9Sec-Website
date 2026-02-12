@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine-Security | Governance Automation Portal</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css?v=20260212-1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0b0d;
+            --card-bg: #14171c;
+            --primary: #00ff9d;
+            --secondary: #00d4ff;
+            --accent: #7000ff;
+            --text: #e0e0e0;
+            --text-dim: #71767d;
+            --success: #00ff9d;
+            --error: #ff4757;
+            --warning: #ffa502;
+            --border: #262c35;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #0d0f14;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 48px;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-group {
+            margin-bottom: 32px;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 255, 157, 0.08);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Login Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 48px;
+            border-radius: 20px;
+            width: 400px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin: 20px 0;
+            background: #1c2129;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 10px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.1);
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: #000;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1rem;
+            transition: transform 0.2s;
+        }
+
+        button.btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
+        }
+
+        /* Dashboard Components */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .page-title h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .page-title p {
+            margin: 8px 0 0;
+            color: var(--text-dim);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: #3d4655;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .risk-a {
+            color: var(--success);
+        }
+
+        .risk-b {
+            color: var(--secondary);
+        }
+
+        .risk-c {
+            color: var(--warning);
+        }
+
+        .risk-d {
+            color: var(--error);
+        }
+
+        .half-width {
+            grid-column: span 2;
+        }
+
+        .full-width {
+            grid-column: span 4;
+        }
+
+        /* Maturity Sections */
+        .domain-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .domain-info h4 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .domain-progress {
+            flex: 1;
+            margin: 0 40px;
+            height: 8px;
+            background: #1c2129;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            border-radius: 4px;
+        }
+
+        /* Action Panel */
+        .action-panel {
+            background: linear-gradient(135deg, #1a1e26, #0d0f14);
+            border: 1px solid var(--primary);
+            padding: 32px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0, 255, 157, 0.05);
+        }
+
+        .action-text h3 {
+            margin: 0 0 8px 0;
+            color: var(--primary);
+        }
+
+        .action-text p {
+            margin: 0;
+            color: var(--text-dim);
+        }
+
+        .btn-action {
+            padding: 14px 28px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+
+        /* Table Style */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 16px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid #1c2129;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: rgba(255, 165, 2, 0.1);
+            color: var(--warning);
+        }
+
+        .status-completed {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--secondary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .modal {
+            background: var(--card-bg);
+            width: 500px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 32px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .close-modal {
+            cursor: pointer;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginScreen">
+        <div class="login-card">
+            <div style="font-size: 3rem, color: var(--primary), margin-bottom: 20px;"><i
+                    class="fa-solid fa-microchip"></i></div>
+            <h2>GOVERNANCE PORTAL</h2>
+            <p style="color:var(--text-dim); font-size:0.9rem;">Technical Evidence & Compliance Engine</p>
+            <input type="password" id="adminKeyInput" placeholder="System Access Key">
+            <button class="btn-primary" onclick="login()">INITIALIZE SESSION</button>
+            <p style="font-size: 10px; color: #444; margin-top: 30px;">SECURE ACCESS PROTOCOL 9SEC-V2</p>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved"></i> 9SEC GOV
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-label">Main</div>
+            <div class="nav-item active"><i class="fa-solid fa-gauge-high"></i> Executive View</div>
+            <div class="nav-item"><i class="fa-solid fa-sitemap"></i> Organizations</div>
+            <div class="nav-item"><i class="fa-solid fa-clock-rotate-left"></i> Evidence Logs</div>
+        </div>
+
+        <div class="nav-group">
+            <div class="nav-label">Compliance</div>
+            <div class="nav-item"><i class="fa-solid fa-file-contract"></i> Law-2024 Audit</div>
+            <div class="nav-item"><i class="fa-solid fa-list-check"></i> Control Center</div>
+        </div>
+
+        <div style="margin-top: auto;">
+            <div class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Exit Portal</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <div class="header-row">
+            <div class="page-title">
+                <h1>Maturity Overview</h1>
+                <p>Real-time technical compliance posture for <span id="currentOrg"
+                        style="color:var(--primary);">...</span></p>
+            </div>
+            <div class="user-info" style="text-align: right;">
+                <div style="font-size: 0.8rem; color: var(--text-dim);">ADMIN_ID</div>
+                <div style="font-weight: 700; color: var(--secondary);" id="adminIdDisplay">NOT_INITIALIZED</div>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid">
+            <div class="card stat-card">
+                <div class="stat-label">Overall Maturity</div>
+                <div class="stat-value risk-b" id="overallScore">--</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Risk Rating</div>
+                <div class="stat-value risk-b" id="riskLevel">--</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">Evidence Objects</div>
+                <div class="stat-value" id="evidenceCount">0</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-label">System Health</div>
+                <div class="stat-value" style="color:var(--success);">NOMINAL</div>
+            </div>
+        </div>
+
+        <!-- Domain Breakdown -->
+        <div class="grid">
+            <div class="card half-width">
+                <h3 style="margin-top:0; margin-bottom:24px;">Domain Breakdown</h3>
+                <div id="domainList">
+                    <div class="domain-row">
+                        <div class="domain-info">
+                            <h4>Host Security</h4>
+                        </div>
+                        <div class="domain-progress">
+                            <div class="progress-bar" style="width: 85%;"></div>
+                        </div>
+                        <div style="font-weight:bold; color:var(--primary);">85%</div>
+                    </div>
+                    <div class="domain-row">
+                        <div class="domain-info">
+                            <h4>Identity Control</h4>
+                        </div>
+                        <div class="domain-progress">
+                            <div class="progress-bar" style="width: 72%;"></div>
+                        </div>
+                        <div style="font-weight:bold; color:var(--secondary);">72%</div>
+                    </div>
+                    <div class="domain-row">
+                        <div class="domain-info">
+                            <h4>Data Protection</h4>
+                        </div>
+                        <div class="domain-progress">
+                            <div class="progress-bar" style="width: 45%;"></div>
+                        </div>
+                        <div style="font-weight:bold; color:var(--warning);">45%</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card half-width">
+                <h3 style="margin-top:0; margin-bottom:24px;">Security Distribution</h3>
+                <div style="height:220px;">
+                    <canvas id="maturityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="action-panel">
+            <div class="action-text">
+                <h3>Start Domain Assessment</h3>
+                <p>Generate a one-time evidence collector for your endpoint environment.</p>
+            </div>
+            <button class="btn-action" onclick="showTaskModal()">
+                <i class="fa-solid fa-circle-play"></i> CREATE COLLECTION TASK
+            </button>
+        </div>
+
+        <!-- Recent Tasks -->
+        <div class="card full-width" style="margin-top:24px;">
+            <h3>Recent Collection Tasks</h3>
+            <table class="data-table" id="tasksTable">
+                <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Environment</th>
+                        <th>Token ID</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--text-dim); padding:40px;">No active tasks.
+                            Initialized systems check...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 style="margin:0; color:var(--primary);">New Collection Task</h2>
+                <span class="close-modal" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label class="stat-label">Organization ID (Target Account)</label>
+                <input type="text" id="targetOrg" placeholder="e.g. Org-101">
+
+                <label class="stat-label">Environment Name</label>
+                <input type="text" id="targetEnv" placeholder="e.g. Factory-A_Subnet">
+            </div>
+            <button class="btn-primary" id="btnGenerateTask" onclick="createTask()">AUTHORIZE & GENERATE ZIP</button>
+            <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 15px; text-align: center;">
+                Generated ZIP will expire in 12 hours according to protocol.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev";
+        let currentAdminKey = localStorage.getItem("gov_admin_key");
+
+        if (currentAdminKey) {
+            document.getElementById("loginScreen").style.display = "none";
+            initPortal();
+        }
+
+        function login() {
+            const key = document.getElementById("adminKeyInput").value.trim();
+            if (!key) return alert("System Key Required");
+            localStorage.setItem("gov_admin_key", key);
+            currentAdminKey = key;
+            window.location.reload();
+        }
+
+        function logout() {
+            localStorage.removeItem("gov_admin_key");
+            window.location.reload();
+        }
+
+        function initPortal() {
+            document.getElementById("adminIdDisplay").innerText = "ADMIN_" + currentAdminKey.slice(0, 4) + "...";
+            document.getElementById("currentOrg").innerText = "Nine-Security Corp (Demo)";
+
+            // Render Radar Chart for fun
+            const ctx = document.getElementById('maturityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Endpoints', 'Logs', 'Backup', 'Privilege', 'Network', 'Identity'],
+                    datasets: [{
+                        label: 'Current Maturity',
+                        data: [85, 90, 45, 72, 60, 88],
+                        backgroundColor: 'rgba(0, 255, 157, 0.2)',
+                        borderColor: '#00ff9d',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00ff9d'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: { grid: { color: '#262c35' }, angleLines: { color: '#262c35' }, pointLabels: { color: '#888' }, ticks: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function showTaskModal() {
+            document.getElementById("taskModal").style.display = "flex";
+        }
+
+        function closeTaskModal() {
+            document.getElementById("taskModal").style.display = "none";
+        }
+
+        async function createTask() {
+            const org = document.getElementById("targetOrg").value.trim();
+            const envName = document.getElementById("targetEnv").value.trim();
+            const btn = document.getElementById("btnGenerateTask");
+
+            if (!org || !envName) return alert("All fields required");
+
+            btn.disabled = true;
+            btn.innerText = "SIGNING PROTOCOL...";
+
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/session`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentAdminKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ organization_id: org, environment_id: envName })
+                });
+
+                if (!res.ok) throw new Error("Auth Failure or API unavailable");
+                const json = await res.json();
+
+                // Add to table (UI only for now)
+                addTableRow(json.data);
+
+                // Start Simulated Download
+                downloadDummyZip(json.data);
+
+                closeTaskModal();
+                alert("Task Authorized! Downloading Bundle ZIP...");
+
+            } catch (e) {
+                alert("Error: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "AUTHORIZE & GENERATE ZIP";
+            }
+        }
+
+        function addTableRow(data) {
+            const tbody = document.querySelector("#tasksTable tbody");
+            if (tbody.innerText.includes("No active tasks")) tbody.innerHTML = "";
+
+            const row = `
+                <tr>
+                    <td>${new Date().toLocaleTimeString()}</td>
+                    <td>${data.environment_id}</td>
+                    <td style="font-family:monospace; font-size: 0.8rem; color:var(--primary);">${data.upload_session_id.slice(0, 8)}...</td>
+                    <td><span class="status-badge status-pending">PENDING</span></td>
+                    <td><button style="padding:4px 8px; font-size:0.7rem;" onclick="alert('Token: ${data.token}')">Copy Token</button></td>
+                </tr>
+            `;
+            tbody.innerHTML = row + tbody.innerHTML;
+        }
+
+        // --- Simulated Task 2.2: Dynamic ZIP Wrapper ---
+        function downloadDummyZip(sessionData) {
+            // In a real scenario, this would be a BLOB from the server
+            // Here we simulate the ZIP content with a text file for POC
+            const readme = `NINE-SECURITY GOVERNANCE COLLECTOR\n================================\nOrg: ${sessionData.organization_id}\nEnv: ${sessionData.environment_id}\n\n1. Extract all files.\n2. Run collector.exe (Simulated)\n3. Result will be uploaded to ${sessionData.ingest_url}`;
+
+            const sessionFile = JSON.stringify({
+                upload_session_id: sessionData.upload_session_id,
+                organization_id: sessionData.organization_id,
+                environment_id: sessionData.environment_id,
+                ingest_url: sessionData.ingest_url,
+                token: sessionData.token,
+                expires_at: sessionData.expires_at,
+                mode: "one_time"
+            }, null, 2);
+
+            // Using simple blob to simulate downloading the bundle
+            // In production, the Worker would return a real ZIP via fflate
+            const blob = new Blob([sessionFile], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `upload_session.json`; // Dummy download
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+
+</html>
