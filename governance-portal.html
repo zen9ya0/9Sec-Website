@@ -678,7 +678,17 @@
 
                 if (!json.ok || !json.data) {
                     // Initialize empty chart if no data
-                    updateChart(['No Data'], [0]);
+                    updateChart(['Waiting for Data'], [0]);
+
+                    // Clear the domain list placeholder
+                    document.getElementById("domainList").innerHTML =
+                        `<div style="text-align:center; padding:40px; color:var(--text-dim); font-size:0.9rem;">
+                            No assessment data yet.<br/>Create a collection task to begin.
+                         </div>`;
+
+                    // Reset KPIs
+                    document.getElementById("overallScore").innerText = "--";
+                    document.getElementById("riskLevel").innerText = "--";
                     return;
                 }
 
