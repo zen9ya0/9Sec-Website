@@ -586,6 +586,28 @@
         const API_BASE = "https://9sec-smtp-backend.nine-security.workers.dev";
         let currentUser = JSON.parse(localStorage.getItem("gov_user") || "null");
 
+        // IDLE TIMEOUT CONFIGURATION
+        const INACTIVITY_LIMIT_MS = 30 * 60 * 1000; // 30 Minutes
+        let inactivityTimer;
+
+        function startInactivityMonitor() {
+            ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event => {
+                document.addEventListener(event, resetInactivityTimer);
+            });
+            resetInactivityTimer();
+            console.log("Inactivity monitor started.");
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            if (!currentUser) return;
+
+            inactivityTimer = setTimeout(() => {
+                alert("Session timed out due to inactivity for 30 minutes.");
+                logout();
+            }, INACTIVITY_LIMIT_MS);
+        }
+
         // Initial Session Check
         async function checkSession() {
             try {
@@ -596,6 +618,7 @@
                     localStorage.setItem("gov_user", JSON.stringify(currentUser));
                     document.getElementById("loginScreen").style.display = "none";
                     initPortal();
+                    startInactivityMonitor();
                 } else {
                     document.getElementById("loginScreen").style.display = "flex";
                 }
