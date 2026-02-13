@@ -444,6 +444,8 @@
         </div>
 
         <div style="margin-top: auto;">
+            <div class="nav-item" onclick="resetOrganizationData()" style="color:var(--error);"><i
+                    class="fa-solid fa-triangle-exclamation"></i> Reset Data</div>
             <div class="nav-item" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Exit Portal</div>
         </div>
     </div>
@@ -692,6 +694,31 @@
                 }
             } catch (e) {
                 alert("Network Error");
+            }
+        }
+
+        async function resetOrganizationData() {
+            if (!confirm("⚠️ WARNING: This will DELETE ALL assessment data, sessions, and reports for your organization.\n\nThis action cannot be undone. Are you sure?")) return;
+
+            // Double confirmation for safety
+            const confirmation = prompt("To confirm, please type 'RESET' below:");
+            if (confirmation !== "RESET") return alert("Reset cancelled.");
+
+            try {
+                const res = await fetch(`${API_BASE}/api/governance/reset`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const json = await res.json();
+
+                if (json.ok) {
+                    alert("Organization data has been reset.");
+                    window.location.reload();
+                } else {
+                    alert("Reset Failed: " + (json.error || "Unknown Error"));
+                }
+            } catch (e) {
+                alert("Network Error: " + e.message);
             }
         }
 
