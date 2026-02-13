@@ -454,7 +454,14 @@
             <div class="page-title">
                 <h1>Maturity Overview</h1>
                 <p>Real-time technical compliance posture for <span id="currentOrg"
-                        style="color:var(--primary);">...</span></p>
+                        style="color:var(--primary);">...</span>
+                    <button onclick="refreshDashboard()"
+                        style="background:none; border:none; color:var(--text-dim); cursor:pointer; margin-left:10px; font-size: 0.9rem;"
+                        title="Refresh Data" onmouseover="this.style.color='var(--primary)'"
+                        onmouseout="this.style.color='var(--text-dim)'">
+                        <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
+                    </button>
+                </p>
             </div>
             <div class="user-info" style="text-align: right;">
                 <div style="font-size: 0.8rem; color: var(--text-dim);">ADMIN_ID</div>
@@ -680,6 +687,22 @@
             // Load Real Data
             loadInsights();
             loadTasks();
+        }
+
+        async function refreshDashboard() {
+            const icon = document.getElementById("refreshIcon");
+            if (icon) icon.classList.add("fa-spin");
+
+            try {
+                await Promise.all([
+                    loadInsights(),
+                    loadTasks()
+                ]);
+            } catch (e) {
+                console.error("Refresh failed", e);
+            } finally {
+                if (icon) setTimeout(() => icon.classList.remove("fa-spin"), 800);
+            }
         }
 
 
