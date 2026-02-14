@@ -934,12 +934,14 @@ function updateLanguage(lang) {
 }
 
 // --- SMTP Check Logic ---
+// --- SMTP Check Logic ---
 async function submitAssessment() {
-    console.log("Starting assessment...");
+    console.log("Starting assessment session...");
     const emailInput = document.getElementById('email-input');
     const consentCheck = document.getElementById('consent-check');
     const stepInput = document.getElementById('smtp-step-input');
-    const stepReport = document.getElementById('smtp-step-report');
+    const stepVerify = document.getElementById('smtp-step-verify');
+    const verifyAddrDisplay = document.getElementById('verification-email');
 
     const email = emailInput.value.trim();
     const consent = consentCheck.checked;
@@ -954,10 +956,10 @@ async function submitAssessment() {
         return;
     }
 
-    // Call real backend: POST /api/smtp/check
+    // Call real backend: POST /api/assessment (Session Start)
     let resp;
     try {
-        resp = await fetch(`${API_BASE}/api/smtp/check`, {
+        resp = await fetch(`${API_BASE}/api/assessment`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, consent })
@@ -977,42 +979,53 @@ async function submitAssessment() {
     }
 
     if (!resp.ok || !data.ok) {
-        console.error("API_FAIL", resp.status, data);
-        showNotice(`Check failed: ${data?.error || resp.status}`);
+        showNotice(`Check initialization failed: ${data?.error || resp.status}`);
         return;
     }
 
-    // Direct result (Synchronous)
-    const results = data.results || {};
+    currentAssessmentId = data.assessment_id;
 
-    // Generate Report Data from Backend Results
-    const report = {
-        domain: results.domain,
-        sender_ip: "N/A (Static Check)",
-        transport_time: "0.5s",
-        dns_posture: {
-            spf: results.spf?.status || "missing",
-            dmarc: results.dmarc?.status || "missing",
-            dkim: "unknown",
-            mta_sts: "missing",
-            tls_rpt: "missing",
-            bimi: "missing",
-            dnssec: results.dmarc?.status === "pass" ? "pass" : "unknown"
-        },
-        smtp_tls: {
-            version: results.encryption?.status === "pass" ? "TLS 1.3" : "Unknown",
-            cipher: "Unknown"
-        },
-        risk_score: calculateRiskScore(results),
-        risk_breakdown: generateRiskBreakdown(results)
-    };
-
-    // Transition UI
+    // UI Transition to Verification Step
     if (stepInput) stepInput.classList.add('hidden');
-    if (stepReport) stepReport.classList.remove('hidden');
+    if (stepVerify) stepVerify.classList.remove('hidden');
+    if (verifyAddrDisplay) verifyAddrDisplay.textContent = data.verification_address;
 
-    // Display Report
-    renderReport(report);
+    // Start Polling Status
+    startPolling(currentAssessmentId);
+}
+
+function startPolling(id) {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(async () => {
+        try {
+            const resp = await fetch(`${API_BASE}/api/assessment/${id}`);
+            if (!resp.ok) return;
+            const data = await resp.json();
+            if (data.status === 'completed') {
+                clearInterval(pollInterval);
+                fetchAndRenderReport(id);
+            }
+        } catch (e) {
+            console.error("Polling error:", e);
+        }
+    }, 3000);
+}
+
+async function fetchAndRenderReport(id) {
+    try {
+        const resp = await fetch(`${API_BASE}/api/assessment/${id}/report`);
+        const data = await resp.json();
+        if (data.ok && data.report) {
+            const stepVerify = document.getElementById('smtp-step-verify');
+            const stepReport = document.getElementById('smtp-step-report');
+            if (stepVerify) stepVerify.classList.add('hidden');
+            if (stepReport) stepReport.classList.remove('hidden');
+
+            renderReport(data.report);
+        }
+    } catch (e) {
+        showNotice("Failed to load report results.");
+    }
 }
 
 // Bind Start Button (Robust)
