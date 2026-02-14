@@ -1545,4 +1545,4 @@ async function checkGlobalSession() {
         console.error("Global session check failed", e);
     }
 }
-checkGlobalSession();
+// checkGlobalSession(); // Temporary disabled during maintenance
