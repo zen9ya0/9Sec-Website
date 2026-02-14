@@ -939,8 +939,7 @@ async function submitAssessment() {
     const emailInput = document.getElementById('email-input');
     const consentCheck = document.getElementById('consent-check');
     const stepInput = document.getElementById('smtp-step-input');
-    const stepVerify = document.getElementById('smtp-step-verify');
-    const verifyEmailCode = document.getElementById('verification-email');
+    const stepReport = document.getElementById('smtp-step-report');
 
     const email = emailInput.value.trim();
     const consent = consentCheck.checked;
@@ -954,99 +953,6 @@ async function submitAssessment() {
         showNotice("Please agree to the authorization terms.");
         return;
     }
-
-    let resp;
-    try {
-        // Use full URL to avoid relative path issues on github pages
-        resp = await fetch(`${API_BASE}/api/assessment`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, consent })
-        });
-    } catch (e) {
-        console.error("API_ERROR", e);
-        showNotice("Backend Unreachable. Please check your network or try again.");
-        return;
-    }
-
-    let data;
-    try {
-        data = await resp.json();
-    } catch {
-        showNotice("Backend returned invalid JSON.");
-        return;
-    }
-
-    if (!data.ok) {
-        showNotice(`Error: ${data.error}`);
-        return;
-    }
-
-    // Update UI
-    currentAssessmentId = data.assessment_id;
-    verifyEmailCode.textContent = data.verification_address;
-
-    stepInput.classList.add('hidden');
-    stepVerify.classList.remove('hidden');
-
-    // Reset Logs
-    const logContainer = document.getElementById('scan-log');
-    if (logContainer) {
-        logContainer.innerHTML = '';
-        addLog("Session Initialized.");
-        addLog(`Target: ${data.domain}`);
-        addLog("Waiting for inbound verification email...");
-    }
-
-    // Start Polling
-    if (pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(() => checkStatus(currentAssessmentId), 2500);
-}
-
-// Bind Start Button (Robust)
-const btnStartCheck = document.getElementById('btn-start-check');
-if (btnStartCheck) {
-    btnStartCheck.addEventListener('click', submitAssessment);
-}
-
-const smtpForm = document.getElementById('smtp-form');
-const stepInput = document.getElementById('smtp-step-input');
-const stepVerify = document.getElementById('smtp-step-verify');
-const stepReport = document.getElementById('smtp-step-report');
-const verifyEmailCode = document.getElementById('verification-email');
-const btnCopy = document.getElementById('btn-copy-email');
-const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - Can be removed
-
-let currentAssessmentId = null;
-let pollInterval = null;
-
-/* Legacy form handler removed
-if (smtpForm) {
-    smtpForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        // Legacy call removed
-    });
-}
-*/
-
-if (btnCopy) {
-    btnCopy.addEventListener('click', () => {
-        navigator.clipboard.writeText(verifyEmailCode.textContent);
-        const originalIcon = btnCopy.innerHTML;
-        btnCopy.innerHTML = '<i class="fa-solid fa-check"></i>';
-        setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
-    });
-}
-
-async function startAssessment(email) {
-    const emailErr = validateEmail(email);
-    if (emailErr) {
-        showNotice(emailErr);
-        return;
-    }
-    // Read consent checkbox (required by backend)
-    const consentEl = document.getElementById('consent-check');
-    const consent = !!consentEl?.checked;
 
     // Call real backend: POST /api/smtp/check
     let resp;
@@ -1087,11 +993,11 @@ async function startAssessment(email) {
         dns_posture: {
             spf: results.spf?.status || "missing",
             dmarc: results.dmarc?.status || "missing",
-            dkim: "unknown", // Cannot test without real email
-            mta_sts: "missing", // Not checked in simplistic version
+            dkim: "unknown",
+            mta_sts: "missing",
             tls_rpt: "missing",
             bimi: "missing",
-            dnssec: results.dmarc?.status === "pass" ? "pass" : "unknown" // Mock inference
+            dnssec: results.dmarc?.status === "pass" ? "pass" : "unknown"
         },
         smtp_tls: {
             version: results.encryption?.status === "pass" ? "TLS 1.3" : "Unknown",
@@ -1101,12 +1007,50 @@ async function startAssessment(email) {
         risk_breakdown: generateRiskBreakdown(results)
     };
 
-    renderReport(report);
+    // Transition UI
+    if (stepInput) stepInput.classList.add('hidden');
+    if (stepReport) stepReport.classList.remove('hidden');
 
-    // Skip verification step, go straight to report
-    stepInput.classList.add('hidden');
-    stepReport.classList.remove('hidden');
+    // Display Report
+    renderReport(report);
 }
+
+// Bind Start Button (Robust)
+const btnStartCheck = document.getElementById('btn-start-check');
+if (btnStartCheck) {
+    btnStartCheck.addEventListener('click', submitAssessment);
+}
+
+const smtpForm = document.getElementById('smtp-form');
+const stepInput = document.getElementById('smtp-step-input');
+const stepVerify = document.getElementById('smtp-step-verify');
+const stepReport = document.getElementById('smtp-step-report');
+const verifyEmailCode = document.getElementById('verification-email');
+const btnCopy = document.getElementById('btn-copy-email');
+const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - Can be removed
+
+let currentAssessmentId = null;
+let pollInterval = null;
+
+/* Legacy form handler removed
+if (smtpForm) {
+    smtpForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Legacy call removed
+    });
+}
+*/
+
+if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+        navigator.clipboard.writeText(verifyEmailCode.textContent);
+        const originalIcon = btnCopy.innerHTML;
+        btnCopy.innerHTML = '<i class="fa-solid fa-check"></i>';
+        setTimeout(() => btnCopy.innerHTML = originalIcon, 2000);
+    });
+}
+
+// SMTP Check logic consolidated in submitAssessment
 
 function calculateRiskScore(results) {
     let score = 50;
