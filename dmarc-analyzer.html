@@ -321,7 +321,7 @@
             try {
                 // Determine API URL (Local vs Prod)
                 // Use relative path if on same domain, or full URL to worker
-                const API_URL = "https://9sec-smtp-backend.nine-security.workers.dev/api/dmarc/analyze";
+                const API_URL = "https://api.nine-security.com/api/dmarc/analyze";
 
                 const resp = await fetch(API_URL, {
                     method: 'POST',
