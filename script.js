@@ -109,6 +109,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // --- API 基底（單一來源，方便換環境／staging）---
 const API_BASE = "https://api.nine-security.com";
 
+const FREE_EMAIL_DOMAINS = new Set([
+    "gmail.com", "googlemail.com", "outlook.com", "hotmail.com", "live.com", "msn.com",
+    "yahoo.com", "yahoo.com.tw", "yahoo.co.jp", "ymail.com", "aol.com", "aim.com",
+    "icloud.com", "me.com", "mac.com",
+    "protonmail.com", "proton.me", "pm.me",
+    "zoho.com", "zohomail.com", "zohomail.eu",
+    "mail.com", "gmx.com", "gmx.de",
+    "yandex.com", "yandex.ru", "mail.ru",
+    "qq.com", "163.com", "126.com", "sina.com", "yeah.net",
+    "fastmail.com", "tutanota.com", "tuta.io"
+]);
+
 /** Email 格式與長度驗證（長度 ≤254，單一 @，domain 含點）。回傳 null 表示合法，否則回傳錯誤訊息。 */
 function validateEmail(value) {
     if (typeof value !== "string") return "Please enter a valid corporate email.";
@@ -119,6 +131,7 @@ function validateEmail(value) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return "Please enter a valid corporate email.";
     const domain = s.split("@")[1];
     if (!domain || domain.length < 4) return "Please enter a valid corporate email.";
+    if (FREE_EMAIL_DOMAINS.has(domain.toLowerCase())) return "Please use your corporate/work email. Free email providers are not supported.";
     return null;
 }
 
@@ -1015,14 +1028,26 @@ async function fetchAndRenderReport(id) {
     try {
         const resp = await fetch(`${API_BASE}/api/assessment/${id}/report`);
         const data = await resp.json();
-        if (data.ok && data.report) {
+        if (data.ok && data.report_html) {
             const stepVerify = document.getElementById('smtp-step-verify');
             const stepReport = document.getElementById('smtp-step-report');
             if (stepVerify) stepVerify.classList.add('hidden');
             if (stepReport) stepReport.classList.remove('hidden');
 
-            renderReport(data.report);
+            renderForensicReportHtml(data.report_html, data.domain || id);
+            return;
         }
+
+        // Backward compatibility (older backend response)
+        if (data.ok && data.report) {
+            const stepVerify = document.getElementById('smtp-step-verify');
+            const stepReport = document.getElementById('smtp-step-report');
+            if (stepVerify) stepVerify.classList.add('hidden');
+            if (stepReport) stepReport.classList.remove('hidden');
+            renderReport(data.report);
+            return;
+        }
+        showNotice("Failed to load report results.");
     } catch (e) {
         showNotice("Failed to load report results.");
     }
@@ -1044,6 +1069,7 @@ const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - 
 
 let currentAssessmentId = null;
 let pollInterval = null;
+window.currentReportHtml = null;
 
 /* Legacy form handler removed
 if (smtpForm) {
@@ -1211,6 +1237,26 @@ function renderReport(report) {
         if (reportContent) reportContent.innerHTML = `<div class="error">Report rendering error: ${escapeHtml(String(e && e.message || "Unknown error"))}</div>`;
     }
 }
+
+function renderForensicReportHtml(html, domainHint) {
+    const reportDomain = document.getElementById('report-domain');
+    const reportContent = document.getElementById('report-content');
+    const btnDownload = document.getElementById('btn-download-report');
+
+    window.currentReportHtml = String(html || "");
+    window.currentReportData = { domain: domainHint || "unknown" };
+
+    if (reportDomain) reportDomain.textContent = domainHint || "Forensic Report";
+    if (reportContent) {
+        reportContent.innerHTML = `<iframe id="forensic-report-frame" title="Forensic Report" style="width:100%;min-height:1200px;border:1px solid #1f1f1f;border-radius:8px;background:#0a0a0a;"></iframe>`;
+        const frame = document.getElementById('forensic-report-frame');
+        if (frame) frame.srcdoc = window.currentReportHtml;
+    }
+    if (btnDownload) {
+        btnDownload.classList.remove('hidden');
+        btnDownload.textContent = "Download Forensic Report";
+    }
+}
 // --- Report Action Handlers ---
 
 const btnResetCheck = document.getElementById('btn-reset-check');
@@ -1230,6 +1276,7 @@ if (btnResetCheck) {
 
         // Clean up data
         currentAssessmentId = null;
+        window.currentReportHtml = null;
         if (pollInterval) clearInterval(pollInterval);
         if (emailInput) emailInput.value = '';
         if (scanLog) scanLog.innerHTML = '';
@@ -1320,17 +1367,17 @@ function getReportHtml(data) {
 const btnDownloadReport = document.getElementById('btn-download-report');
 if (btnDownloadReport) {
     btnDownloadReport.addEventListener('click', () => {
-        const data = window.currentReportData;
-        if (!data) return;
+        const data = window.currentReportData || {};
+        const forensicHtml = window.currentReportHtml;
         const rawDomain = data.domain || 'unknown';
         const safeFilename = String(rawDomain).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'domain';
-        const fullHtml = getReportHtml(data);
+        const fullHtml = forensicHtml || getReportHtml(data);
         if (!fullHtml) return;
         const blob = new Blob([fullHtml], { type: 'text/html' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `9Sec_Security_Report_${safeFilename}.html`;
+        a.download = `9Sec_Forensic_Report_${safeFilename}.html`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
