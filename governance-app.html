@@ -45,6 +45,12 @@
         .msg.ok { background: rgba(0,255,157,0.1); color: var(--green); }
         .back-link { margin-bottom: 1rem; }
         .back-link a { color: var(--dim); font-size: 0.9rem; }
+        .dashboard-panel { display: block; }
+        .dashboard-panel.hidden { display: none !important; }
+        .env-block { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: rgba(0,0,0,0.2); }
+        .env-block h3 { font-size: 0.95rem; margin: 0 0 0.75rem; color: var(--green); }
+        .btn-danger { background: rgba(255,71,87,0.2); border-color: var(--fail); color: var(--fail); }
+        .btn-danger:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -75,29 +81,28 @@
         <div id="dashboard">
             <div class="user-bar">
                 <span id="userInfo">—</span>
+                <button type="button" id="btnNewTask"><i class="fa-solid fa-plus"></i> New Task</button>
                 <button type="button" id="btnLogout" class="btn-secondary">Sign Out</button>
             </div>
 
-            <div class="card-panel">
-                <h2>Maturity Overview</h2>
-                <div id="insightsArea">Loading…</div>
+            <div class="dashboard-tabs tabs" style="margin-bottom:1rem;">
+                <button type="button" id="dashTabOverview" class="active">Overview</button>
+                <button type="button" id="dashTabEnvs">Environments</button>
             </div>
 
-            <div class="card-panel">
-                <h2>Collection Tasks</h2>
-                <p style="color:var(--dim);font-size:0.9rem;margin-bottom:0.5rem;">Create a task to download the collector ZIP. Run collector.exe on the target machine; it will collect evidence and <strong>automatically upload</strong> to this platform. The platform then <strong>automatically analyzes</strong> and updates the maturity score above.</p>
-                <div class="form-row" style="max-width:320px;margin-bottom:1rem;">
-                    <label>Environment</label>
-                    <select id="createTaskEnv" style="padding:10px 14px;border-radius:6px;border:1px solid var(--border);background:#1a1f26;color:var(--text);width:100%;">
-                        <option value="">Default (auto)</option>
-                    </select>
+            <div id="panelOverview" class="dashboard-panel">
+                <div class="card-panel">
+                    <h2>Maturity Overview</h2>
+                    <div id="insightsArea">Loading…</div>
                 </div>
-                <button type="button" id="btnCreateTask"><i class="fa-solid fa-plus"></i> Create Collection Task</button>
-                <div id="createTaskResult" class="hidden"></div>
-                <table style="margin-top:1.5rem;">
-                    <thead><tr><th>Created</th><th>Environment</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="tasksBody"></tbody>
-                </table>
+            </div>
+
+            <div id="panelEnvs" class="dashboard-panel hidden">
+                <div class="card-panel">
+                    <h2>Environments</h2>
+                    <p style="color:var(--dim);font-size:0.9rem;margin-bottom:1rem;">View all environments (endpoints), their collection tasks, and download links. You can clear all data for an environment.</p>
+                    <div id="envsArea">Loading…</div>
+                </div>
             </div>
         </div>
     </div>
@@ -136,27 +141,21 @@
             document.getElementById("loginScreen").classList.add("hidden");
             document.getElementById("dashboard").classList.add("visible");
             loadMe();
-            loadEnvironments();
-            loadTasks();
             loadInsights();
+            switchDashboardTab("Overview");
         }
 
-        async function loadEnvironments() {
-            const sel = document.getElementById("createTaskEnv");
-            const defaultOpt = sel.options[0];
-            sel.innerHTML = "";
-            sel.appendChild(defaultOpt);
-            try {
-                const j = await api("/api/governance/environments");
-                if (j && j.ok && j.data && j.data.length) {
-                    j.data.forEach(env => {
-                        const opt = document.createElement("option");
-                        opt.value = env.id;
-                        opt.textContent = env.name || env.id;
-                        sel.appendChild(opt);
-                    });
-                }
-            } catch (e) { /* keep default only */ }
+        function switchDashboardTab(name) {
+            document.querySelectorAll(".dashboard-tabs button").forEach(b => { b.classList.remove("active"); });
+            document.querySelectorAll(".dashboard-panel").forEach(p => p.classList.add("hidden"));
+            if (name === "Overview") {
+                document.getElementById("dashTabOverview").classList.add("active");
+                document.getElementById("panelOverview").classList.remove("hidden");
+            } else if (name === "Environments") {
+                document.getElementById("dashTabEnvs").classList.add("active");
+                document.getElementById("panelEnvs").classList.remove("hidden");
+                loadEnvs();
+            }
         }
 
         async function loadMe() {
@@ -193,21 +192,64 @@
             el.innerHTML = "<p><strong>Overall Score</strong> <span class='score-badge " + cls + "'>" + escapeHtml(score) + "/100</span> &nbsp; <strong>Risk Level</strong> <span class='score-badge " + cls + "'>" + escapeHtml(risk) + "</span></p><p style='color:var(--dim);font-size:0.85rem;'>Last report: " + escapeHtml(date) + "</p>" + domainsHtml + highRiskHtml;
         }
 
-        async function loadTasks() {
-            const j = await api("/api/governance/tasks");
-            const tbody = document.getElementById("tasksBody");
-            if (!j || !j.ok || !j.data || !j.data.length) {
-                tbody.innerHTML = "<tr><td colspan='4' style='color:var(--dim)'>No tasks yet.</td></tr>";
-                return;
+        async function loadEnvs() {
+            const el = document.getElementById("envsArea");
+            el.textContent = "Loading…";
+            if (!govCsrfToken) {
+                try {
+                    const me = await api("/api/governance/me");
+                    if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
+                } catch (_) {}
             }
-            tbody.innerHTML = j.data.map(t => {
-                const created = t.created_at ? (typeof t.created_at === 'number' ? new Date(t.created_at * 1000) : new Date(t.created_at)).toLocaleString() : "—";
-                const envName = t.env_name || t.environment_id || "—";
-                const status = (t.status || "pending").toLowerCase();
-                const downloadUrl = API_BASE + "/api/governance/download/" + encodeURIComponent(t.id) + "?token=" + encodeURIComponent(t.token || "");
-                const action = status === "pending" ? "<a href=\"" + escapeHtml(downloadUrl) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Download ZIP</a>" : "—";
-                return "<tr><td>" + escapeHtml(created) + "</td><td>" + escapeHtml(envName) + "</td><td>" + escapeHtml(status) + "</td><td>" + action + "</td></tr>";
-            }).join("");
+            try {
+                const [envRes, tasksRes] = await Promise.all([
+                    api("/api/governance/environments"),
+                    api("/api/governance/tasks")
+                ]);
+                const envs = (envRes && envRes.ok && envRes.data) ? envRes.data : [];
+                const tasks = (tasksRes && tasksRes.ok && tasksRes.data) ? tasksRes.data : [];
+                const byEnv = {};
+                envs.forEach(e => { byEnv[e.id] = { name: e.name || e.id, tasks: [] }; });
+                tasks.forEach(t => {
+                    const eid = t.environment_id || "";
+                    if (!byEnv[eid]) byEnv[eid] = { name: t.env_name || eid || "—", tasks: [] };
+                    byEnv[eid].tasks.push(t);
+                });
+                if (envs.length === 0 && Object.keys(byEnv).length === 0) {
+                    el.innerHTML = "<p style='color:var(--dim)'>No environments yet. Click <strong>New Task</strong> in the bar above and enter an environment name to create one.</p>";
+                    return;
+                }
+                const envIds = envs.length ? envs.map(e => e.id) : Object.keys(byEnv);
+                el.innerHTML = envIds.map(envId => {
+                    const block = byEnv[envId] || { name: envId, tasks: [] };
+                    const displayName = escapeHtml(block.name || envId);
+                    const taskRows = (block.tasks || []).map(t => {
+                        const created = t.created_at ? (typeof t.created_at === 'number' ? new Date(t.created_at * 1000) : new Date(t.created_at)).toLocaleString() : "—";
+                        const status = (t.status || "pending").toLowerCase();
+                        const downloadUrl = API_BASE + "/api/governance/download/" + encodeURIComponent(t.id) + "?token=" + encodeURIComponent(t.token || "");
+                        const action = status === "pending" ? "<a href=\"" + escapeHtml(downloadUrl) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Download ZIP</a>" : "—";
+                        return "<tr><td>" + escapeHtml(created) + "</td><td>" + escapeHtml(status) + "</td><td>" + action + "</td></tr>";
+                    }).join("");
+                    const tableHtml = block.tasks && block.tasks.length
+                        ? "<table style='margin-top:0.5rem;'><thead><tr><th>Created</th><th>Status</th><th>Action</th></tr></thead><tbody>" + taskRows + "</tbody></table>"
+                        : "<p style='color:var(--dim);font-size:0.9rem;margin-top:0.5rem;'>No tasks for this environment.</p>";
+                    return "<div class=\"env-block\" data-env-id=\"" + escapeHtml(envId) + "\"><h3><i class=\"fa-solid fa-server\"></i> " + displayName + "</h3>" + tableHtml + "<button type=\"button\" class=\"btn-danger\" style=\"margin-top:0.75rem;\" data-clear-env=\"" + escapeHtml(envId) + "\"><i class=\"fa-solid fa-trash-can\"></i> Clear environment data</button></div>";
+                }).join("");
+                el.querySelectorAll("[data-clear-env]").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const id = btn.getAttribute("data-clear-env");
+                        if (!confirm("Clear all reports and tasks for this environment? This cannot be undone.")) return;
+                        if (!govCsrfToken) { alert("Session expired. Please refresh and sign in again."); return; }
+                        try {
+                            const j = await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
+                            if (j && j.ok) { loadEnvs(); loadInsights(); alert("Environment data cleared."); }
+                            else alert((j && j.error) || "Failed to clear.");
+                        } catch (e) { alert("Request failed: " + (e.message || "network error")); }
+                    });
+                });
+            } catch (e) {
+                el.innerHTML = "<p class=\"msg err\">Failed to load environments.</p>";
+            }
         }
 
         document.getElementById("tabLogin").addEventListener("click", () => {
@@ -281,34 +323,49 @@
             document.getElementById("loginScreen").classList.remove("hidden");
         });
 
-        document.getElementById("btnCreateTask").addEventListener("click", async () => {
-            const resultEl = document.getElementById("createTaskResult");
-            resultEl.classList.add("hidden");
-            const envId = document.getElementById("createTaskEnv").value.trim();
-            const body = envId ? { environment_id: envId } : {};
-            const j = await api("/api/governance/session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
-            });
-            if (!j || !j.ok) {
-                resultEl.className = "msg err";
-                resultEl.textContent = (j && j.error) || "Failed to create task.";
-                resultEl.classList.remove("hidden");
+        document.getElementById("dashTabOverview").addEventListener("click", () => switchDashboardTab("Overview"));
+        document.getElementById("dashTabEnvs").addEventListener("click", () => switchDashboardTab("Environments"));
+
+        document.getElementById("btnNewTask").addEventListener("click", async () => {
+            const envName = prompt("Environment Name (e.g. HQ Office, Server-A). This matches the Environments tab; each environment has its own task list.");
+            if (envName == null || !envName.trim()) return;
+            if (!govCsrfToken) {
+                try {
+                    const me = await api("/api/governance/me");
+                    if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
+                } catch (_) {}
+            }
+            if (!govCsrfToken) {
+                alert("Session expired or missing security token. Please refresh the page or sign out and sign in again.");
                 return;
             }
-            const d = j.data;
-            const downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
-            resultEl.className = "msg ok";
-            resultEl.innerHTML = "Task created. <a href=\"" + downloadUrl + "\" target=\"_blank\">Download collector ZIP</a> (valid 12 hours).";
-            resultEl.classList.remove("hidden");
-            loadTasks();
+            try {
+                const j = await api("/api/governance/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ environment_id: envName.trim() })
+                });
+                if (!j || !j.ok) {
+                    alert((j && j.error) || "Failed to create task.");
+                    return;
+                }
+                const d = j.data;
+                const downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
+                alert("Task created. Download collector ZIP (valid 12 hours):\n\n" + downloadUrl);
+                if (document.getElementById("panelEnvs").classList.contains("hidden") === false) loadEnvs();
+                loadInsights();
+            } catch (e) {
+                alert("Request failed: " + (e.message || "network error"));
+            }
         });
 
         (async function init() {
             try {
                 const j = await api("/api/governance/me");
-                if (j && j.ok && j.user) showDashboard();
+                if (j && j.ok && j.user) {
+                    if (j.csrf_token) govCsrfToken = j.csrf_token;
+                    showDashboard();
+                }
             } catch (e) { /* silent */ }
         })();
     </script>
