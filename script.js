@@ -1490,9 +1490,9 @@ function renderForensicReportHtml(html, domainHint, meta) {
     if (reportDomain) reportDomain.textContent = domainHint || "Forensic Report";
     if (reportContent) {
         const trendHtml = renderTrendSummary(meta || {});
-        reportContent.innerHTML = trendHtml + '<div id="forensic-report-inline" class="forensic-report-inline"></div>';
-        const inlineDiv = document.getElementById('forensic-report-inline');
-        if (inlineDiv && window.currentReportHtml) {
+        reportContent.innerHTML = '<div class="report-page">' + trendHtml + '<div class="report-body"></div></div>';
+        const reportBody = reportContent.querySelector('.report-body');
+        if (reportBody && window.currentReportHtml) {
             try {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(window.currentReportHtml, 'text/html');
@@ -1501,13 +1501,13 @@ function renderForensicReportHtml(html, domainHint, meta) {
                 let scopedCss = '';
                 if (styleEl && styleEl.textContent) {
                     scopedCss = styleEl.textContent
-                        .replace(/\bbody\s*\{/g, '.forensic-report-inline {')
-                        .replace(/\bbody\s+,/g, '.forensic-report-inline,');
+                        .replace(/\bbody\s*\{/g, '.report-page .report-body {')
+                        .replace(/\bbody\s+,/g, '.report-page .report-body,');
                 }
-                inlineDiv.innerHTML = (scopedCss ? '<style>' + scopedCss + '</style>' : '') + bodyContent;
+                reportBody.innerHTML = (scopedCss ? '<style>' + scopedCss + '</style>' : '') + bodyContent;
             } catch (e) {
                 console.error('Report parse error:', e);
-                inlineDiv.innerHTML = '<p class="error">Report could not be displayed. Use Download HTML.</p>';
+                reportBody.innerHTML = '<p class="error">Report could not be displayed. Use Download HTML.</p>';
             }
         }
     }
