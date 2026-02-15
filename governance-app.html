@@ -47,12 +47,13 @@
         .back-link a { color: var(--dim); font-size: 0.9rem; }
         .dashboard-panel { display: block; }
         .dashboard-panel.hidden { display: none !important; }
-        .dashboard-body { display: flex; gap: 1.5rem; margin-top: 1rem; align-items: flex-start; }
-        .dashboard-sidebar { width: 180px; flex-shrink: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem; }
-        .dashboard-sidebar button { display: block; width: 100%; text-align: left; padding: 10px 14px; margin-bottom: 2px; border: none; border-radius: 6px; background: transparent; color: var(--dim); cursor: pointer; font-size: 0.95rem; }
-        .dashboard-sidebar button:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-        .dashboard-sidebar button.active { background: rgba(0,255,157,0.15); color: var(--green); }
-        .dashboard-main { flex: 1; min-width: 0; }
+        .dashboard-body { display: flex; gap: 0; margin-top: 1rem; align-items: stretch; min-height: 360px; }
+        .dashboard-sidebar { width: 160px; flex-shrink: 0; background: var(--card); border: 1px solid var(--border); border-right: none; border-radius: 8px 0 0 8px; padding: 12px 0; }
+        .dashboard-sidebar .nav-label { padding: 0 14px 8px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); }
+        .dashboard-sidebar button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 14px; margin: 0; border: none; border-left: 3px solid transparent; border-radius: 0; background: transparent; color: var(--dim); cursor: pointer; font-size: 0.9rem; }
+        .dashboard-sidebar button:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+        .dashboard-sidebar button.active { border-left-color: var(--green); background: rgba(0,255,157,0.08); color: var(--green); }
+        .dashboard-main { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 0 8px 8px 0; padding: 1.25rem; background: var(--card); }
         .env-block { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: rgba(0,0,0,0.2); }
         .env-block h3 { font-size: 0.95rem; margin: 0 0 0.75rem; color: var(--green); }
         .btn-danger { background: rgba(255,71,87,0.2); border-color: var(--fail); color: var(--fail); }
@@ -93,8 +94,9 @@
 
             <div class="dashboard-body">
                 <nav class="dashboard-sidebar" aria-label="Dashboard navigation">
-                    <button type="button" id="dashTabOverview" class="active"><i class="fa-solid fa-chart-line"></i> Overview</button>
-                    <button type="button" id="dashTabEnvs"><i class="fa-solid fa-server"></i> Environments</button>
+                    <div class="nav-label">Menu</div>
+                    <button type="button" id="dashTabOverview" class="active"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Overview</button>
+                    <button type="button" id="dashTabEnvs"><i class="fa-solid fa-server" aria-hidden="true"></i> Environments</button>
                 </nav>
                 <main class="dashboard-main">
             <div id="panelOverview" class="dashboard-panel">
