@@ -1183,6 +1183,19 @@ footer {
     width: 100%;
 }
 
+/* Inline forensic report: no iframe box, single page scroll */
+.forensic-report-inline {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+}
+.forensic-report-inline .header { margin-bottom: 1.5rem; }
+.forensic-report-inline .section-title { margin-top: 1.5rem; }
+.forensic-report-inline .footer { margin-top: 2rem; }
+
 .report-section-title {
     font-family: var(--font-mono);
     color: var(--accent-secondary);

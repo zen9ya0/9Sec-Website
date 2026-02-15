@@ -1390,9 +1390,26 @@ function renderForensicReportHtml(html, domainHint, meta) {
     if (reportDomain) reportDomain.textContent = domainHint || "Forensic Report";
     if (reportContent) {
         const trendHtml = renderTrendSummary(meta || {});
-        reportContent.innerHTML = `${trendHtml}<iframe id="forensic-report-frame" title="Forensic Report" style="width:100%;min-height:1200px;border:1px solid #1f1f1f;border-radius:8px;background:#0a0a0a;"></iframe>`;
-        const frame = document.getElementById('forensic-report-frame');
-        if (frame) frame.srcdoc = window.currentReportHtml;
+        reportContent.innerHTML = trendHtml + '<div id="forensic-report-inline" class="forensic-report-inline"></div>';
+        const inlineDiv = document.getElementById('forensic-report-inline');
+        if (inlineDiv && window.currentReportHtml) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(window.currentReportHtml, 'text/html');
+                const styleEl = doc.querySelector('style');
+                const bodyContent = doc.body ? doc.body.innerHTML : '';
+                let scopedCss = '';
+                if (styleEl && styleEl.textContent) {
+                    scopedCss = styleEl.textContent
+                        .replace(/\bbody\s*\{/g, '.forensic-report-inline {')
+                        .replace(/\bbody\s+,/g, '.forensic-report-inline,');
+                }
+                inlineDiv.innerHTML = (scopedCss ? '<style>' + scopedCss + '</style>' : '') + bodyContent;
+            } catch (e) {
+                console.error('Report parse error:', e);
+                inlineDiv.innerHTML = '<p class="error">Report could not be displayed. Use Download HTML.</p>';
+            }
+        }
     }
     if (btnDownload) {
         btnDownload.classList.remove('hidden');
@@ -1530,14 +1547,14 @@ if (btnDownloadReport) {
     });
 }
 
-// Download Forensic Report as PDF (professional layout, print-optimized)
+// Download Forensic Report as PDF (professional layout, light theme for visibility)
 const btnDownloadPdf = document.getElementById('btn-download-pdf');
 if (btnDownloadPdf) {
     btnDownloadPdf.addEventListener('click', async () => {
-        const frame = document.getElementById('forensic-report-frame');
+        const reportContent = document.getElementById('report-content');
         const data = window.currentReportData || {};
         const rawDomain = (data.domain || 'unknown').toString().replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'domain';
-        if (!frame || !frame.contentDocument || !frame.contentDocument.body) {
+        if (!reportContent || !reportContent.querySelector('.forensic-report-inline')) {
             if (typeof showNotice === 'function') showNotice('Please wait for the report to load, then try again.');
             return;
         }
@@ -1545,20 +1562,24 @@ if (btnDownloadPdf) {
             if (typeof showNotice === 'function') showNotice('PDF library not loaded. Refresh the page and try again.');
             return;
         }
-        const doc = frame.contentDocument;
         const wrapper = document.createElement('div');
         wrapper.id = 'pdf-export-wrapper';
+        wrapper.className = 'pdf-export-print';
         wrapper.style.background = '#fff';
-        wrapper.style.padding = '0';
+        wrapper.style.color = '#1a1a1a';
+        wrapper.style.padding = '20px';
         wrapper.style.maxWidth = '210mm';
         wrapper.style.margin = '0 auto';
-        const styleEl = doc.querySelector('style');
-        if (styleEl) wrapper.appendChild(styleEl.cloneNode(true));
+        wrapper.style.position = 'absolute';
+        wrapper.style.left = '-9999px';
+        wrapper.style.top = '0';
+        wrapper.style.width = '210mm';
         const lightTheme = document.createElement('style');
-        lightTheme.textContent = '#pdf-export-wrapper, #pdf-export-wrapper body { background: #fff !important; color: #1a1a1a !important; } #pdf-export-wrapper .header, #pdf-export-wrapper .header h1, #pdf-export-wrapper .section-title { color: #0a7b2e !important; border-color: #0a7b2e !important; } #pdf-export-wrapper .value.pass { color: #0a7b2e !important; } #pdf-export-wrapper .value.fail { color: #b91c1c !important; } #pdf-export-wrapper .value.warn { color: #b45309 !important; } #pdf-export-wrapper .card { background: #f8f8f8 !important; border-color: #ddd !important; } #pdf-export-wrapper .risk-item { background: #f5f5f5 !important; border-color: #ddd !important; } #pdf-export-wrapper .remediation-card { background: #e8f5e9 !important; border-color: #a5d6a7 !important; color: #1b5e20 !important; } #pdf-export-wrapper .remediation-title { color: #0a7b2e !important; } #pdf-export-wrapper .label { color: #555 !important; } #pdf-export-wrapper .footer { color: #666 !important; border-color: #ddd !important; } #pdf-export-wrapper pre { background: #f5f5f5 !important; color: #333 !important; border-color: #ccc !important; }';
+        lightTheme.textContent = '.pdf-export-print, .pdf-export-print .forensic-report-inline, .pdf-export-print .forensic-report-inline * { background-color: #fff !important; color: #1a1a1a !important; } .pdf-export-print .header, .pdf-export-print .header h1, .pdf-export-print .section-title, .pdf-export-print .forensic-report-inline .header, .pdf-export-print .forensic-report-inline .section-title { color: #0a7b2e !important; border-color: #0a7b2e !important; } .pdf-export-print .value.pass, .pdf-export-print .forensic-report-inline .value.pass { color: #0a7b2e !important; } .pdf-export-print .value.fail, .pdf-export-print .forensic-report-inline .value.fail { color: #b91c1c !important; } .pdf-export-print .value.warn, .pdf-export-print .forensic-report-inline .value.warn { color: #b45309 !important; } .pdf-export-print .card, .pdf-export-print .forensic-report-inline .card { background: #f8f8f8 !important; border-color: #ddd !important; color: #1a1a1a !important; } .pdf-export-print .risk-item, .pdf-export-print .forensic-report-inline .risk-item { background: #f5f5f5 !important; border-color: #ddd !important; color: #1a1a1a !important; } .pdf-export-print .remediation-card, .pdf-export-print .forensic-report-inline .remediation-card { background: #e8f5e9 !important; border-color: #a5d6a7 !important; color: #1b5e20 !important; } .pdf-export-print .remediation-title, .pdf-export-print .forensic-report-inline .remediation-title { color: #0a7b2e !important; } .pdf-export-print .label, .pdf-export-print .forensic-report-inline .label { color: #555 !important; } .pdf-export-print .footer, .pdf-export-print .forensic-report-inline .footer { color: #666 !important; border-color: #ddd !important; } .pdf-export-print pre, .pdf-export-print .forensic-report-inline pre { background: #f5f5f5 !important; color: #333 !important; border-color: #ccc !important; } .pdf-export-print .trend-card, .pdf-export-print .trend-summary .value { background: #f0f0f0 !important; color: #1a1a1a !important; border-color: #ddd !important; } .pdf-export-print .gap-warning { color: #b45309 !important; }';
         wrapper.appendChild(lightTheme);
-        const bodyClone = doc.body.cloneNode(true);
-        wrapper.appendChild(bodyClone);
+        const contentClone = reportContent.cloneNode(true);
+        contentClone.id = 'report-content-pdf-clone';
+        wrapper.appendChild(contentClone);
         document.body.appendChild(wrapper);
         btnDownloadPdf.disabled = true;
         btnDownloadPdf.textContent = ' Generating PDF…';
