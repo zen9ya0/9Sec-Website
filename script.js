@@ -1547,57 +1547,40 @@ if (btnDownloadReport) {
     });
 }
 
-// Download Forensic Report as PDF (professional layout, light theme for visibility)
+// Download PDF: backend-generated (pdf-lib), no blank pages
 const btnDownloadPdf = document.getElementById('btn-download-pdf');
 if (btnDownloadPdf) {
     btnDownloadPdf.addEventListener('click', async () => {
-        const reportContent = document.getElementById('report-content');
-        const data = window.currentReportData || {};
-        const rawDomain = (data.domain || 'unknown').toString().replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'domain';
-        if (!reportContent || !reportContent.querySelector('.forensic-report-inline')) {
+        const id = currentAssessmentId;
+        if (!id) {
             if (typeof showNotice === 'function') showNotice('Please wait for the report to load, then try again.');
             return;
         }
-        if (typeof html2pdf === 'undefined') {
-            if (typeof showNotice === 'function') showNotice('PDF library not loaded. Refresh the page and try again.');
-            return;
-        }
-        const wrapper = document.createElement('div');
-        wrapper.id = 'pdf-export-wrapper';
-        wrapper.className = 'pdf-export-print';
-        wrapper.style.background = '#fff';
-        wrapper.style.color = '#1a1a1a';
-        wrapper.style.padding = '20px';
-        wrapper.style.maxWidth = '210mm';
-        wrapper.style.margin = '0 auto';
-        wrapper.style.position = 'absolute';
-        wrapper.style.left = '-9999px';
-        wrapper.style.top = '0';
-        wrapper.style.width = '210mm';
-        const lightTheme = document.createElement('style');
-        lightTheme.textContent = '.pdf-export-print, .pdf-export-print .forensic-report-inline, .pdf-export-print .forensic-report-inline * { background-color: #fff !important; color: #1a1a1a !important; } .pdf-export-print .header, .pdf-export-print .header h1, .pdf-export-print .section-title, .pdf-export-print .forensic-report-inline .header, .pdf-export-print .forensic-report-inline .section-title { color: #0a7b2e !important; border-color: #0a7b2e !important; } .pdf-export-print .value.pass, .pdf-export-print .forensic-report-inline .value.pass { color: #0a7b2e !important; } .pdf-export-print .value.fail, .pdf-export-print .forensic-report-inline .value.fail { color: #b91c1c !important; } .pdf-export-print .value.warn, .pdf-export-print .forensic-report-inline .value.warn { color: #b45309 !important; } .pdf-export-print .card, .pdf-export-print .forensic-report-inline .card { background: #f8f8f8 !important; border-color: #ddd !important; color: #1a1a1a !important; } .pdf-export-print .risk-item, .pdf-export-print .forensic-report-inline .risk-item { background: #f5f5f5 !important; border-color: #ddd !important; color: #1a1a1a !important; } .pdf-export-print .remediation-card, .pdf-export-print .forensic-report-inline .remediation-card { background: #e8f5e9 !important; border-color: #a5d6a7 !important; color: #1b5e20 !important; } .pdf-export-print .remediation-title, .pdf-export-print .forensic-report-inline .remediation-title { color: #0a7b2e !important; } .pdf-export-print .label, .pdf-export-print .forensic-report-inline .label { color: #555 !important; } .pdf-export-print .footer, .pdf-export-print .forensic-report-inline .footer { color: #666 !important; border-color: #ddd !important; } .pdf-export-print pre, .pdf-export-print .forensic-report-inline pre { background: #f5f5f5 !important; color: #333 !important; border-color: #ccc !important; } .pdf-export-print .trend-card, .pdf-export-print .trend-summary .value { background: #f0f0f0 !important; color: #1a1a1a !important; border-color: #ddd !important; } .pdf-export-print .gap-warning { color: #b45309 !important; }';
-        wrapper.appendChild(lightTheme);
-        const contentClone = reportContent.cloneNode(true);
-        contentClone.id = 'report-content-pdf-clone';
-        wrapper.appendChild(contentClone);
-        document.body.appendChild(wrapper);
         btnDownloadPdf.disabled = true;
         btnDownloadPdf.textContent = ' Generating PDF…';
         try {
-            const opt = {
-                margin: [10, 10, 10, 10],
-                filename: `9Sec_Forensic_Report_${rawDomain}.pdf`,
-                image: { type: 'jpeg', quality: 0.96 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'], before: '.section-title', after: '.footer' }
-            };
-            await html2pdf().set(opt).from(wrapper).save();
+            const resp = await fetch(`${API_BASE}/api/assessment/${id}/report.pdf`);
+            if (!resp.ok) {
+                const err = await resp.json().catch(() => ({}));
+                if (typeof showNotice === 'function') showNotice(err.error || 'PDF unavailable.');
+                return;
+            }
+            const blob = await resp.blob();
+            const disposition = resp.headers.get('Content-Disposition');
+            const match = disposition && disposition.match(/filename="?([^";]+)"?/);
+            const filename = match ? match[1].trim() : `9Sec_Forensic_Report_${id}.pdf`;
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         } catch (e) {
-            console.error('PDF export failed:', e);
-            if (typeof showNotice === 'function') showNotice('PDF export failed. Try downloading HTML and printing to PDF.');
+            console.error('PDF download failed:', e);
+            if (typeof showNotice === 'function') showNotice('PDF download failed. Check network or try Download HTML.');
         } finally {
-            document.body.removeChild(wrapper);
             btnDownloadPdf.disabled = false;
             btnDownloadPdf.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF';
         }
