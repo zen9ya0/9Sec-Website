@@ -1181,6 +1181,37 @@ function generateMockReport(domain) {
     };
 }
 
+/** Remediation hints for risk findings (Phase 3). Key substring in item text -> { title, snippet, priority } */
+function getRemediationHint(item) {
+    if (!item || typeof item.item !== "string") return null;
+    const s = (item.item || "").toLowerCase();
+    if (s.includes("spf") && (s.includes("missing") || s.includes("depth") || s.includes("limit"))) {
+        return { title: "SPF", snippet: "Add or simplify SPF: TXT @ root e.g. v=spf1 include:_spf.example.com -all. Keep total lookups ≤10 (RFC 7208).", priority: "high" };
+    }
+    if (s.includes("dmarc") && (s.includes("none") || s.includes("pct") || s.includes("destination"))) {
+        return { title: "DMARC", snippet: "Set p=reject or p=quarantine; pct=100; aspf=s; adkim=s. Use same-domain mailto for rua/ruf.", priority: "high" };
+    }
+    if (s.includes("dkim") && (s.includes("missing") || s.includes("fail") || s.includes("quality") || s.includes("weak"))) {
+        return { title: "DKIM", snippet: "Publish 2048-bit DKIM key at selector._domainkey.<domain>. Sign From and critical headers.", priority: "high" };
+    }
+    if (s.includes("tls") && (s.includes("posture") || s.includes("mta-sts"))) {
+        return { title: "TLS", snippet: "Enable MTA-STS (HTTPS /.well-known/mta-sts.txt) and TLS-RPT (_smtp._tls TXT). Use STARTTLS on all hops.", priority: "medium" };
+    }
+    if (s.includes("routing anomaly") || s.includes("relay")) {
+        return { title: "Routing", snippet: "Reduce unnecessary relays; ensure all hops use TLS; fix missing PTR/hostnames on relays.", priority: "medium" };
+    }
+    if (s.includes("bec") || s.includes("reply-to") || s.includes("return-path")) {
+        return { title: "BEC", snippet: "Align Reply-To and Return-Path with From domain. Avoid external reply addresses for corporate mail.", priority: "high" };
+    }
+    if (s.includes("alignment")) {
+        return { title: "Alignment", snippet: "Ensure Envelope From (Return-Path) and DKIM d= match Header From domain (organizational alignment).", priority: "high" };
+    }
+    if (s.includes("rbl") || s.includes("blacklist")) {
+        return { title: "Reputation", snippet: "Request delisting from reported RBLs; fix open relay or compromised host; warm up IP reputation.", priority: "high" };
+    }
+    return null;
+}
+
 function renderReport(report) {
     if (!report) {
         console.error("No report data available");
@@ -1212,17 +1243,21 @@ function renderReport(report) {
             </div>
         `;
 
-        // Unified Executive Report (與後端 / 下載 / Discord 一致)
+        // Unified Executive Report (與後端 / 下載 / Discord 一致) + remediation cards (P3-5)
         const riskItemBorder = (r) => r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666');
         let html = `
             <div class="section-title">> Executive Risk Profile (Score: ${riskScore}/100)</div>
             <div class="risk-container">
-                ${riskBreakdown.map(r => `
+                ${riskBreakdown.map(r => {
+                    const hint = getRemediationHint(r);
+                    const hintHtml = hint ? `<div class="remediation-card" data-priority="${escapeHtml(hint.priority)}"><span class="remediation-title">${escapeHtml(hint.title)} — Fix:</span> ${escapeHtml(hint.snippet)}</div>` : '';
+                    return `
                     <div class="risk-item" style="border-left-color: ${riskItemBorder(r)};">
                         <span>${escapeHtml(String(r.item != null ? r.item : ''))}</span>
                         <span class="value pass">+${r.score}</span>
-                    </div>
-                `).join('')}
+                        ${hintHtml}
+                    </div>`;
+                }).join('')}
             </div>
 
             <div class="section-title">> Authentication Infrastructure</div>
