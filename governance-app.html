@@ -51,6 +51,7 @@
     <div class="container">
         <div class="back-link"><a href="governance-portal.html"><i class="fa-solid fa-arrow-left"></i> Back to Governance Portal</a></div>
         <h1><i class="fa-solid fa-scale-balanced"></i> Governance Automation SaaS</h1>
+        <p id="backendStatus" style="font-size:0.85rem;color:var(--dim);margin-bottom:1rem;">Checking backend…</p>
 
         <div id="loginScreen">
             <div class="tabs">
@@ -190,13 +191,17 @@
             const email = document.getElementById("loginEmail").value.trim();
             const password = document.getElementById("loginPassword").value;
             if (!email || !password) { showMsg("loginMsg", "Please enter email and password.", true); return; }
-            const j = await api("/api/governance/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-            if (j && j.ok) { showDashboard(); return; }
-            showMsg("loginMsg", (j && j.error) || "Login failed.", true);
+            try {
+                const j = await api("/api/governance/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                });
+                if (j && j.ok) { showDashboard(); return; }
+                showMsg("loginMsg", (j && j.error) || "Login failed.", true);
+            } catch (e) {
+                showMsg("loginMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
+            }
         });
 
         document.getElementById("btnSignup").addEventListener("click", async () => {
@@ -206,13 +211,17 @@
             const password = document.getElementById("signupPassword").value;
             if (!org_name || !email || !password) { showMsg("signupMsg", "Please fill all fields.", true); return; }
             if (password.length < 8) { showMsg("signupMsg", "Password must be at least 8 characters.", true); return; }
-            const j = await api("/api/governance/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password, org_name })
-            });
-            if (j && j.ok) { showMsg("signupMsg", "Account created. You can sign in now.", false); return; }
-            showMsg("signupMsg", (j && j.error) || "Signup failed.", true);
+            try {
+                const j = await api("/api/governance/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password, org_name })
+                });
+                if (j && j.ok) { showMsg("signupMsg", "Account created. You can sign in now.", false); return; }
+                showMsg("signupMsg", (j && j.error) || "Signup failed.", true);
+            } catch (e) {
+                showMsg("signupMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
+            }
         });
 
         document.getElementById("btnLogout").addEventListener("click", async () => {
@@ -244,8 +253,16 @@
         });
 
         (async function init() {
-            const j = await api("/api/governance/me");
-            if (j && j.ok && j.user) showDashboard();
+            const statusEl = document.getElementById("backendStatus");
+            try {
+                const j = await api("/api/governance/me");
+                statusEl.textContent = "Backend: " + API_BASE + " (connected)";
+                statusEl.style.color = "var(--green)";
+                if (j && j.ok && j.user) showDashboard();
+            } catch (e) {
+                statusEl.textContent = "Backend: " + API_BASE + " — unreachable (" + (e.message || "network/CORS error") + ")";
+                statusEl.style.color = "var(--fail)";
+            }
         })();
     </script>
 </body>
