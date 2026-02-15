@@ -1,3 +1,32 @@
+/*
+ _   _ _              ____                        _ _          
+| \ | (_)_ __   ___  / ___|  ___  ___ _   _ _ __(_) |_ _   _ 
+|  \| | | '_ \ / _ \ \___ \ / _ \/ __| | | | '__| | __| | | |
+| |\  | | | | |  __/  ___) |  __/ (__| |_| | |  | | |_| |_| |
+|_| \_|_|_| |_|\___| |____/ \___|\___|\__,_|_|  |_|\__|\__, |
+                                                        |___/ 
+Nine-Security.INC - Copyright (c) 2026. All rights reserved.
+*/
+
+(() => {
+    if (typeof window === "undefined" || window.__nineSecBannerShown) return;
+    window.__nineSecBannerShown = true;
+    const banner = [
+        " _   _ _              ____                        _ _          ",
+        "| \\ | (_)_ __   ___  / ___|  ___  ___ _   _ _ __(_) |_ _   _ ",
+        "|  \\| | | '_ \\ / _ \\ \\___ \\ / _ \\/ __| | | | '__| | __| | | |",
+        "| |\\  | | | | |  __/  ___) |  __/ (__| |_| | |  | | |_| |_| |",
+        "|_| \\_|_|_| |_|\\___| |____/ \\___|\\___|\\__,_|_|  |_|\\__|\\__, |",
+        "                                                        |___/ ",
+        "Nine-Security.INC - Copyright (c) 2026. All rights reserved."
+    ].join("\n");
+    try {
+        console.log(banner);
+    } catch (e) {
+        // Ignore console output failures on restricted environments.
+    }
+})();
+
 const canvas = document.getElementById('bg-canvas');
 if (canvas) {
     const ctx = canvas.getContext('2d');
