@@ -935,30 +935,37 @@ if (themeToggleBtn) {
 function closeMobileMenu(nav) {
     if (!nav) return;
     nav.classList.remove('mobile-menu-open');
-    const btn = nav.querySelector('.mobile-menu-btn i');
-    if (btn) {
-        btn.classList.remove('fa-bars', 'fa-xmark');
-        btn.classList.add('fa-bars');
+    const icon = nav.querySelector('.mobile-menu-btn i');
+    if (icon) {
+        icon.classList.remove('fa-bars', 'fa-xmark');
+        icon.classList.add('fa-bars');
     }
 }
 
-document.querySelectorAll('.mobile-menu-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-        const nav = btn.closest('nav');
-        if (!nav) return;
-        const isOpen = nav.classList.toggle('mobile-menu-open');
-        const icon = btn.querySelector('i');
-        if (icon) {
-            icon.classList.remove('fa-bars', 'fa-xmark');
-            icon.classList.add(isOpen ? 'fa-xmark' : 'fa-bars');
-        }
-    });
+function toggleMobileMenu(btn) {
+    const nav = btn.closest('nav');
+    if (!nav) return;
+    const isOpen = nav.classList.toggle('mobile-menu-open');
+    const icon = btn.querySelector('i');
+    if (icon) {
+        icon.classList.remove('fa-bars', 'fa-xmark');
+        icon.classList.add(isOpen ? 'fa-xmark' : 'fa-bars');
+    }
+}
+
+// Event delegation: 點擊任何 .mobile-menu-btn（含動態加入的）都會觸發，避免第一次後失效
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mobile-menu-btn');
+    if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleMobileMenu(btn);
+    }
 });
 
-document.querySelectorAll('nav .nav-links a').forEach((link) => {
-    link.addEventListener('click', () => {
-        closeMobileMenu(link.closest('nav'));
-    });
+document.addEventListener('click', (e) => {
+    const link = e.target.closest('nav .nav-links a');
+    if (link) closeMobileMenu(link.closest('nav'));
 });
 
 function updateThemeLabel(theme) {

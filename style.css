@@ -726,6 +726,12 @@ footer {
         display: flex;
     }
 
+    /* 選單打開時按鈕保持在最上層，確保第二次點擊能關閉選單 */
+    nav.mobile-menu-open .mobile-menu-btn {
+        position: relative;
+        z-index: 101;
+    }
+
     .mobile-menu-btn {
         display: flex;
         align-items: center;
