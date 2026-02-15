@@ -1063,7 +1063,7 @@ async function fetchAndRenderReport(id) {
             if (stepVerify) stepVerify.classList.add('hidden');
             if (stepReport) stepReport.classList.remove('hidden');
 
-            renderForensicReportHtml(data.report_html, data.domain || id);
+            renderForensicReportHtml(data.report_html, data.domain || id, data);
             return;
         }
 
@@ -1099,6 +1099,7 @@ const btnMockVerify = document.getElementById('btn-mock-verify'); // Dev only - 
 let currentAssessmentId = null;
 let pollInterval = null;
 window.currentReportHtml = null;
+window.currentTrendData = null;
 
 /* Legacy form handler removed
 if (smtpForm) {
@@ -1198,6 +1199,18 @@ function renderReport(report) {
         const riskScore = report.risk_score || 0;
         const riskBreakdown = report.risk_breakdown || [];
         const rblStatus = report.rbl_status || 'unchecked';
+        const additionalChecksHtml = `
+            <div class="section-title">> Additional Security Checks</div>
+            <div class="grid">
+                <div class="card"><div class="label">SPF Lookup Depth</div><div class="value ${Number(dns.spf_lookups || 0) > 10 ? 'fail' : (Number(dns.spf_lookups || 0) >= 8 ? 'warn' : 'pass')}">${dns.spf_lookups ?? 'N/A'}</div></div>
+                <div class="card"><div class="label">DMARC Destination Risks</div><div class="value ${(dns.dmarc_destinations?.risks || []).length > 0 ? 'warn' : 'pass'}">${(dns.dmarc_destinations?.risks || []).length}</div></div>
+                <div class="card"><div class="label">SPF Semantic Risks</div><div class="value ${(dns.spf_semantic?.risks || []).length > 0 ? 'warn' : 'pass'}">${(dns.spf_semantic?.risks || []).length}</div></div>
+                <div class="card"><div class="label">DMARC Semantic Risks</div><div class="value ${(dns.dmarc_semantic?.risks || []).length > 0 ? 'warn' : 'pass'}">${(dns.dmarc_semantic?.risks || []).length}</div></div>
+                <div class="card"><div class="label">Routing Anomalies</div><div class="value ${(report.deep_analysis?.routing_analysis?.anomalies || []).length > 0 ? 'warn' : 'pass'}">${(report.deep_analysis?.routing_analysis?.anomalies || []).length}</div></div>
+                <div class="card"><div class="label">Routing Relay Count</div><div class="value">${report.deep_analysis?.routing_analysis?.relay_count ?? 'N/A'}</div></div>
+                <div class="card"><div class="label">TLS Posture</div><div class="value ${getStatusClass(dns.tls_posture?.status || 'warn')}">${String(dns.tls_posture?.status || 'warn').toUpperCase()} (${dns.tls_posture?.score ?? 'N/A'})</div></div>
+            </div>
+        `;
 
         // Unified Executive Report (與後端 / 下載 / Discord 一致)
         const riskItemBorder = (r) => r.severity === 'high' ? '#ff0055' : (r.severity === 'medium' ? '#ffaa00' : '#666');
@@ -1242,6 +1255,8 @@ function renderReport(report) {
                 <div class="card"><div class="label">Transport Encryption</div><div class="value pass">${escapeHtml(String(tls.version || 'TLS 1.3 (Verified)'))}</div></div>
             </div>
 
+            ${additionalChecksHtml}
+
             <div class="cta-box">
                 <h3>Want the Technical Forensic Report?</h3>
                 <p>Our backend has identified specific RFC violations and policy handshake failures.</p>
@@ -1267,17 +1282,52 @@ function renderReport(report) {
     }
 }
 
-function renderForensicReportHtml(html, domainHint) {
+function formatDelta(v) {
+    if (!Number.isFinite(Number(v))) return "N/A";
+    const n = Number(v);
+    return `${n > 0 ? "+" : ""}${n}`;
+}
+
+function renderTrendSummary(meta = {}) {
+    const checks = meta.checks_summary || {};
+    const trend = meta.trend_analysis || {};
+    const baseline = meta.domain_baseline || {};
+    const semanticNow = Number(checks.spf_semantic_risks || 0) + Number(checks.dmarc_semantic_risks || 0);
+    const semanticDelta = Number(trend.spf_semantic_risks_delta || 0) + Number(trend.dmarc_semantic_risks_delta || 0);
+    return `
+        <div class="trend-summary">
+            <div class="trend-card">
+                <div class="label">Current Checks</div>
+                <div class="value">SPF ${checks.spf_lookups ?? "N/A"} | DMARC Risks ${checks.dmarc_destination_risks ?? "N/A"} | Routing ${checks.routing_anomalies ?? "N/A"}</div>
+            </div>
+            <div class="trend-card">
+                <div class="label">Trend Delta</div>
+                <div class="value">Risk ${formatDelta(trend.risk_score_delta)} | SPF ${formatDelta(trend.spf_lookups_delta)} | Routing ${formatDelta(trend.routing_anomalies_delta)}</div>
+            </div>
+            <div class="trend-card">
+                <div class="label">Domain Baseline</div>
+                <div class="value">Samples ${baseline.samples ?? 0} | Avg Risk ${Math.round(Number(baseline.avg_risk_score || 0))}</div>
+            </div>
+            <div class="trend-card">
+                <div class="label">Semantic + TLS</div>
+                <div class="value">Semantic ${semanticNow} (${formatDelta(semanticDelta)}) | TLS ${checks.tls_posture_score ?? "N/A"} (${formatDelta(trend.tls_posture_score_delta)})</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderForensicReportHtml(html, domainHint, meta) {
     const reportDomain = document.getElementById('report-domain');
     const reportContent = document.getElementById('report-content');
     const btnDownload = document.getElementById('btn-download-report');
-
     window.currentReportHtml = String(html || "");
+    window.currentTrendData = meta || null;
     window.currentReportData = { domain: domainHint || "unknown" };
 
     if (reportDomain) reportDomain.textContent = domainHint || "Forensic Report";
     if (reportContent) {
-        reportContent.innerHTML = `<iframe id="forensic-report-frame" title="Forensic Report" style="width:100%;min-height:1200px;border:1px solid #1f1f1f;border-radius:8px;background:#0a0a0a;"></iframe>`;
+        const trendHtml = renderTrendSummary(meta || {});
+        reportContent.innerHTML = `${trendHtml}<iframe id="forensic-report-frame" title="Forensic Report" style="width:100%;min-height:1200px;border:1px solid #1f1f1f;border-radius:8px;background:#0a0a0a;"></iframe>`;
         const frame = document.getElementById('forensic-report-frame');
         if (frame) frame.srcdoc = window.currentReportHtml;
     }
@@ -1306,6 +1356,7 @@ if (btnResetCheck) {
         // Clean up data
         currentAssessmentId = null;
         window.currentReportHtml = null;
+        window.currentTrendData = null;
         if (pollInterval) clearInterval(pollInterval);
         if (emailInput) emailInput.value = '';
         if (scanLog) scanLog.innerHTML = '';

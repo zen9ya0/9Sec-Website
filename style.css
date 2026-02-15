@@ -1751,3 +1751,17 @@ footer {
     background: linear-gradient(90deg, transparent, var(--accent-secondary), transparent);
     animation: flowLight 3s linear infinite;
 }
+
+.trend-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.trend-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+}
