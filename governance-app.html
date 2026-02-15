@@ -121,6 +121,7 @@
     <script>
         const API_BASE = "https://api.nine-security.com";
         let govCsrfToken = null;
+        let csrfLogoutShown = false;
 
         function showMsg(elId, text, isErr) {
             const el = document.getElementById(elId);
@@ -278,6 +279,7 @@
                 });
                 if (j && j.ok) {
                     govCsrfToken = j.csrf_token || null;
+                    csrfLogoutShown = false;
                     showDashboard();
                     return;
                 }
@@ -346,10 +348,13 @@
                     var errMsg = (j && j.error) ? String(j.error) : "Failed to create task.";
                     if (errMsg.indexOf("CSRF") !== -1 || errMsg.indexOf("Invalid session") !== -1) {
                         govCsrfToken = null;
-                        alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
-                        await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-                        document.getElementById("dashboard").classList.remove("visible");
-                        document.getElementById("loginScreen").classList.remove("hidden");
+                        if (!csrfLogoutShown) {
+                            csrfLogoutShown = true;
+                            alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
+                            await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+                            document.getElementById("dashboard").classList.remove("visible");
+                            document.getElementById("loginScreen").classList.remove("hidden");
+                        }
                     } else {
                         alert(errMsg);
                     }
@@ -394,10 +399,13 @@
                             var errMsg = (j && j.error) ? String(j.error) : "Failed to clear.";
                             if (errMsg.indexOf("CSRF") !== -1 || errMsg.indexOf("Invalid session") !== -1) {
                                 govCsrfToken = null;
-                                alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
-                                await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-                                document.getElementById("dashboard").classList.remove("visible");
-                                document.getElementById("loginScreen").classList.remove("hidden");
+                                if (!csrfLogoutShown) {
+                                    csrfLogoutShown = true;
+                                    alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
+                                    await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+                                    document.getElementById("dashboard").classList.remove("visible");
+                                    document.getElementById("loginScreen").classList.remove("hidden");
+                                }
                             } else {
                                 alert(errMsg);
                             }
