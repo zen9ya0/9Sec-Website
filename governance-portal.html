@@ -21,48 +21,66 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             text-align: center;
         }
 
         .container {
-            max-width: 600px;
+            max-width: 560px;
             padding: 2rem;
         }
 
         .logo {
             font-size: 3rem;
             color: #00ff9d;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         h1 {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 2rem;
+            font-size: 1.75rem;
             margin-bottom: 1rem;
         }
 
         p {
-            color: #71767d;
-            margin-bottom: 2rem;
+            color: #a0a0a0;
+            margin-bottom: 1.5rem;
             line-height: 1.6;
+        }
+
+        .btn-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
         }
 
         .btn {
             display: inline-block;
-            padding: 12px 24px;
+            padding: 14px 28px;
             background-color: transparent;
             color: #00ff9d;
             border: 1px solid #00ff9d;
             text-decoration: none;
             border-radius: 4px;
             font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
         }
 
         .btn:hover {
-            background-color: rgba(0, 255, 157, 0.1);
+            background-color: rgba(0, 255, 157, 0.12);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 212, 255, 0.15));
+            border-color: #00ff9d;
+        }
+
+        .btn.primary:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.3), rgba(0, 212, 255, 0.25));
         }
 
         .legal-footer {
@@ -82,12 +100,14 @@
 
 <body>
     <div class="container">
-        <div class="logo"><i class="fa-solid fa-microchip"></i></div>
-        <h1>Governance Portal</h1>
-        <p>This module is currently undergoing scheduled maintenance and system upgrades to enhance security and
-            performance.</p>
-        <p>Please check back later or contact our support team for assistance.</p>
-        <a href="index.html" class="btn">RETURN TO HOME</a>
+        <div class="logo"><i class="fa-solid fa-scale-balanced"></i></div>
+        <h1>Governance Automation</h1>
+        <p>Compliance evidence collection, maturity scoring, and audit readiness. ISO27001 / NIST aligned. Start your 7-day trial or sign in to the dashboard.</p>
+        <div class="btn-wrap">
+            <a href="9sec-p6x-portal.html" class="btn primary">OPEN DASHBOARD <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></a>
+            <a href="contact.html" class="btn">CONTACT SUPPORT</a>
+            <a href="index.html" class="btn">RETURN TO HOME</a>
+        </div>
     </div>
     <div class="legal-footer">&copy; 2026 Nine-Security. All rights reserved.</div>
 </body>
