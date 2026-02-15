@@ -1592,7 +1592,7 @@ if (btnDownloadPdf) {
             const resp = await fetch(`${API_BASE}/api/assessment/${id}/report.pdf`);
             if (!resp.ok) {
                 const err = await resp.json().catch(() => ({}));
-                if (typeof showNotice === 'function') showNotice(err.error || 'PDF unavailable.');
+                if (typeof showNotice === 'function') showNotice(err.error || 'PDF unavailable. Try Download HTML.');
                 return;
             }
             const blob = await resp.blob();
@@ -1609,7 +1609,7 @@ if (btnDownloadPdf) {
             document.body.removeChild(a);
         } catch (e) {
             console.error('PDF download failed:', e);
-            if (typeof showNotice === 'function') showNotice('PDF download failed. Check network or try Download HTML.');
+            if (typeof showNotice === 'function') showNotice('PDF download failed (network or API). Try Download HTML or refresh the page.');
         } finally {
             btnDownloadPdf.disabled = false;
             btnDownloadPdf.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF';
