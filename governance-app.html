@@ -85,7 +85,13 @@
 
             <div class="card-panel">
                 <h2>Collection Tasks</h2>
-                <p style="color:var(--dim);font-size:0.9rem;margin-bottom:1rem;">Create a task to download the collector ZIP. Run collector.exe on the target machine to upload evidence.</p>
+                <p style="color:var(--dim);font-size:0.9rem;margin-bottom:0.5rem;">Create a task to download the collector ZIP. Run collector.exe on the target machine; it will collect evidence and <strong>automatically upload</strong> to this platform. The platform then <strong>automatically analyzes</strong> and updates the maturity score above.</p>
+                <div class="form-row" style="max-width:320px;margin-bottom:1rem;">
+                    <label>Environment</label>
+                    <select id="createTaskEnv" style="padding:10px 14px;border-radius:6px;border:1px solid var(--border);background:#1a1f26;color:var(--text);width:100%;">
+                        <option value="">Default (auto)</option>
+                    </select>
+                </div>
                 <button type="button" id="btnCreateTask"><i class="fa-solid fa-plus"></i> Create Collection Task</button>
                 <div id="createTaskResult" class="hidden"></div>
                 <table style="margin-top:1.5rem;">
@@ -98,6 +104,7 @@
 
     <script>
         const API_BASE = "https://api.nine-security.com";
+        let govCsrfToken = null;
 
         function showMsg(elId, text, isErr) {
             const el = document.getElementById(elId);
@@ -106,10 +113,20 @@
             el.classList.remove("hidden");
         }
         function hideMsg(elId) { document.getElementById(elId).classList.add("hidden"); }
+        function escapeHtml(s) {
+            if (s == null || s === "") return "";
+            const t = String(s);
+            return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        }
 
         async function api(path, opts = {}) {
             const url = API_BASE + path;
-            const res = await fetch(url, { credentials: "include", ...opts });
+            const method = (opts.method || "GET").toUpperCase();
+            const headers = { ...(opts.headers || {}) };
+            if (path.startsWith("/api/governance/") && (method === "POST" || method === "DELETE") && govCsrfToken) {
+                headers["X-CSRF-Token"] = govCsrfToken;
+            }
+            const res = await fetch(url, { credentials: "include", ...opts, headers });
             const contentType = res.headers.get("content-type") || "";
             if (contentType.includes("application/json")) return await res.json();
             return res;
@@ -119,14 +136,34 @@
             document.getElementById("loginScreen").classList.add("hidden");
             document.getElementById("dashboard").classList.add("visible");
             loadMe();
+            loadEnvironments();
             loadTasks();
             loadInsights();
+        }
+
+        async function loadEnvironments() {
+            const sel = document.getElementById("createTaskEnv");
+            const defaultOpt = sel.options[0];
+            sel.innerHTML = "";
+            sel.appendChild(defaultOpt);
+            try {
+                const j = await api("/api/governance/environments");
+                if (j && j.ok && j.data && j.data.length) {
+                    j.data.forEach(env => {
+                        const opt = document.createElement("option");
+                        opt.value = env.id;
+                        opt.textContent = env.name || env.id;
+                        sel.appendChild(opt);
+                    });
+                }
+            } catch (e) { /* keep default only */ }
         }
 
         async function loadMe() {
             const j = await api("/api/governance/me");
             if (j && j.ok && j.user) {
                 document.getElementById("userInfo").textContent = j.user.email + " · " + (j.user.org_name || "Org");
+                if (j.csrf_token) govCsrfToken = j.csrf_token;
             }
         }
 
@@ -150,9 +187,10 @@
             let domainsHtml = "";
             if (d.domains && d.domains.length) {
                 domainsHtml = "<table style='margin-top:0.75rem;'><tr><th>Domain</th><th>Score</th></tr>" +
-                    d.domains.map(x => "<tr><td>" + (x.domain_name || "—") + "</td><td>" + (x.score != null ? Math.round(x.score) : "—") + "</td></tr>").join("") + "</table>";
+                    d.domains.map(x => "<tr><td>" + escapeHtml(x.domain_name || "—") + "</td><td>" + escapeHtml(x.score != null ? Math.round(x.score) : "—") + "</td></tr>").join("") + "</table>";
             }
-            el.innerHTML = "<p><strong>Overall Score</strong> <span class='score-badge " + cls + "'>" + score + "/100</span> &nbsp; <strong>Risk Level</strong> <span class='score-badge " + cls + "'>" + risk + "</span></p><p style='color:var(--dim);font-size:0.85rem;'>Last report: " + date + "</p>" + domainsHtml;
+            const highRiskHtml = "<p style='margin-top:1rem;color:var(--dim);font-size:0.85rem;'><strong style='color:var(--warn);'>High-risk domains</strong>: — (coming soon)</p>";
+            el.innerHTML = "<p><strong>Overall Score</strong> <span class='score-badge " + cls + "'>" + escapeHtml(score) + "/100</span> &nbsp; <strong>Risk Level</strong> <span class='score-badge " + cls + "'>" + escapeHtml(risk) + "</span></p><p style='color:var(--dim);font-size:0.85rem;'>Last report: " + escapeHtml(date) + "</p>" + domainsHtml + highRiskHtml;
         }
 
         async function loadTasks() {
@@ -166,9 +204,9 @@
                 const created = t.created_at ? (typeof t.created_at === 'number' ? new Date(t.created_at * 1000) : new Date(t.created_at)).toLocaleString() : "—";
                 const envName = t.env_name || t.environment_id || "—";
                 const status = (t.status || "pending").toLowerCase();
-                const downloadUrl = API_BASE + "/api/governance/download/" + t.id + "?token=" + encodeURIComponent(t.token || "");
-                const action = status === "pending" ? "<a href=\"" + downloadUrl + "\" target=\"_blank\">Download ZIP</a>" : "—";
-                return "<tr><td>" + created + "</td><td>" + envName + "</td><td>" + status + "</td><td>" + action + "</td></tr>";
+                const downloadUrl = API_BASE + "/api/governance/download/" + encodeURIComponent(t.id) + "?token=" + encodeURIComponent(t.token || "");
+                const action = status === "pending" ? "<a href=\"" + escapeHtml(downloadUrl) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Download ZIP</a>" : "—";
+                return "<tr><td>" + escapeHtml(created) + "</td><td>" + escapeHtml(envName) + "</td><td>" + escapeHtml(status) + "</td><td>" + action + "</td></tr>";
             }).join("");
         }
 
@@ -196,7 +234,11 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
                 });
-                if (j && j.ok) { showDashboard(); return; }
+                if (j && j.ok) {
+                    govCsrfToken = j.csrf_token || null;
+                    showDashboard();
+                    return;
+                }
                 showMsg("loginMsg", (j && j.error) || "Login failed.", true);
             } catch (e) {
                 showMsg("loginMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
@@ -211,13 +253,22 @@
             if (!org_name || !email || !password) { showMsg("signupMsg", "Please fill all fields.", true); return; }
             if (password.length < 8) { showMsg("signupMsg", "Password must be at least 8 characters.", true); return; }
             try {
-                const j = await api("/api/governance/signup", {
+                const res = await fetch(API_BASE + "/api/governance/signup", {
                     method: "POST",
+                    credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password, org_name })
                 });
+                let j = null;
+                const ct = res.headers.get("content-type") || "";
+                if (ct.includes("application/json")) {
+                    j = await res.json();
+                } else {
+                    const text = await res.text();
+                    try { j = JSON.parse(text); } catch (_) { j = { ok: false, error: text || "Signup failed." }; }
+                }
                 if (j && j.ok) { showMsg("signupMsg", "Account created. You can sign in now.", false); return; }
-                showMsg("signupMsg", (j && j.error) || "Signup failed.", true);
+                showMsg("signupMsg", (j && j.error) || "Signup failed. Please try again or contact support.", true);
             } catch (e) {
                 showMsg("signupMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
             }
@@ -225,6 +276,7 @@
 
         document.getElementById("btnLogout").addEventListener("click", async () => {
             await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+            govCsrfToken = null;
             document.getElementById("dashboard").classList.remove("visible");
             document.getElementById("loginScreen").classList.remove("hidden");
         });
@@ -232,10 +284,12 @@
         document.getElementById("btnCreateTask").addEventListener("click", async () => {
             const resultEl = document.getElementById("createTaskResult");
             resultEl.classList.add("hidden");
+            const envId = document.getElementById("createTaskEnv").value.trim();
+            const body = envId ? { environment_id: envId } : {};
             const j = await api("/api/governance/session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({})
+                body: JSON.stringify(body)
             });
             if (!j || !j.ok) {
                 resultEl.className = "msg err";
