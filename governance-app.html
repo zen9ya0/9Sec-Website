@@ -51,7 +51,6 @@
     <div class="container">
         <div class="back-link"><a href="services.html"><i class="fa-solid fa-arrow-left"></i> Back to Services</a></div>
         <h1><i class="fa-solid fa-scale-balanced"></i> Governance Automation SaaS</h1>
-        <p id="backendStatus" style="font-size:0.85rem;color:var(--dim);margin-bottom:1rem;">Checking backend…</p>
 
         <div id="loginScreen">
             <div class="tabs">
@@ -253,16 +252,10 @@
         });
 
         (async function init() {
-            const statusEl = document.getElementById("backendStatus");
             try {
                 const j = await api("/api/governance/me");
-                statusEl.textContent = "Backend: " + API_BASE + " (connected)";
-                statusEl.style.color = "var(--green)";
                 if (j && j.ok && j.user) showDashboard();
-            } catch (e) {
-                statusEl.textContent = "Backend: " + API_BASE + " — unreachable (" + (e.message || "network/CORS error") + ")";
-                statusEl.style.color = "var(--fail)";
-            }
+            } catch (e) { /* silent */ }
         })();
     </script>
 </body>
