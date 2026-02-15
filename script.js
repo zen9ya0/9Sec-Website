@@ -931,6 +931,36 @@ if (themeToggleBtn) {
     });
 }
 
+/* --- Mobile menu toggle (hamburger) --- */
+function closeMobileMenu(nav) {
+    if (!nav) return;
+    nav.classList.remove('mobile-menu-open');
+    const btn = nav.querySelector('.mobile-menu-btn i');
+    if (btn) {
+        btn.classList.remove('fa-bars', 'fa-xmark');
+        btn.classList.add('fa-bars');
+    }
+}
+
+document.querySelectorAll('.mobile-menu-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+        const nav = btn.closest('nav');
+        if (!nav) return;
+        const isOpen = nav.classList.toggle('mobile-menu-open');
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.classList.remove('fa-bars', 'fa-xmark');
+            icon.classList.add(isOpen ? 'fa-xmark' : 'fa-bars');
+        }
+    });
+});
+
+document.querySelectorAll('nav .nav-links a').forEach((link) => {
+    link.addEventListener('click', () => {
+        closeMobileMenu(link.closest('nav'));
+    });
+});
+
 function updateThemeLabel(theme) {
     if (themeToggleBtn) {
         // Button shows CURRENT status
