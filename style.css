@@ -940,7 +940,7 @@ footer {
     font-size: 0.85rem;
     color: var(--text-secondary);
     height: 150px;
-    overflow-y: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;

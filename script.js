@@ -1064,6 +1064,74 @@ async function submitAssessment() {
 
     // Start Polling Status
     startPolling(currentAssessmentId);
+    // Restore terminal log marquee: stream check items like a live scan
+    startScanLogMarquee();
+}
+
+/** Phases shown in the verify-step terminal log (marquee effect). */
+const SCAN_LOG_PHASES = [
+    { text: "> Daemon initialized. Listening on port 25...", class: "" },
+    { text: "> SPF lookup started...", class: "" },
+    { text: "> DMARC policy check...", class: "" },
+    { text: "> MX resolution...", class: "" },
+    { text: "> TLS handshake (STARTTLS)...", class: "" },
+    { text: "> DKIM key fetch...", class: "" },
+    { text: "> Routing baseline (ASN/Geo)...", class: "" },
+    { text: "> Security headers scan...", class: "" },
+    { text: "> Semantic audit (SPF/DMARC)...", class: "" },
+    { text: "> BEC / Reply-To check...", class: "" },
+    { text: "> Brand impersonation cluster...", class: "" },
+    { text: "> Waiting for inbound email...", class: "warn" },
+];
+
+let scanLogMarqueeInterval = null;
+const SCAN_LOG_MAX_LINES = 14;
+const SCAN_LOG_INTERVAL_MS = 1800;
+
+function startScanLogMarquee() {
+    stopScanLogMarquee();
+    const el = document.getElementById("scan-log");
+    if (!el) return;
+    el.innerHTML = "";
+    let phaseIndex = 0;
+
+    function appendLine(phase) {
+        const line = document.createElement("div");
+        line.className = "log-line" + (phase.class ? " " + phase.class : "");
+        line.textContent = phase.text;
+        el.appendChild(line);
+        let lines = el.querySelectorAll(".log-line");
+        while (lines.length > SCAN_LOG_MAX_LINES) {
+            lines[0].remove();
+            lines = el.querySelectorAll(".log-line");
+        }
+        el.scrollTop = el.scrollHeight;
+    }
+
+    appendLine(SCAN_LOG_PHASES[0]);
+    phaseIndex = 1;
+    scanLogMarqueeInterval = setInterval(() => {
+        if (phaseIndex >= SCAN_LOG_PHASES.length) phaseIndex = 1;
+        appendLine(SCAN_LOG_PHASES[phaseIndex]);
+        phaseIndex++;
+    }, SCAN_LOG_INTERVAL_MS);
+}
+
+function stopScanLogMarquee() {
+    if (scanLogMarqueeInterval) {
+        clearInterval(scanLogMarqueeInterval);
+        scanLogMarqueeInterval = null;
+    }
+}
+
+function appendScanLogFinal(text) {
+    const el = document.getElementById("scan-log");
+    if (!el) return;
+    const line = document.createElement("div");
+    line.className = "log-line success";
+    line.textContent = text;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
 }
 
 function startPolling(id) {
@@ -1075,6 +1143,8 @@ function startPolling(id) {
             const data = await resp.json();
             if (data.status === 'completed') {
                 clearInterval(pollInterval);
+                stopScanLogMarquee();
+                appendScanLogFinal("> Email received. Generating report...");
                 fetchAndRenderReport(id);
             }
         } catch (e) {
@@ -1470,6 +1540,7 @@ if (btnResetCheck) {
         window.currentReportHtml = null;
         window.currentTrendData = null;
         if (pollInterval) clearInterval(pollInterval);
+        stopScanLogMarquee();
         if (emailInput) emailInput.value = '';
         if (scanLog) scanLog.innerHTML = '';
         if (reportContent) reportContent.innerHTML = ''; // Clear report
