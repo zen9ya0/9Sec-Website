@@ -1185,16 +1185,16 @@ function generateMockReport(domain) {
 function getRemediationHint(item) {
     if (!item || typeof item.item !== "string") return null;
     const s = (item.item || "").toLowerCase();
-    if (s.includes("spf") && (s.includes("missing") || s.includes("depth") || s.includes("limit"))) {
+    if (s.includes("spf") && (s.includes("missing") || s.includes("depth") || s.includes("limit") || s.includes("failed") || s.includes("softfail") || s.includes("semantic") || s.includes("disallowed"))) {
         return { title: "SPF", snippet: "Add or simplify SPF: TXT @ root e.g. v=spf1 include:_spf.example.com -all. Keep total lookups ≤10 (RFC 7208).", priority: "high" };
     }
-    if (s.includes("dmarc") && (s.includes("none") || s.includes("pct") || s.includes("destination"))) {
+    if (s.includes("dmarc") && (s.includes("none") || s.includes("pct") || s.includes("destination") || s.includes("semantic"))) {
         return { title: "DMARC", snippet: "Set p=reject or p=quarantine; pct=100; aspf=s; adkim=s. Use same-domain mailto for rua/ruf.", priority: "high" };
     }
     if (s.includes("dkim") && (s.includes("missing") || s.includes("fail") || s.includes("quality") || s.includes("weak"))) {
         return { title: "DKIM", snippet: "Publish 2048-bit DKIM key at selector._domainkey.<domain>. Sign From and critical headers.", priority: "high" };
     }
-    if (s.includes("tls") && (s.includes("posture") || s.includes("mta-sts"))) {
+    if (s.includes("mta-sts") || (s.includes("tls") && (s.includes("posture") || s.includes("mta-sts")))) {
         return { title: "TLS", snippet: "Enable MTA-STS (HTTPS /.well-known/mta-sts.txt) and TLS-RPT (_smtp._tls TXT). Use STARTTLS on all hops.", priority: "medium" };
     }
     if (s.includes("routing anomaly") || s.includes("relay")) {
@@ -1203,11 +1203,29 @@ function getRemediationHint(item) {
     if (s.includes("bec") || s.includes("reply-to") || s.includes("return-path")) {
         return { title: "BEC", snippet: "Align Reply-To and Return-Path with From domain. Avoid external reply addresses for corporate mail.", priority: "high" };
     }
-    if (s.includes("alignment")) {
+    if (s.includes("alignment") || s.includes("mismatch")) {
         return { title: "Alignment", snippet: "Ensure Envelope From (Return-Path) and DKIM d= match Header From domain (organizational alignment).", priority: "high" };
     }
-    if (s.includes("rbl") || s.includes("blacklist")) {
+    if (s.includes("ptr") || s.includes("reverse dns")) {
+        return { title: "PTR/DNS", snippet: "Configure correct PTR record for sending IP; ensure forward and reverse DNS match.", priority: "medium" };
+    }
+    if (s.includes("bimi")) {
+        return { title: "BIMI", snippet: "Publish BIMI record at default._bimi.<domain> (v=BIMI1) with verified logo for brand visibility in supported clients.", priority: "low" };
+    }
+    if ((s.includes("mx") && (s.includes("single") || s.includes("only 1") || s.includes("failure"))) || s.includes("single point of failure")) {
+        return { title: "MX Redundancy", snippet: "Add at least one additional MX record for failover; use different providers or hosts for resilience.", priority: "high" };
+    }
+    if (s.includes("dnssec")) {
+        return { title: "DNSSEC", snippet: "Enable DNSSEC on the domain to prevent DNS spoofing; sign zone and publish DS records at registrar.", priority: "low" };
+    }
+    if (s.includes("rbl") || s.includes("blacklist") || (s.includes("reputation") && (s.includes("poor") || s.includes("sender")))) {
         return { title: "Reputation", snippet: "Request delisting from reported RBLs; fix open relay or compromised host; warm up IP reputation.", priority: "high" };
+    }
+    if (s.includes("brand impersonation") || s.includes("cluster")) {
+        return { title: "Impersonation", snippet: "Monitor lookalike domains; consider defensive registration; enforce DMARC and BIMI to protect brand.", priority: "medium" };
+    }
+    if (s.includes("deep analysis") || s.includes("security finding")) {
+        return { title: "Security", snippet: "Review authentication headers and routing path; fix reported issues and re-run assessment.", priority: "medium" };
     }
     return null;
 }
@@ -1327,8 +1345,12 @@ function renderTrendSummary(meta = {}) {
     const checks = meta.checks_summary || {};
     const trend = meta.trend_analysis || {};
     const baseline = meta.domain_baseline || {};
+    const routingOffset = meta.routing_baseline_offset || {};
+    const firstSeenAsn = routingOffset.first_seen_asn_count ?? checks.first_seen_asn_count ?? null;
+    const firstSeenCountry = routingOffset.first_seen_country_count ?? checks.first_seen_country_count ?? null;
     const semanticNow = Number(checks.spf_semantic_risks || 0) + Number(checks.dmarc_semantic_risks || 0);
     const semanticDelta = Number(trend.spf_semantic_risks_delta || 0) + Number(trend.dmarc_semantic_risks_delta || 0);
+    const hasRoutingBaseline = firstSeenAsn != null || firstSeenCountry != null;
     return `
         <div class="trend-summary">
             <div class="trend-card">
@@ -1347,6 +1369,12 @@ function renderTrendSummary(meta = {}) {
                 <div class="label">Semantic + TLS</div>
                 <div class="value">Semantic ${semanticNow} (${formatDelta(semanticDelta)}) | TLS ${checks.tls_posture_score ?? "N/A"} (${formatDelta(trend.tls_posture_score_delta)})</div>
             </div>
+            ${hasRoutingBaseline ? `
+            <div class="trend-card">
+                <div class="label">Routing Baseline (First-Seen)</div>
+                <div class="value">New ASNs ${firstSeenAsn ?? "—"} | New Countries ${firstSeenCountry ?? "—"}${(trend.first_seen_asn_count_delta != null || trend.first_seen_country_count_delta != null) ? ` · Δ ${formatDelta(trend.first_seen_asn_count_delta)} / ${formatDelta(trend.first_seen_country_count_delta)}` : ""}</div>
+            </div>
+            ` : ""}
         </div>
     `;
 }
@@ -1370,6 +1398,8 @@ function renderForensicReportHtml(html, domainHint, meta) {
         btnDownload.classList.remove('hidden');
         btnDownload.textContent = "Download Forensic Report";
     }
+    const btnPdf = document.getElementById('btn-download-pdf');
+    if (btnPdf) btnPdf.classList.remove('hidden');
 }
 // --- Report Action Handlers ---
 
@@ -1497,6 +1527,59 @@ if (btnDownloadReport) {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+    });
+}
+
+// Download Forensic Report as PDF (professional layout, print-optimized)
+const btnDownloadPdf = document.getElementById('btn-download-pdf');
+if (btnDownloadPdf) {
+    btnDownloadPdf.addEventListener('click', async () => {
+        const frame = document.getElementById('forensic-report-frame');
+        const data = window.currentReportData || {};
+        const rawDomain = (data.domain || 'unknown').toString().replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200) || 'domain';
+        if (!frame || !frame.contentDocument || !frame.contentDocument.body) {
+            if (typeof showNotice === 'function') showNotice('Please wait for the report to load, then try again.');
+            return;
+        }
+        if (typeof html2pdf === 'undefined') {
+            if (typeof showNotice === 'function') showNotice('PDF library not loaded. Refresh the page and try again.');
+            return;
+        }
+        const doc = frame.contentDocument;
+        const wrapper = document.createElement('div');
+        wrapper.id = 'pdf-export-wrapper';
+        wrapper.style.background = '#fff';
+        wrapper.style.padding = '0';
+        wrapper.style.maxWidth = '210mm';
+        wrapper.style.margin = '0 auto';
+        const styleEl = doc.querySelector('style');
+        if (styleEl) wrapper.appendChild(styleEl.cloneNode(true));
+        const lightTheme = document.createElement('style');
+        lightTheme.textContent = '#pdf-export-wrapper, #pdf-export-wrapper body { background: #fff !important; color: #1a1a1a !important; } #pdf-export-wrapper .header, #pdf-export-wrapper .header h1, #pdf-export-wrapper .section-title { color: #0a7b2e !important; border-color: #0a7b2e !important; } #pdf-export-wrapper .value.pass { color: #0a7b2e !important; } #pdf-export-wrapper .value.fail { color: #b91c1c !important; } #pdf-export-wrapper .value.warn { color: #b45309 !important; } #pdf-export-wrapper .card { background: #f8f8f8 !important; border-color: #ddd !important; } #pdf-export-wrapper .risk-item { background: #f5f5f5 !important; border-color: #ddd !important; } #pdf-export-wrapper .remediation-card { background: #e8f5e9 !important; border-color: #a5d6a7 !important; color: #1b5e20 !important; } #pdf-export-wrapper .remediation-title { color: #0a7b2e !important; } #pdf-export-wrapper .label { color: #555 !important; } #pdf-export-wrapper .footer { color: #666 !important; border-color: #ddd !important; } #pdf-export-wrapper pre { background: #f5f5f5 !important; color: #333 !important; border-color: #ccc !important; }';
+        wrapper.appendChild(lightTheme);
+        const bodyClone = doc.body.cloneNode(true);
+        wrapper.appendChild(bodyClone);
+        document.body.appendChild(wrapper);
+        btnDownloadPdf.disabled = true;
+        btnDownloadPdf.textContent = ' Generating PDF…';
+        try {
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `9Sec_Forensic_Report_${rawDomain}.pdf`,
+                image: { type: 'jpeg', quality: 0.96 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'], before: '.section-title', after: '.footer' }
+            };
+            await html2pdf().set(opt).from(wrapper).save();
+        } catch (e) {
+            console.error('PDF export failed:', e);
+            if (typeof showNotice === 'function') showNotice('PDF export failed. Try downloading HTML and printing to PDF.');
+        } finally {
+            document.body.removeChild(wrapper);
+            btnDownloadPdf.disabled = false;
+            btnDownloadPdf.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Download PDF';
+        }
     });
 }
 
