@@ -323,59 +323,69 @@
             document.getElementById("loginScreen").classList.remove("hidden");
         });
 
-        // Event delegation: one handler for dashboard so New Task, sidebar, and Clear env always work
-        document.getElementById("dashboard").addEventListener("click", async (e) => {
-            if (e.target.closest("#btnNewTask")) {
+        // Delegate from body so New Task and Clear env work even when dashboard is hidden at load or content is dynamic
+        function handleDashboardClick(e) {
+            var el = e.target;
+            if (!el || !el.closest) return;
+            if (el.closest("#btnNewTask")) {
                 e.preventDefault();
-                const envName = prompt("Environment Name (e.g. HQ Office, Server-A). This matches the Environments tab; each environment has its own task list.");
-                if (envName == null || !envName.trim()) return;
-                if (!govCsrfToken) {
-                    try {
-                        const me = await api("/api/governance/me");
-                        if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
-                    } catch (_) {}
-                }
-                if (!govCsrfToken) {
-                    alert("Session expired or missing security token. Please refresh the page or sign out and sign in again.");
-                    return;
-                }
-                try {
-                    const j = await api("/api/governance/session", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ environment_id: envName.trim() })
-                    });
-                    if (!j || !j.ok) {
-                        alert((j && j.error) || "Failed to create task.");
+                e.stopPropagation();
+                (async function() {
+                    var envName = prompt("Environment Name (e.g. HQ Office, Server-A). This matches the Environments tab; each environment has its own task list.");
+                    if (envName == null || !String(envName).trim()) return;
+                    if (!govCsrfToken) {
+                        try {
+                            var me = await api("/api/governance/me");
+                            if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
+                        } catch (_) {}
+                    }
+                    if (!govCsrfToken) {
+                        alert("Session expired or missing security token. Please refresh the page or sign out and sign in again.");
                         return;
                     }
-                    const d = j.data;
-                    const downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
-                    alert("Task created. Download collector ZIP (valid 12 hours):\n\n" + downloadUrl);
-                    if (!document.getElementById("panelEnvs").classList.contains("hidden")) loadEnvs();
-                    loadInsights();
-                } catch (err) {
-                    alert("Request failed: " + (err.message || "network error"));
-                }
+                    try {
+                        var j = await api("/api/governance/session", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ environment_id: String(envName).trim() })
+                        });
+                        if (!j || !j.ok) {
+                            alert((j && j.error) || "Failed to create task.");
+                            return;
+                        }
+                        var d = j.data;
+                        var downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
+                        alert("Task created. Download collector ZIP (valid 12 hours):\n\n" + downloadUrl);
+                        var panelEnvs = document.getElementById("panelEnvs");
+                        if (panelEnvs && !panelEnvs.classList.contains("hidden")) loadEnvs();
+                        loadInsights();
+                    } catch (err) {
+                        alert("Request failed: " + (err.message || "network error"));
+                    }
+                })();
                 return;
             }
-            if (e.target.closest("[data-clear-env]")) {
+            if (el.closest("[data-clear-env]")) {
                 e.preventDefault();
-                const btn = e.target.closest("[data-clear-env]");
-                const id = btn.getAttribute("data-clear-env");
+                e.stopPropagation();
+                var btn = el.closest("[data-clear-env]");
+                var id = btn && btn.getAttribute("data-clear-env");
                 if (!id) return;
                 if (!confirm("Clear all reports and tasks for this environment? This cannot be undone.")) return;
                 if (!govCsrfToken) { alert("Session expired. Please refresh and sign in again."); return; }
-                try {
-                    const j = await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
-                    if (j && j.ok) { loadEnvs(); loadInsights(); alert("Environment data cleared."); }
-                    else alert((j && j.error) || "Failed to clear.");
-                } catch (err) { alert("Request failed: " + (err.message || "network error")); }
+                (async function() {
+                    try {
+                        var j = await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
+                        if (j && j.ok) { loadEnvs(); loadInsights(); alert("Environment data cleared."); }
+                        else alert((j && j.error) || "Failed to clear.");
+                    } catch (err) { alert("Request failed: " + (err.message || "network error")); }
+                })();
                 return;
             }
-            if (e.target.closest("#dashTabOverview")) { switchDashboardTab("Overview"); return; }
-            if (e.target.closest("#dashTabEnvs")) { switchDashboardTab("Environments"); return; }
-        });
+            if (el.closest("#dashTabOverview")) { switchDashboardTab("Overview"); return; }
+            if (el.closest("#dashTabEnvs")) { switchDashboardTab("Environments"); return; }
+        }
+        document.body.addEventListener("click", handleDashboardClick, true);
 
         (async function init() {
             try {
