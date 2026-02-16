@@ -204,22 +204,43 @@
                 return;
             }
             const d = j.data;
-            if (!d || !d.report) {
-                el.innerHTML = "<span style='color:var(--dim)'>No maturity report yet. Run the collector and upload evidence.</span>";
+            if (!d) {
+                el.innerHTML = "<span style='color:var(--dim)'>No data.</span>";
                 return;
             }
-            const r = d.report;
-            const score = r.overall_score != null ? Math.round(r.overall_score) : "—";
-            const risk = (r.risk_level || "—").toUpperCase();
-            const cls = risk === "A" ? "score-a" : risk === "B" ? "score-b" : risk === "C" ? "score-c" : "score-d";
-            const date = r.created_at ? (typeof r.created_at === 'number' ? new Date(r.created_at * 1000) : new Date(r.created_at)).toLocaleString() : "—";
-            let domainsHtml = "";
-            if (d.domains && d.domains.length) {
-                domainsHtml = "<table style='margin-top:0.75rem;'><tr><th>Domain</th><th>Score</th></tr>" +
-                    d.domains.map(x => "<tr><td>" + escapeHtml(x.domain_name || "—") + "</td><td>" + escapeHtml(x.score != null ? Math.round(x.score) : "—") + "</td></tr>").join("") + "</table>";
+            const envs = d.environments || [];
+            const summary = d.summary || {};
+            if (envs.length === 0) {
+                el.innerHTML = "<span style='color:var(--dim)'>No environments yet. Click <strong>New Task</strong> and enter an environment name to add one.</span>";
+                return;
             }
-            const highRiskHtml = "<p style='margin-top:1rem;color:var(--dim);font-size:0.85rem;'><strong style='color:var(--warn);'>High-risk domains</strong>: — (coming soon)</p>";
-            el.innerHTML = "<p><strong>Overall Score</strong> <span class='score-badge " + cls + "'>" + escapeHtml(score) + "/100</span> &nbsp; <strong>Risk Level</strong> <span class='score-badge " + cls + "'>" + escapeHtml(risk) + "</span></p><p style='color:var(--dim);font-size:0.85rem;'>Last report: " + escapeHtml(date) + "</p>" + domainsHtml + highRiskHtml;
+            const avgScore = summary.overall_score_avg != null ? Math.round(summary.overall_score_avg) : null;
+            const latestAt = summary.latest_at ? new Date(summary.latest_at).toLocaleString() : "—";
+            let html = "<p><strong>Summary (all environments)</strong>";
+            if (avgScore != null) {
+                html += " &nbsp; <span class='score-badge score-a'>" + escapeHtml(String(avgScore)) + "/100 avg</span>";
+            } else {
+                html += " &nbsp; <span style='color:var(--dim)'>No reports yet</span>";
+            }
+            html += "</p><p style='color:var(--dim);font-size:0.85rem;'>Latest report: " + escapeHtml(latestAt) + " &nbsp; Environments: " + escapeHtml(String(summary.environment_count || envs.length)) + "</p>";
+            envs.forEach(function(ev) {
+                const r = ev.report;
+                const name = escapeHtml(ev.env_name || ev.environment_id || "—");
+                if (!r) {
+                    html += "<p style='margin-top:0.75rem;'><strong>" + name + "</strong> <span style='color:var(--dim);font-size:0.9rem;'>— No report yet</span></p>";
+                    return;
+                }
+                const score = r.overall_score != null ? Math.round(r.overall_score) : "—";
+                const risk = (r.risk_level || "—").toUpperCase();
+                const cls = risk === "A" ? "score-a" : risk === "B" ? "score-b" : risk === "C" ? "score-c" : "score-d";
+                const date = r.created_at ? (typeof r.created_at === "number" ? new Date(r.created_at * 1000) : new Date(r.created_at)).toLocaleString() : "—";
+                html += "<p style='margin-top:0.75rem;'><strong>" + name + "</strong> &nbsp; <span class='score-badge " + cls + "'>" + escapeHtml(score) + "/100</span> <span class='score-badge " + cls + "'>" + escapeHtml(risk) + "</span> <span style='color:var(--dim);font-size:0.85rem;'>" + escapeHtml(date) + "</span></p>";
+                if (ev.domains && ev.domains.length) {
+                    html += "<table style='margin-left:1rem;margin-top:0.25rem;font-size:0.85rem;'><tr><th>Domain</th><th>Score</th></tr>" +
+                        ev.domains.map(function(x) { return "<tr><td>" + escapeHtml(x.domain_name || "—") + "</td><td>" + escapeHtml(x.score != null ? Math.round(x.score) : "—") + "</td></tr>"; }).join("") + "</table>";
+                }
+            });
+            el.innerHTML = html;
         }
 
         async function loadEnvs() {
