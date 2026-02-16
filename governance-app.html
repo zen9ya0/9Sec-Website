@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nine-Security | Governance Automation SaaS</title>
     <meta name="robots" content="noindex, nofollow">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --bg: #0a0b0d; --card: #14171c; --border: #2a2f36; --text: #e0e0e0; --dim: #888; --green: #00ff9d; --warn: #ffa502; --fail: #ff4757; }
         * { box-sizing: border-box; }
@@ -60,13 +59,24 @@
         .btn-danger:hover { opacity: 0.9; }
         .toast { position: fixed; bottom: 1.5rem; left: 50%; z-index: 9999; background: var(--card); border: 1px solid var(--green); border-radius: 8px; padding: 14px 20px; color: var(--green); font-size: 0.95rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.25s ease, opacity 0.2s ease; visibility: hidden; opacity: 0; transform: translateX(-50%) translateY(1rem); pointer-events: none; }
         .toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+        .icon { width: 1em; height: 1em; vertical-align: -0.15em; fill: currentColor; }
     </style>
 </head>
 <body>
+    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;">
+        <defs>
+            <symbol id="icon-arrow-left" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32L109.3 224l105.4-105.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></symbol>
+            <symbol id="icon-scale-balanced" viewBox="0 0 640 512"><path d="M384 32c0-17.7 14.3-32 32-32H544c17.7 0 32 14.3 32 32s-14.3 32-32 32H416v64h160c17.7 0 32 14.3 32 32s-14.3 32-32 32H416v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V160H256v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V160H96c-17.7 0-32-14.3-32-32s14.3-32 32-32h128V64H224c-17.7 0-32-14.3-32-32s14.3-32 32-32h128V32zM128 384H64c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32zm0 64v32H64V448h64zm448-64H512c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32zm0 64v32H512V448h64zM208 256c0-17.7 14.3-32 32-32h160c17.7 0 32 14.3 32 32v192c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V256zm32 0v192h160V256H240z"/></symbol>
+            <symbol id="icon-plus" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></symbol>
+            <symbol id="icon-chart-line" viewBox="0 0 512 512"><path fill="currentColor" d="M64 416L128 320 192 352 256 256 320 288 384 192 448 224 448 416 64 416z"/></symbol>
+            <symbol id="icon-server" viewBox="0 0 512 512"><path d="M64 32C28.7 32 0 60.7 0 96v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm64 96H64V96h64v32zm96 0H160V96h64v32zm96 0H256V96h64v32zM448 96v32H384V96h64zM64 288c-35.3 0-64 28.7-64 64v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V352c0-35.3-28.7-64-64-64H64zm64 96H64V352h64v32zm96 0H160V352h64v32zm96 0H256V352h64v32zM448 352v32H384V352h64z"/></symbol>
+            <symbol id="icon-trash-can" viewBox="0 0 448 512"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></symbol>
+        </defs>
+    </svg>
     <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true"></div>
     <div class="container">
-        <div class="back-link"><a href="services.html"><i class="fa-solid fa-arrow-left"></i> Back to Services</a></div>
-        <h1><i class="fa-solid fa-scale-balanced"></i> Governance Automation SaaS</h1>
+        <div class="back-link"><a href="services.html"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"/></svg> Back to Services</a></div>
+        <h1><svg class="icon" aria-hidden="true"><use href="#icon-scale-balanced"/></svg> Governance Automation SaaS</h1>
 
         <div id="loginScreen">
             <div class="tabs">
@@ -91,15 +101,15 @@
         <div id="dashboard">
             <div class="user-bar">
                 <span id="userInfo">—</span>
-                <button type="button" id="btnNewTask"><i class="fa-solid fa-plus"></i> New Task</button>
+                <button type="button" id="btnNewTask"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> New Task</button>
                 <button type="button" id="btnLogout" class="btn-secondary">Sign Out</button>
             </div>
 
             <div class="dashboard-body">
                 <nav class="dashboard-sidebar" aria-label="Dashboard navigation">
                     <div class="nav-label">Menu</div>
-                    <button type="button" id="dashTabOverview" class="active"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Overview</button>
-                    <button type="button" id="dashTabEnvs"><i class="fa-solid fa-server" aria-hidden="true"></i> Environments</button>
+                    <button type="button" id="dashTabOverview" class="active"><svg class="icon" aria-hidden="true"><use href="#icon-chart-line"/></svg> Overview</button>
+                    <button type="button" id="dashTabEnvs"><svg class="icon" aria-hidden="true"><use href="#icon-server"/></svg> Environments</button>
                 </nav>
                 <main class="dashboard-main">
             <div id="panelOverview" class="dashboard-panel">
@@ -284,7 +294,7 @@
                     const tableHtml = block.tasks && block.tasks.length
                         ? "<table style='margin-top:0.5rem;'><thead><tr><th>Created</th><th>Status</th><th>Action</th></tr></thead><tbody>" + taskRows + "</tbody></table>"
                         : "<p style='color:var(--dim);font-size:0.9rem;margin-top:0.5rem;'>No tasks for this environment.</p>";
-                    return "<div class=\"env-block\" data-env-id=\"" + escapeHtml(envId) + "\"><h3><i class=\"fa-solid fa-server\"></i> " + displayName + "</h3>" + tableHtml + "<button type=\"button\" class=\"btn-danger\" style=\"margin-top:0.75rem;\" data-clear-env=\"" + escapeHtml(envId) + "\"><i class=\"fa-solid fa-trash-can\"></i> Clear environment data</button></div>";
+                    return "<div class=\"env-block\" data-env-id=\"" + escapeHtml(envId) + "\"><h3><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#icon-server\"/></svg> " + displayName + "</h3>" + tableHtml + "<button type=\"button\" class=\"btn-danger\" style=\"margin-top:0.75rem;\" data-clear-env=\"" + escapeHtml(envId) + "\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#icon-trash-can\"/></svg> Clear environment data</button></div>";
                 }).join("");
                 // Clear buttons use event delegation (see dashboard click handler below)
             } catch (e) {
