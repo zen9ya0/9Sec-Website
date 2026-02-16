@@ -58,9 +58,12 @@
         .env-block h3 { font-size: 0.95rem; margin: 0 0 0.75rem; color: var(--green); }
         .btn-danger { background: rgba(255,71,87,0.2); border-color: var(--fail); color: var(--fail); }
         .btn-danger:hover { opacity: 0.9; }
+        .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(120%); z-index: 9999; background: var(--card); border: 1px solid var(--green); border-radius: 8px; padding: 14px 20px; color: var(--green); font-size: 0.95rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.25s ease; }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <div class="container">
         <div class="back-link"><a href="services.html"><i class="fa-solid fa-arrow-left"></i> Back to Services</a></div>
         <h1><i class="fa-solid fa-scale-balanced"></i> Governance Automation SaaS</h1>
@@ -130,6 +133,14 @@
             el.classList.remove("hidden");
         }
         function hideMsg(elId) { document.getElementById(elId).classList.add("hidden"); }
+        function showToast(message) {
+            var el = document.getElementById("toast");
+            if (!el) return;
+            el.textContent = message;
+            el.classList.add("show");
+            clearTimeout(el._toastTimer);
+            el._toastTimer = setTimeout(function() { el.classList.remove("show"); }, 3500);
+        }
         function escapeHtml(s) {
             if (s == null || s === "") return "";
             const t = String(s);
@@ -143,7 +154,9 @@
             if (path.startsWith("/api/governance/") && (method === "POST" || method === "DELETE") && govCsrfToken) {
                 headers["X-CSRF-Token"] = govCsrfToken;
             }
-            const res = await fetch(url, { credentials: "include", ...opts, headers });
+            const fetchOpts = { credentials: "include", ...opts };
+            fetchOpts.headers = headers;
+            const res = await fetch(url, fetchOpts);
             const contentType = res.headers.get("content-type") || "";
             if (contentType.includes("application/json")) return await res.json();
             return res;
@@ -362,7 +375,14 @@
                 }
                 var d = j.data;
                 var downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
-                alert("Task created. Download collector ZIP (valid 12 hours):\n\n" + downloadUrl);
+                var a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = "governance-collector.zip";
+                a.rel = "noopener";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast("Task created. Collector ZIP is downloading.");
                 var panelEnvs = document.getElementById("panelEnvs");
                 if (panelEnvs && !panelEnvs.classList.contains("hidden")) loadEnvs();
                 loadInsights();
