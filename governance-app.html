@@ -58,12 +58,12 @@
         .env-block h3 { font-size: 0.95rem; margin: 0 0 0.75rem; color: var(--green); }
         .btn-danger { background: rgba(255,71,87,0.2); border-color: var(--fail); color: var(--fail); }
         .btn-danger:hover { opacity: 0.9; }
-        .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(120%); z-index: 9999; background: var(--card); border: 1px solid var(--green); border-radius: 8px; padding: 14px 20px; color: var(--green); font-size: 0.95rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.25s ease; }
-        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast { position: fixed; bottom: 1.5rem; left: 50%; z-index: 9999; background: var(--card); border: 1px solid var(--green); border-radius: 8px; padding: 14px 20px; color: var(--green); font-size: 0.95rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.25s ease, opacity 0.2s ease; visibility: hidden; opacity: 0; transform: translateX(-50%) translateY(1rem); pointer-events: none; }
+        .toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
     </style>
 </head>
 <body>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true"></div>
     <div class="container">
         <div class="back-link"><a href="services.html"><i class="fa-solid fa-arrow-left"></i> Back to Services</a></div>
         <h1><i class="fa-solid fa-scale-balanced"></i> Governance Automation SaaS</h1>
@@ -139,7 +139,12 @@
             el.textContent = message;
             el.classList.add("show");
             clearTimeout(el._toastTimer);
-            el._toastTimer = setTimeout(function() { el.classList.remove("show"); }, 3500);
+            el._toastTimer = setTimeout(function() {
+                el.classList.remove("show");
+                el.textContent = "";
+                el.setAttribute("aria-hidden", "true");
+            }, 3500);
+            el.setAttribute("aria-hidden", "false");
         }
         function escapeHtml(s) {
             if (s == null || s === "") return "";
@@ -456,10 +461,7 @@
             if (el.closest("#dashTabEnvs")) { switchDashboardTab("Environments"); return; }
         }
 
-        var dashboardEl = document.getElementById("dashboard");
-        if (dashboardEl) {
-            dashboardEl.addEventListener("click", handleDashboardClick, true);
-        }
+        document.body.addEventListener("click", handleDashboardClick, true);
         var btnNewTaskEl = document.getElementById("btnNewTask");
         if (btnNewTaskEl) {
             btnNewTaskEl.addEventListener("click", function(e) {
