@@ -324,7 +324,12 @@
                 }
                 showMsg("loginMsg", (j && j.error) || "Login failed.", true);
             } catch (e) {
-                showMsg("loginMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
+                var msg = e && e.message;
+                if (msg && (msg.indexOf("fetch") !== -1 || msg.indexOf("NetworkError") !== -1)) {
+                    showMsg("loginMsg", "無法連線至伺服器（Network error）。請確認：1) 網路連線正常 2) 若使用 VPN/防火牆請嘗試關閉或換網路 3) 稍後再試。", true);
+                } else {
+                    showMsg("loginMsg", "Network error: " + (msg || "Cannot reach backend. Check API_BASE and CORS."), true);
+                }
             }
         });
 
