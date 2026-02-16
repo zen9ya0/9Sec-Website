@@ -348,7 +348,7 @@
                 } catch (_) {}
             }
             if (!govCsrfToken) {
-                alert("Session expired or missing security token. Please refresh the page or sign out and sign in again.");
+                showToast("Session expired. Please sign out and sign in again.");
                 return;
             }
             try {
@@ -363,31 +363,45 @@
                         govCsrfToken = null;
                         if (!csrfLogoutShown) {
                             csrfLogoutShown = true;
-                            alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
+                            showToast("Session expired. Signing out…");
                             await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
                             document.getElementById("dashboard").classList.remove("visible");
                             document.getElementById("loginScreen").classList.remove("hidden");
                         }
                     } else {
-                        alert(errMsg);
+                        showToast(errMsg);
                     }
                     return;
                 }
                 var d = j.data;
                 var downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
-                var a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = "governance-collector.zip";
-                a.rel = "noopener";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                showToast("Task created. Collector ZIP is downloading.");
+                showToast("Task created. Preparing download…");
                 var panelEnvs = document.getElementById("panelEnvs");
                 if (panelEnvs && !panelEnvs.classList.contains("hidden")) loadEnvs();
                 loadInsights();
+                (async function() {
+                    try {
+                        var r = await fetch(downloadUrl, { credentials: "include" });
+                        if (!r.ok) {
+                            var errText = await r.text();
+                            showToast(errText || "Download failed.");
+                            return;
+                        }
+                        var blob = await r.blob();
+                        var a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = "governance-collector.zip";
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(a.href);
+                        showToast("Collector ZIP downloaded.");
+                    } catch (err) {
+                        showToast("Download failed: " + (err.message || "network error"));
+                    }
+                })();
             } catch (err) {
-                alert("Request failed: " + (err.message || "network error"));
+                showToast("Request failed: " + (err.message || "network error"));
             }
         }
 
@@ -413,7 +427,7 @@
                             var me = await api("/api/governance/me");
                             if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
                         }
-                        if (!govCsrfToken) { alert("Session expired. Please sign out and sign in again."); return; }
+                        if (!govCsrfToken) { showToast("Session expired. Please sign out and sign in again."); return; }
                         var j = await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
                         if (!j || !j.ok) {
                             var errMsg = (j && j.error) ? String(j.error) : "Failed to clear.";
@@ -421,20 +435,20 @@
                                 govCsrfToken = null;
                                 if (!csrfLogoutShown) {
                                     csrfLogoutShown = true;
-                                    alert("Your session needs to be refreshed. You will be signed out — please sign in again.");
+                                    showToast("Session expired. Signing out…");
                                     await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
                                     document.getElementById("dashboard").classList.remove("visible");
                                     document.getElementById("loginScreen").classList.remove("hidden");
                                 }
                             } else {
-                                alert(errMsg);
+                                showToast(errMsg);
                             }
                             return;
                         }
                         loadEnvs();
                         loadInsights();
-                        alert("Environment data cleared.");
-                    } catch (err) { alert("Request failed: " + (err.message || "network error")); }
+                        showToast("Environment data cleared.");
+                    } catch (err) { showToast("Request failed: " + (err.message || "network error")); }
                 })();
                 return;
             }
