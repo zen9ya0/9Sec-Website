@@ -3,138 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nine-Security | Governance Automation SaaS</title>
+    <title>Nine-Security | Governance Maturity Terminal</title>
     <meta name="robots" content="noindex, nofollow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0b0d; --card: #14171c; --border: #2a2f36; --text: #e0e0e0; --dim: #888; --green: #00ff9d; --warn: #ffa502; --fail: #ff4757; }
-        * { box-sizing: border-box; }
-        body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; min-height: 100vh; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
-        h1 { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: var(--green); margin-bottom: 1.5rem; }
-        .card-panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .card-panel h2 { font-size: 1rem; color: var(--dim); margin: 0 0 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        input, button { padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; }
-        input { background: #1a1f26; color: var(--text); width: 100%; }
-        button { background: linear-gradient(135deg, rgba(0,255,157,0.2), rgba(0,212,255,0.15)); border-color: var(--green); color: var(--green); cursor: pointer; font-weight: 600; }
-        button:hover { opacity: 0.9; }
-        .btn-secondary { background: transparent; color: var(--dim); border-color: var(--border); }
-        .form-row { margin-bottom: 1rem; }
-        .form-row label { display: block; margin-bottom: 0.35rem; color: var(--dim); font-size: 0.85rem; }
-        .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .tabs button { padding: 8px 16px; }
-        .tabs button.active { background: rgba(0,255,157,0.15); color: var(--green); }
+        :root {
+            --bg: #030407;
+            --card: #0d0f14;
+            --card-hover: #161a23;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(0, 255, 157, 0.3);
+            --text: #f0f2f5;
+            --dim: #94a3b8;
+            --accent: #00ff9d;
+            --accent-glow: rgba(0, 255, 157, 0.15);
+            
+            /* Maturity Colors */
+            --lvl-a: #00ff9d; /* Resilient */
+            --lvl-b: #00d4ff; /* Optimized */
+            --lvl-c: #fbbf24; /* Managed */
+            --lvl-d: #f43f5e; /* High Risk */
+            
+            --glass: rgba(13, 15, 20, 0.7);
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 40%);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+        }
+
+        h1, h2, h3 {
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        h1 {
+            font-size: 1.85rem;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h1 svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--accent);
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+        }
+
+        .card-panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        .card-panel:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-panel h2 {
+            font-size: 0.85rem;
+            color: var(--dim);
+            margin: 0 0 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Inputs & Buttons */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--dim); font-size: 0.85rem; }
+
+        input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 14px 18px;
+            border-radius: 12px;
+            width: 100%;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(0, 255, 157, 0.05);
+            box-shadow: 0 0 0 4px rgba(0, 255, 157, 0.1);
+        }
+
+        button {
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: inherit;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, #00d4ff 100%);
+            color: #030407;
+            box-shadow: 0 8px 16px rgba(0, 255, 157, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0, 255, 157, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--dim);
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--lvl-d);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+        }
+
+        /* Tabs */
+        .dashboard-tabs {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px;
+            border-radius: 16px;
+            margin-bottom: 2.5rem;
+            width: fit-content;
+            border: 1px solid var(--border);
+        }
+
+        .dashboard-tabs button {
+            background: transparent;
+            color: var(--dim);
+            padding: 10px 24px;
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .dashboard-tabs button.active {
+            background: var(--accent);
+            color: #030407;
+            border-radius: 10px;
+        }
+
+        /* Utility */
         .hidden { display: none !important; }
-        #loginScreen { padding-top: 2rem; }
-        #dashboard { display: none; }
-        #dashboard.visible { display: block; }
-        .user-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
-        .user-bar span { color: var(--dim); font-size: 0.9rem; }
-        .score-badge { display: inline-block; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-family: 'JetBrains Mono', monospace; }
-        .score-a { background: rgba(0,255,157,0.2); color: var(--green); }
-        .score-b { background: rgba(0,212,255,0.2); color: #00d4ff; }
-        .score-c { background: rgba(255,165,2,0.2); color: var(--warn); }
-        .score-d { background: rgba(255,71,87,0.2); color: var(--fail); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { color: var(--dim); font-weight: 600; }
-        a { color: var(--green); text-decoration: none; }
+        .msg { padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .msg.err { background: rgba(244, 63, 94, 0.1); color: var(--lvl-d); border: 1px solid rgba(244, 63, 94, 0.2); }
+        .msg.ok { background: rgba(0, 255, 157, 0.1); color: var(--lvl-a); border: 1px solid rgba(0, 255, 157, 0.2); }
+
+        /* Login Screen */
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 5vh;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+        }
+
+        /* Dashboard UI */
+        .user-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        /* Stats Grid */
+        .summary-header {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            padding: 1.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 8px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .stat-label {
+            color: var(--dim);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* Domain Cards */
+        .domain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .domain-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .domain-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .domain-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+
+        .domain-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .score-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Status badges */
+        .score-badge {
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .score-a { color: var(--lvl-a); background: rgba(0, 255, 157, 0.1); border: 1px solid rgba(0, 255, 157, 0.2); }
+        .score-b { color: var(--lvl-b); background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.2); }
+        .score-c { color: var(--lvl-c); background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.2); }
+        .score-d { color: var(--lvl-d); background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.2); }
+
+        .toast {
+            position: fixed;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            background: #0d0f14;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 1.25rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+            transform: translateY(120px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            z-index: 2000;
+            font-weight: 600;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Icons */
+        .icon { width: 1.4em; height: 1.4em; vertical-align: middle; fill: currentColor; }
+
+        /* Environments Management */
+        .env-block {
+            background: rgba(255, 255, 255, 0.015);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; padding: 1.25rem 1rem; border-bottom: 1px solid var(--border); }
+        td { padding: 1.5rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        a { color: var(--accent); text-decoration: none; font-weight: 600; }
         a:hover { text-decoration: underline; }
-        .msg { padding: 10px; border-radius: 6px; margin-bottom: 1rem; }
-        .msg.err { background: rgba(255,71,87,0.15); color: var(--fail); }
-        .msg.ok { background: rgba(0,255,157,0.1); color: var(--green); }
-        .back-link { margin-bottom: 1rem; }
-        .back-link a { color: var(--dim); font-size: 0.9rem; }
-        .dashboard-panel { display: block; }
-        .dashboard-panel.hidden { display: none !important; }
-        .dashboard-body { display: flex; gap: 0; margin-top: 1rem; align-items: stretch; min-height: 360px; }
-        .dashboard-sidebar { width: 160px; flex-shrink: 0; background: var(--card); border: 1px solid var(--border); border-right: none; border-radius: 8px 0 0 8px; padding: 12px 0; }
-        .dashboard-sidebar .nav-label { padding: 0 14px 8px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dim); }
-        .dashboard-sidebar button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 8px 14px; margin: 0; border: none; border-left: 3px solid transparent; border-radius: 0; background: transparent; color: var(--dim); cursor: pointer; font-size: 0.9rem; }
-        .dashboard-sidebar button:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-        .dashboard-sidebar button.active { border-left-color: var(--green); background: rgba(0,255,157,0.08); color: var(--green); }
-        .dashboard-main { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 0 8px 8px 0; padding: 1.25rem; background: var(--card); }
-        .env-block { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; background: rgba(0,0,0,0.2); }
-        .env-block h3 { font-size: 0.95rem; margin: 0 0 0.75rem; color: var(--green); }
-        .btn-danger { background: rgba(255,71,87,0.2); border-color: var(--fail); color: var(--fail); }
-        .btn-danger:hover { opacity: 0.9; }
-        .toast { position: fixed; bottom: 1.5rem; left: 50%; z-index: 9999; background: var(--card); border: 1px solid var(--green); border-radius: 8px; padding: 14px 20px; color: var(--green); font-size: 0.95rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: transform 0.25s ease, opacity 0.2s ease; visibility: hidden; opacity: 0; transform: translateX(-50%) translateY(1rem); pointer-events: none; }
-        .toast.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-        .icon { width: 1em; height: 1em; vertical-align: -0.15em; fill: currentColor; }
     </style>
 </head>
 <body>
-    <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;">
-        <defs>
-            <symbol id="icon-arrow-left" viewBox="0 0 448 512"><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 288 416 288c17.7 0 32-14.3 32-32s-14.3-32-32-32L109.3 224l105.4-105.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></symbol>
-            <symbol id="icon-scale-balanced" viewBox="0 0 640 512"><path d="M384 32c0-17.7 14.3-32 32-32H544c17.7 0 32 14.3 32 32s-14.3 32-32 32H416v64h160c17.7 0 32 14.3 32 32s-14.3 32-32 32H416v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V160H256v64c0 17.7-14.3 32-32 32s-32-14.3-32-32V160H96c-17.7 0-32-14.3-32-32s14.3-32 32-32h128V64H224c-17.7 0-32-14.3-32-32s14.3-32 32-32h128V32zM128 384H64c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32zm0 64v32H64V448h64zm448-64H512c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32V416c0-17.7-14.3-32-32-32zm0 64v32H512V448h64zM208 256c0-17.7 14.3-32 32-32h160c17.7 0 32 14.3 32 32v192c0 17.7-14.3 32-32 32H240c-17.7 0-32-14.3-32-32V256zm32 0v192h160V256H240z"/></symbol>
-            <symbol id="icon-plus" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></symbol>
-            <symbol id="icon-chart-line" viewBox="0 0 512 512"><path fill="currentColor" d="M64 416L128 320 192 352 256 256 320 288 384 192 448 224 448 416 64 416z"/></symbol>
-            <symbol id="icon-server" viewBox="0 0 512 512"><path d="M64 32C28.7 32 0 60.7 0 96v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm64 96H64V96h64v32zm96 0H160V96h64v32zm96 0H256V96h64v32zM448 96v32H384V96h64zM64 288c-35.3 0-64 28.7-64 64v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V352c0-35.3-28.7-64-64-64H64zm64 96H64V352h64v32zm96 0H160V352h64v32zm96 0H256V352h64v32zM448 352v32H384V352h64z"/></symbol>
-            <symbol id="icon-trash-can" viewBox="0 0 448 512"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></symbol>
-        </defs>
-    </svg>
-    <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true"></div>
-    <div class="container">
-        <div class="back-link"><a href="services.html"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"/></svg> Back to Services</a></div>
-        <h1><svg class="icon" aria-hidden="true"><use href="#icon-scale-balanced"/></svg> Governance Automation SaaS</h1>
-
-        <div id="loginScreen">
-            <div class="tabs">
-                <button type="button" id="tabLogin" class="active">Sign In</button>
-                <button type="button" id="tabSignup">Sign Up (7-Day Trial)</button>
-            </div>
-            <div id="loginForm" class="card-panel">
-                <div id="loginMsg"></div>
-                <div class="form-row"><label>Email</label><input type="email" id="loginEmail" placeholder="you@company.com"></div>
-                <div class="form-row"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-                <button type="button" id="btnLogin">Sign In</button>
-            </div>
-            <div id="signupForm" class="card-panel hidden">
-                <div id="signupMsg"></div>
-                <div class="form-row"><label>Organization Name</label><input type="text" id="signupOrg" placeholder="Acme Corp"></div>
-                <div class="form-row"><label>Email</label><input type="email" id="signupEmail" placeholder="you@company.com"></div>
-                <div class="form-row"><label>Password (min 8 characters)</label><input type="password" id="signupPassword" placeholder="••••••••"></div>
-                <button type="button" id="btnSignup">Create Account</button>
-            </div>
+    <div class="container" id="loginScreen">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h1>
+                <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 10.91v7.09c-2.68-1.11-4.73-4.39-4.97-8H12z"/></svg>
+                Nine-Security
+            </h1>
+            <p style="color: var(--dim); margin-top: 1rem; font-weight: 400;">Advanced Governance Operations Platform</p>
         </div>
 
-        <div id="dashboard">
-            <div class="user-bar">
-                <span id="userInfo">—</span>
-                <button type="button" id="btnNewTask"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> New Task</button>
-                <button type="button" id="btnLogout" class="btn-secondary">Sign Out</button>
+        <div class="auth-card">
+            <div class="dashboard-tabs" style="margin: 0 auto 2.5rem;">
+                <button type="button" id="tabLogin" class="active">Sign In</button>
+                <button type="button" id="tabSignup">Create Account</button>
             </div>
 
-            <div class="dashboard-body">
-                <nav class="dashboard-sidebar" aria-label="Dashboard navigation">
-                    <div class="nav-label">Menu</div>
-                    <button type="button" id="dashTabOverview" class="active"><svg class="icon" aria-hidden="true"><use href="#icon-chart-line"/></svg> Overview</button>
-                    <button type="button" id="dashTabEnvs"><svg class="icon" aria-hidden="true"><use href="#icon-server"/></svg> Environments</button>
-                </nav>
-                <main class="dashboard-main">
-            <div id="panelOverview" class="dashboard-panel">
-                <div class="card-panel">
-                    <h2>Maturity Overview</h2>
-                    <div id="insightsArea">Loading…</div>
+            <div id="loginForm">
+                <div id="loginMsg" class="msg hidden"></div>
+                <div class="form-group">
+                    <label>Corporate Email</label>
+                    <input type="email" id="loginEmail" placeholder="name@company.com">
                 </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <button type="button" id="btnLogin" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Access Terminal
+                </button>
             </div>
 
-            <div id="panelEnvs" class="dashboard-panel hidden">
-                <div class="card-panel">
-                    <h2>Environments</h2>
-                    <p style="color:var(--dim);font-size:0.9rem;margin-bottom:1rem;">View all environments (endpoints), their collection tasks, and download links. You can clear all data for an environment.</p>
-                    <div id="envsArea">Loading…</div>
+            <div id="signupForm" class="hidden">
+                <div id="signupMsg" class="msg hidden"></div>
+                <div class="form-group">
+                    <label>Enterprise Name</label>
+                    <input type="text" id="signupOrg" placeholder="Nine Security INC.">
                 </div>
-            </div>
-                </main>
+                <div class="form-group">
+                    <label>Work Email</label>
+                    <input type="email" id="signupEmail" placeholder="admin@company.com">
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="signupPassword" placeholder="Min 8 characters">
+                </div>
+                <button type="button" id="btnSignup" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Initialize Account
+                </button>
             </div>
         </div>
     </div>
 
+    <div class="container hidden" id="dashboard">
+        <div class="user-bar">
+            <h1>
+                <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 10.91v7.09c-2.68-1.11-4.73-4.39-4.97-8H12z"/></svg>
+                Nine-Security <span style="font-weight: 300; opacity: 0.6; margin-left: 8px;">Governance</span>
+            </h1>
+            <div style="display: flex; align-items: center; gap: 24px;">
+                <div style="text-align: right;">
+                    <div id="userInfo" style="font-weight: 600; font-size: 0.95rem;"></div>
+                    <div style="color: var(--dim); font-size: 0.75rem; text-transform: uppercase;">Authenticated Session</div>
+                </div>
+                <button type="button" id="btnLogout" class="btn-secondary" style="padding: 10px 16px; font-size: 0.85rem">Exit</button>
+            </div>
+        </div>
+
+        <div class="dashboard-tabs">
+            <button type="button" id="dashTabOverview" class="active">Maturity Dashboard</button>
+            <button type="button" id="dashTabEnvs">Resource Management</button>
+        </div>
+
+        <div id="panelOverview" class="dashboard-panel">
+            <div id="insightsArea">
+                <div class="stat-card" style="text-align: center; padding: 4rem 1rem;">
+                    <div style="color: var(--dim)">Synchronizing posture analytics...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="panelEnvs" class="dashboard-panel hidden">
+            <div class="card-panel" style="margin-bottom: 0px; border-bottom: none; border-radius: 20px 20px 0 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="margin:0">Environment Inventory</h2>
+                    <button type="button" id="btnNewTask" class="btn-primary" style="padding: 10px 20px; font-size: 0.9rem;">
+                        Register New Env
+                    </button>
+                </div>
+            </div>
+            <div id="envsArea" style="padding: 2rem; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 20px 20px;">
+                Searching registered systems...
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast" aria-hidden="true"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/dist/fflate.min.js"></script>
     <script>
         const API_BASE = "https://api.nine-security.com";
         let govCsrfToken = null;
         let csrfLogoutShown = false;
+        let idleTimer = null;
+        const IDLE_TIMEOUT = 30 * 60 * 1000;
+        const SESSION_CHECK_INTERVAL = 5 * 60 * 1000;
+
+        function resetIdleTimer() {
+            if (idleTimer) clearTimeout(idleTimer);
+            if (document.getElementById("dashboard").classList.contains("visible")) {
+                idleTimer = setTimeout(forceLogout, IDLE_TIMEOUT);
+            }
+        }
+
+        async function forceLogout(reason = "Session timeout due to inactivity.") {
+            showToast(reason);
+            await api("/api/governance/logout", { method: "POST" });
+            govCsrfToken = null;
+            document.getElementById("dashboard").classList.add("hidden");
+            document.getElementById("loginScreen").classList.remove("hidden");
+            if (idleTimer) clearTimeout(idleTimer);
+        }
+
+        async function validateSession() {
+            if (document.getElementById("loginScreen").classList.contains("hidden")) {
+                try {
+                    const j = await api("/api/governance/me");
+                    if (!j || !j.ok) forceLogout("Session expired.");
+                } catch (e) {}
+            }
+        }
+
+        ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(name => {
+            document.addEventListener(name, resetIdleTimer, true);
+        });
+
+        setInterval(validateSession, SESSION_CHECK_INTERVAL);
 
         function showMsg(elId, text, isErr) {
             const el = document.getElementById(elId);
@@ -144,22 +510,16 @@
         }
         function hideMsg(elId) { document.getElementById(elId).classList.add("hidden"); }
         function showToast(message) {
-            var el = document.getElementById("toast");
-            if (!el) return;
+            const el = document.getElementById("toast");
             el.textContent = message;
             el.classList.add("show");
             clearTimeout(el._toastTimer);
-            el._toastTimer = setTimeout(function() {
+            el._toastTimer = setTimeout(() => {
                 el.classList.remove("show");
-                el.textContent = "";
-                el.setAttribute("aria-hidden", "true");
-            }, 3500);
-            el.setAttribute("aria-hidden", "false");
+            }, 4000);
         }
         function escapeHtml(s) {
-            if (s == null || s === "") return "";
-            const t = String(s);
-            return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+            return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
         }
 
         async function api(path, opts = {}) {
@@ -179,14 +539,16 @@
 
         function showDashboard() {
             document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
             document.getElementById("dashboard").classList.add("visible");
             loadMe();
             loadInsights();
             switchDashboardTab("Overview");
+            resetIdleTimer();
         }
 
         function switchDashboardTab(name) {
-            document.querySelectorAll(".dashboard-tabs button").forEach(b => { b.classList.remove("active"); });
+            document.querySelectorAll(".dashboard-tabs button").forEach(b => b.classList.remove("active"));
             document.querySelectorAll(".dashboard-panel").forEach(p => p.classList.add("hidden"));
             if (name === "Overview") {
                 document.getElementById("dashTabOverview").classList.add("active");
@@ -201,7 +563,7 @@
         async function loadMe() {
             const j = await api("/api/governance/me");
             if (j && j.ok && j.user) {
-                document.getElementById("userInfo").textContent = j.user.email + " · " + (j.user.org_name || "Org");
+                document.getElementById("userInfo").textContent = j.user.email;
                 if (j.csrf_token) govCsrfToken = j.csrf_token;
             }
         }
@@ -210,58 +572,86 @@
             const el = document.getElementById("insightsArea");
             const j = await api("/api/governance/insights");
             if (!j || !j.ok) {
-                el.innerHTML = j && j.data === null ? "<span style='color:var(--dim)'>No maturity report yet. Create a task and run the collector to see scores.</span>" : "<span class='err'>Failed to load insights.</span>";
+                el.innerHTML = `<div class="stat-card" style="text-align:center; padding: 3rem;"><p color="var(--dim)">${j && j.data === null ? 'Create a task to begin posture analysis.' : 'Error synchronizing telemetry.'}</p></div>`;
                 return;
             }
             const d = j.data;
-            if (!d) {
-                el.innerHTML = "<span style='color:var(--dim)'>No data.</span>";
-                return;
-            }
             const envs = d.environments || [];
             const summary = d.summary || {};
+            
             if (envs.length === 0) {
-                el.innerHTML = "<span style='color:var(--dim)'>No environments yet. Click <strong>New Task</strong> and enter an environment name to add one.</span>";
+                el.innerHTML = `<div class="stat-card" style="text-align:center; padding: 4rem;"><p style="color:var(--dim); font-size:1.1rem; margin-bottom:1rem;">Ready for First Assessment</p><p style="color:var(--dim); font-size:0.9rem;">Register an environment to generate your first ETMI maturity index.</p></div>`;
                 return;
             }
-            const avgScore = summary.overall_score_avg != null ? Math.round(summary.overall_score_avg) : null;
-            const latestAt = summary.latest_at ? new Date(summary.latest_at).toLocaleString() : "—";
-            let html = "<p><strong>Summary (all environments)</strong>";
-            if (avgScore != null) {
-                html += " &nbsp; <span class='score-badge score-a'>" + escapeHtml(String(avgScore)) + "/100 avg</span>";
-            } else {
-                html += " &nbsp; <span style='color:var(--dim)'>No reports yet</span>";
-            }
-            html += "</p><p style='color:var(--dim);font-size:0.85rem;'>Latest report: " + escapeHtml(latestAt) + " &nbsp; Environments: " + escapeHtml(String(summary.environment_count || envs.length)) + "</p>";
+
+            const avgScore = summary.overall_score_avg != null ? Math.round(summary.overall_score_avg) : 0;
+            const latestAt = summary.latest_at ? new Date(summary.latest_at).toLocaleDateString() + ' ' + new Date(summary.latest_at).toLocaleTimeString() : "—";
+            
+            let html = `
+                <div class="summary-header">
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: ${avgScore >= 75 ? 'var(--lvl-a)' : avgScore >= 45 ? 'var(--lvl-c)' : 'var(--lvl-d)'}">${avgScore}</div>
+                        <div class="stat-label">Network Maturity (ETMI)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="font-size: 1.15rem; margin: 10px 0;">${latestAt}</div>
+                        <div class="stat-label">Last Threat Intelligence Sync</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${summary.environment_count || envs.length}</div>
+                        <div class="stat-label">Monitored Assets</div>
+                    </div>
+                </div>
+            `;
+
             envs.forEach(function(ev) {
                 const r = ev.report;
                 const name = escapeHtml(ev.env_name || ev.environment_id || "—");
+                
+                html += `
+                    <div class="env-group" style="margin-top: 4rem;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.25rem;">
+                            <h3 style="margin:0; font-size: 1.35rem; display: flex; align-items: center; gap: 14px;">
+                                <svg class="icon" style="color:var(--accent)"><path d="M22 19V6C22 4.9 21.1 4 20 4H4C2.9 4 2 4.9 2 6V19C2 20.1 2.9 21 4 21H20C21.1 21 22 20.1 22 19M4 6H20V19H4V6M6 9H18V11H6V9M6 13H15V15H6V13Z"/></svg>
+                                ${name}
+                                ${r ? `<span class="score-badge score-${(r.risk_level || 'D').toLowerCase()}">${r.risk_level}</span>` : ''}
+                            </h3>
+                            ${r ? `<span style="font-family: 'JetBrains Mono'; color:var(--dim); font-size:0.8rem; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:6px;">REF_ID: ${r.id.slice(0,8).toUpperCase()}</span>` : ''}
+                        </div>
+                `;
+
                 if (!r) {
-                    html += "<p style='margin-top:0.75rem;'><strong>" + name + "</strong> <span style='color:var(--dim);font-size:0.9rem;'>— No report yet</span></p>";
-                    return;
+                    html += `<div class="stat-card" style="text-align: center; padding: 4rem 1rem;"><p style="color:var(--dim)">System registered. Awaiting initial collector payload...</p></div>`;
+                } else {
+                    html += `<div class="domain-grid">`;
+                    if (ev.domains && ev.domains.length) {
+                        ev.domains.forEach(function(x) {
+                            const dScore = x.score != null ? Math.round(x.score) : 0;
+                            const dCls = dScore >= 90 ? 'lvl-a' : dScore >= 75 ? 'lvl-b' : dScore >= 60 ? 'lvl-c' : 'lvl-d';
+                            html += `
+                                <div class="domain-card">
+                                    <div class="domain-info">
+                                        <span class="domain-name">${escapeHtml(x.domain_name || "—")}</span>
+                                        <span class="score-val" style="color: var(--${dCls})">${dScore}</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" style="width: ${dScore}%; background: var(--${dCls})"></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    html += `</div>`;
                 }
-                const score = r.overall_score != null ? Math.round(r.overall_score) : "—";
-                const risk = (r.risk_level || "—").toUpperCase();
-                const cls = risk === "A" ? "score-a" : risk === "B" ? "score-b" : risk === "C" ? "score-c" : "score-d";
-                const date = r.created_at ? (typeof r.created_at === "number" ? new Date(r.created_at * 1000) : new Date(r.created_at)).toLocaleString() : "—";
-                html += "<p style='margin-top:0.75rem;'><strong>" + name + "</strong> &nbsp; <span class='score-badge " + cls + "'>" + escapeHtml(score) + "/100</span> <span class='score-badge " + cls + "'>" + escapeHtml(risk) + "</span> <span style='color:var(--dim);font-size:0.85rem;'>" + escapeHtml(date) + "</span></p>";
-                if (ev.domains && ev.domains.length) {
-                    html += "<table style='margin-left:1rem;margin-top:0.25rem;font-size:0.85rem;'><tr><th>Domain</th><th>Score</th></tr>" +
-                        ev.domains.map(function(x) { return "<tr><td>" + escapeHtml(x.domain_name || "—") + "</td><td>" + escapeHtml(x.score != null ? Math.round(x.score) : "—") + "</td></tr>"; }).join("") + "</table>";
-                }
+                html += `</div>`;
             });
+
             el.innerHTML = html;
         }
 
         async function loadEnvs() {
             const el = document.getElementById("envsArea");
-            el.textContent = "Loading…";
-            if (!govCsrfToken) {
-                try {
-                    const me = await api("/api/governance/me");
-                    if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
-                } catch (_) {}
-            }
+            el.innerHTML = `<div style="color:var(--dim); text-align:center; padding:2rem;">Synchronizing asset database...</div>`;
             try {
                 const [envRes, tasksRes] = await Promise.all([
                     api("/api/governance/environments"),
@@ -273,35 +663,34 @@
                 envs.forEach(e => { byEnv[e.id] = { name: e.name || e.id, tasks: [] }; });
                 tasks.forEach(t => {
                     const eid = t.environment_id || "";
-                    if (!byEnv[eid]) byEnv[eid] = { name: t.env_name || eid || "—", tasks: [] };
+                    if (!byEnv[eid]) byEnv[eid] = { name: t.env_name || eid, tasks: [] };
                     byEnv[eid].tasks.push(t);
                 });
                 if (envs.length === 0 && Object.keys(byEnv).length === 0) {
-                    el.innerHTML = "<p style='color:var(--dim)'>No environments yet. Click <strong>New Task</strong> in the bar above and enter an environment name to create one.</p>";
+                    el.innerHTML = `<div style="color:var(--dim); text-align:center; padding:2rem;">No registered environments found. Register an asset to begin.</div>`;
                     return;
                 }
                 const envIds = envs.length ? envs.map(e => e.id) : Object.keys(byEnv);
                 el.innerHTML = envIds.map(envId => {
                     const block = byEnv[envId] || { name: envId, tasks: [] };
-                    const displayName = escapeHtml(block.name || envId);
                     const taskRows = (block.tasks || []).map(t => {
-                        const created = t.created_at ? (typeof t.created_at === 'number' ? new Date(t.created_at * 1000) : new Date(t.created_at)).toLocaleString() : "—";
-                        const status = (t.status || "pending").toLowerCase();
+                        const created = t.created_at ? new Date(t.created_at).toLocaleString() : "—";
+                        const status = (t.status || "pending").toUpperCase();
                         const downloadUrl = API_BASE + "/api/governance/download/" + encodeURIComponent(t.id) + "?token=" + encodeURIComponent(t.token || "");
-                        const action = status === "pending" ? "<a href=\"" + escapeHtml(downloadUrl) + "\" target=\"_blank\" rel=\"noopener noreferrer\">Download ZIP</a>" : "—";
-                        return "<tr><td>" + escapeHtml(created) + "</td><td>" + escapeHtml(status) + "</td><td>" + action + "</td></tr>";
+                        const action = status === "PENDING" ? `<a href="${downloadUrl}" target="_blank">Download Bundle</a>` : "Assessment Complete";
+                        return `<tr><td>${created}</td><td><span class="score-badge" style="background:rgba(255,255,255,0.05); color:var(--text);">${status}</span></td><td>${action}</td></tr>`;
                     }).join("");
                     const tableHtml = block.tasks && block.tasks.length
-                        ? "<table style='margin-top:0.5rem;'><thead><tr><th>Created</th><th>Status</th><th>Action</th></tr></thead><tbody>" + taskRows + "</tbody></table>"
-                        : "<p style='color:var(--dim);font-size:0.9rem;margin-top:0.5rem;'>No tasks for this environment.</p>";
-                    return "<div class=\"env-block\" data-env-id=\"" + escapeHtml(envId) + "\"><h3><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#icon-server\"/></svg> " + displayName + "</h3>" + tableHtml + "<button type=\"button\" class=\"btn-danger\" style=\"margin-top:0.75rem;\" data-clear-env=\"" + escapeHtml(envId) + "\"><svg class=\"icon\" aria-hidden=\"true\"><use href=\"#icon-trash-can\"/></svg> Clear environment data</button></div>";
+                        ? `<table><thead><tr><th>Registration Time</th><th>Status</th><th>Operations</th></tr></thead><tbody>${taskRows}</tbody></table>`
+                        : `<p style="color:var(--dim); font-size:0.9rem; margin-top:1rem;">No diagnostic tasks initialized for this asset.</p>`;
+                    return `<div class="env-block"><h3>${escapeHtml(block.name || envId)}</h3>${tableHtml}<button type="button" class="btn-danger" style="margin-top:1.5rem; padding: 8px 16px; font-size:0.8rem;" data-clear-env="${envId}">Purge Asset Telemetry</button></div>`;
                 }).join("");
-                // Clear buttons use event delegation (see dashboard click handler below)
             } catch (e) {
-                el.innerHTML = "<p class=\"msg err\">Failed to load environments.</p>";
+                el.innerHTML = `<p class="msg err">Failed to synchronize asset database.</p>`;
             }
         }
 
+        // Event Listeners
         document.getElementById("tabLogin").addEventListener("click", () => {
             document.getElementById("tabLogin").classList.add("active");
             document.getElementById("tabSignup").classList.remove("active");
@@ -319,7 +708,7 @@
             hideMsg("loginMsg");
             const email = document.getElementById("loginEmail").value.trim();
             const password = document.getElementById("loginPassword").value;
-            if (!email || !password) { showMsg("loginMsg", "Please enter email and password.", true); return; }
+            if (!email || !password) return;
             try {
                 const j = await api("/api/governance/login", {
                     method: "POST",
@@ -327,29 +716,12 @@
                     body: JSON.stringify({ email, password })
                 });
                 if (j && j.ok) {
-                    govCsrfToken = j.csrf_token || null;
-                    csrfLogoutShown = false;
+                    govCsrfToken = j.csrf_token;
                     showDashboard();
-                    return;
-                }
-                showMsg("loginMsg", (j && j.error) || "Login failed.", true);
-            } catch (e) {
-                var msg = e && e.message;
-                if (msg && (msg.indexOf("fetch") !== -1 || msg.indexOf("NetworkError") !== -1)) {
-                    try {
-                        var healthRes = await fetch(API_BASE + "/health", { method: "GET" });
-                        if (healthRes && healthRes.ok) {
-                            showMsg("loginMsg", "API 可連線，但登入請求失敗。請稍後再試或檢查 Email / 密碼。", true);
-                        } else {
-                            showMsg("loginMsg", "無法連線至伺服器（" + (healthRes ? healthRes.status : "network error") + "）。請確認網路或稍後再試。", true);
-                        }
-                    } catch (_) {
-                        showMsg("loginMsg", "無法連線至伺服器（Network error）。請確認：1) 網路連線 2) VPN/防火牆 3) 稍後再試。", true);
-                    }
                 } else {
-                    showMsg("loginMsg", "Network error: " + (msg || "Cannot reach backend."), true);
+                    showMsg("loginMsg", j.error || "Authentication failed.", true);
                 }
-            }
+            } catch (e) { showMsg("loginMsg", "Network connection failed.", true); }
         });
 
         document.getElementById("btnSignup").addEventListener("click", async () => {
@@ -357,173 +729,70 @@
             const org_name = document.getElementById("signupOrg").value.trim();
             const email = document.getElementById("signupEmail").value.trim();
             const password = document.getElementById("signupPassword").value;
-            if (!org_name || !email || !password) { showMsg("signupMsg", "Please fill all fields.", true); return; }
-            if (password.length < 8) { showMsg("signupMsg", "Password must be at least 8 characters.", true); return; }
+            if (!org_name || !email || password.length < 8) return;
             try {
-                const res = await fetch(API_BASE + "/api/governance/signup", {
+                const j = await api("/api/governance/signup", {
                     method: "POST",
-                    credentials: "include",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password, org_name })
                 });
-                let j = null;
-                const ct = res.headers.get("content-type") || "";
-                if (ct.includes("application/json")) {
-                    j = await res.json();
+                if (j && j.ok) {
+                    showMsg("signupMsg", "Deployment successful. You may now sign in.", false);
                 } else {
-                    const text = await res.text();
-                    try { j = JSON.parse(text); } catch (_) { j = { ok: false, error: text || "Signup failed." }; }
+                    showMsg("signupMsg", j.error || "Initialization failed.", true);
                 }
-                if (j && j.ok) { showMsg("signupMsg", "Account created. You can sign in now.", false); return; }
-                showMsg("signupMsg", (j && j.error) || "Signup failed. Please try again or contact support.", true);
-            } catch (e) {
-                showMsg("signupMsg", "Network error: " + (e.message || "Cannot reach backend. Check API_BASE and CORS."), true);
-            }
+            } catch (e) { showMsg("signupMsg", "Network connection failed.", true); }
         });
 
         document.getElementById("btnLogout").addEventListener("click", async () => {
-            await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+            await api("/api/governance/logout", { method: "POST" });
             govCsrfToken = null;
-            document.getElementById("dashboard").classList.remove("visible");
-            document.getElementById("loginScreen").classList.remove("hidden");
+            location.reload();
         });
 
         async function runNewTask() {
-            var envName = prompt("Environment Name (e.g. HQ Office, Server-A). This matches the Environments tab; each environment has its own task list.");
-            if (envName == null || !String(envName).trim()) return;
-            if (!govCsrfToken) {
-                try {
-                    var me = await api("/api/governance/me");
-                    if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
-                } catch (_) {}
-            }
-            if (!govCsrfToken) {
-                showToast("Session expired. Please sign out and sign in again.");
-                return;
-            }
+            const envName = prompt("Register New Asset Environment (e.g. Production Cluster A):");
+            if (!envName) return;
             try {
-                var j = await api("/api/governance/session", {
+                const j = await api("/api/governance/session", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ environment_id: String(envName).trim() })
+                    body: JSON.stringify({ environment_id: envName.trim() })
                 });
-                if (!j || !j.ok) {
-                    var errMsg = (j && j.error) ? String(j.error) : "Failed to create task.";
-                    if (errMsg.indexOf("CSRF") !== -1 || errMsg.indexOf("Invalid session") !== -1) {
-                        govCsrfToken = null;
-                        if (!csrfLogoutShown) {
-                            csrfLogoutShown = true;
-                            showToast("Session expired. Signing out…");
-                            await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-                            document.getElementById("dashboard").classList.remove("visible");
-                            document.getElementById("loginScreen").classList.remove("hidden");
-                        }
-                    } else {
-                        showToast(errMsg);
-                    }
-                    return;
+                if (j && j.ok) {
+                    const downloadUrl = API_BASE + "/api/governance/download/" + j.data.upload_session_id + "?token=" + encodeURIComponent(j.data.token);
+                    const a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = "nine-security-collector.zip";
+                    a.click();
+                    showToast("Diagnostic Bundle Prepared & Downloaded.");
+                    if (document.getElementById("panelEnvs").classList.contains("visible")) loadEnvs();
+                    loadInsights();
+                } else { showToast(j.error || "Task registration failed."); }
+            } catch (e) { showToast("Network synchronization failed."); }
+        }
+
+        document.body.addEventListener("click", async (e) => {
+            const el = e.target;
+            if (el.id === "dashTabOverview") switchDashboardTab("Overview");
+            if (el.id === "dashTabEnvs") switchDashboardTab("Environments");
+            if (el.id === "btnNewTask") runNewTask();
+            if (el.hasAttribute("data-clear-env")) {
+                const id = el.getAttribute("data-clear-env");
+                if (confirm("Permanently purge all telemetry for this asset?")) {
+                    await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
+                    loadEnvs();
+                    loadInsights();
+                    showToast("Asset telemetry purged.");
                 }
-                var d = j.data;
-                var downloadUrl = API_BASE + "/api/governance/download/" + d.upload_session_id + "?token=" + encodeURIComponent(d.token);
-                showToast("Task created. Preparing download…");
-                var panelEnvs = document.getElementById("panelEnvs");
-                if (panelEnvs && !panelEnvs.classList.contains("hidden")) loadEnvs();
-                loadInsights();
-                (async function() {
-                    try {
-                        var r = await fetch(downloadUrl, { credentials: "include" });
-                        if (!r.ok) {
-                            var errText = await r.text();
-                            showToast(errText || "Download failed.");
-                            return;
-                        }
-                        var blob = await r.blob();
-                        var a = document.createElement("a");
-                        a.href = URL.createObjectURL(blob);
-                        a.download = "governance-collector.zip";
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(a.href);
-                        showToast("Collector ZIP downloaded.");
-                    } catch (err) {
-                        showToast("Download failed: " + (err.message || "network error"));
-                    }
-                })();
-            } catch (err) {
-                showToast("Request failed: " + (err.message || "network error"));
             }
-        }
-
-        function handleDashboardClick(e) {
-            var el = e.target;
-            if (!el || !el.closest) return;
-            if (el.closest("#btnNewTask")) {
-                e.preventDefault();
-                e.stopPropagation();
-                runNewTask();
-                return;
-            }
-            if (el.closest("[data-clear-env]")) {
-                e.preventDefault();
-                e.stopPropagation();
-                var btn = el.closest("[data-clear-env]");
-                var id = btn && btn.getAttribute("data-clear-env");
-                if (!id) return;
-                if (!confirm("Clear all reports and tasks for this environment? This cannot be undone.")) return;
-                (async function() {
-                    try {
-                        if (!govCsrfToken) {
-                            var me = await api("/api/governance/me");
-                            if (me && me.ok && me.csrf_token) govCsrfToken = me.csrf_token;
-                        }
-                        if (!govCsrfToken) { showToast("Session expired. Please sign out and sign in again."); return; }
-                        var j = await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
-                        if (!j || !j.ok) {
-                            var errMsg = (j && j.error) ? String(j.error) : "Failed to clear.";
-                            if (errMsg.indexOf("CSRF") !== -1 || errMsg.indexOf("Invalid session") !== -1) {
-                                govCsrfToken = null;
-                                if (!csrfLogoutShown) {
-                                    csrfLogoutShown = true;
-                                    showToast("Session expired. Signing out…");
-                                    await api("/api/governance/logout", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
-                                    document.getElementById("dashboard").classList.remove("visible");
-                                    document.getElementById("loginScreen").classList.remove("hidden");
-                                }
-                            } else {
-                                showToast(errMsg);
-                            }
-                            return;
-                        }
-                        loadEnvs();
-                        loadInsights();
-                        showToast("Environment data cleared.");
-                    } catch (err) { showToast("Request failed: " + (err.message || "network error")); }
-                })();
-                return;
-            }
-            if (el.closest("#dashTabOverview")) { switchDashboardTab("Overview"); return; }
-            if (el.closest("#dashTabEnvs")) { switchDashboardTab("Environments"); return; }
-        }
-
-        document.body.addEventListener("click", handleDashboardClick, true);
-        var btnNewTaskEl = document.getElementById("btnNewTask");
-        if (btnNewTaskEl) {
-            btnNewTaskEl.addEventListener("click", function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                runNewTask();
-            }, false);
-        }
+        });
 
         (async function init() {
             try {
                 const j = await api("/api/governance/me");
-                if (j && j.ok && j.user) {
-                    if (j.csrf_token) govCsrfToken = j.csrf_token;
-                    showDashboard();
-                }
-            } catch (e) { /* silent */ }
+                if (j && j.ok && j.user) showDashboard();
+            } catch (e) {}
         })();
     </script>
 </body>
