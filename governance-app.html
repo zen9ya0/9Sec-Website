@@ -1118,7 +1118,13 @@
                             // For now, we'll try to find any facts that look like system identifiers
                             const hosts = new Set();
                             factsRes.facts.forEach(f => {
-                                if (f.key === 'system.hostname' || f.key === 'identity.computer_name') hosts.add(f.value);
+                                if (f.hostId && f.hostId !== 'unknown-host' && f.hostId !== 'default') {
+                                    hosts.add(f.hostId);
+                                }
+                                // Fallback: still look for specific keys if hostId was generic
+                                if (f.key === 'system.hostname' || f.key === 'identity.computer_name' || f.key === 'host.hostname') {
+                                    hosts.add(f.value);
+                                }
                             });
                             if (byEnv[eid]) byEnv[eid].hosts = Array.from(hosts);
                         }
