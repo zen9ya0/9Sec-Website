@@ -523,6 +523,79 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
         }
+
+        /* Custom Modern Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border-hover);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 480px;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #fff;
+        }
+
+        .modal-header p {
+            margin: 8px 0 0;
+            font-size: 0.9rem;
+            color: var(--dim);
+        }
+
+        .modal-body {
+            margin-bottom: 2rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-footer button {
+            min-width: 100px;
+        }
+
+        .modal-input {
+            margin-top: 1rem;
+        }
     </style>
 </head>
 
@@ -597,15 +670,28 @@
                     <div style="color: var(--dim); font-size: 0.75rem; text-transform: uppercase;">Authenticated Session
                     </div>
                 </div>
+                <button type="button" id="btnNewTaskTop" class="btn-primary"
+                    style="padding: 10px 16px; font-size: 0.85rem">New Env</button>
                 <button type="button" id="btnLogout" class="btn-secondary"
                     style="padding: 10px 16px; font-size: 0.85rem">Exit</button>
             </div>
         </div>
 
-        <div class="dashboard-tabs">
-            <button type="button" id="dashTabOverview" class="active">Maturity Dashboard</button>
-            <button type="button" id="dashTabCompliance">Compliance Center</button>
-            <button type="button" id="dashTabEnvs">Resource Management</button>
+        <div class="dashboard-tabs"
+            style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: none;">
+            <div style="display: flex; gap: 12px;">
+                <button type="button" id="dashTabOverview" class="active">Maturity Dashboard</button>
+                <button type="button" id="dashTabCompliance">Compliance Center</button>
+                <button type="button" id="dashTabEnvs">Resource Management</button>
+            </div>
+            <button type="button" id="btnRefresh" class="btn-secondary"
+                style="padding: 8px 16px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px;">
+                <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:currentColor;">
+                    <path
+                        d="M17.65,6.35C16.2,4.9 14.21,4 12,4c-4.42,0-7.99,3.58-7.99,8s3.57,8,7.99,8c3.73,0,6.84-2.55,7.73-6h-2.08 c-0.82,2.33-3.04,4-5.65,4c-3.31,0-6-2.69-6-6s2.69-6,6-6c1.66,0,3.14,0.69,4.22,1.78L13,11h7V4L17.65,6.35z" />
+                </svg>
+                Refresh
+            </button>
         </div>
 
         <div id="panelOverview" class="dashboard-panel">
@@ -778,7 +864,8 @@
             const url = API_BASE + path;
             const method = (opts.method || "GET").toUpperCase();
             const headers = { ...(opts.headers || {}) };
-            if (path.startsWith("/api/governance/") && (method === "POST" || method === "DELETE") && govCsrfToken) {
+            const isStateChange = ["POST", "DELETE", "PUT", "PATCH"].includes(method);
+            if (isStateChange && govCsrfToken && (path.startsWith("/api/governance/") || path.startsWith("/api/compliance/"))) {
                 headers["X-CSRF-Token"] = govCsrfToken;
             }
             const fetchOpts = { credentials: "include", ...opts };
@@ -817,21 +904,30 @@
         }
 
         async function loadComplianceDashboard() {
-            const assessmentId = localStorage.getItem('currentAssessmentId') || 'demo-asmt';
+            let assessmentId = localStorage.getItem('currentAssessmentId');
             const frameworkId = localStorage.getItem('currentFrameworkId') || 'TW_CYBERSEC_ACT_V1';
 
-            try {
-                // In production, this would use a real assessmentId from navigation context
-                const res = await fetch(`${API_BASE}/api/compliance/evaluate/${assessmentId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': govCsrfToken
-                    },
-                    body: JSON.stringify({ frameworkId })
-                }).then(r => r.json());
+            if (!assessmentId) {
+                // Try to find a real assessment ID from environments if available
+                try {
+                    const envs = await api("/api/governance/environments");
+                    if (envs && envs.ok && envs.data && envs.data.length > 0) {
+                        assessmentId = envs.data[0].id;
+                        localStorage.setItem('currentAssessmentId', assessmentId);
+                    }
+                } catch (e) { }
+            }
 
-                if (res.ok) {
+            if (!assessmentId) assessmentId = 'demo-asmt-001';
+
+            try {
+                const res = await api(`/api/compliance/evaluate/${assessmentId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ frameworkId })
+                });
+
+                if (res && res.ok) {
                     const results = res.results;
                     document.getElementById('val-readiness').textContent = Math.round(results.overall_readiness * 100) + '%';
 
@@ -843,7 +939,10 @@
                         tbody.innerHTML = results.control_results.map((c) => `
                             <tr>
                                 <td class="mono">${c.control_id}</td>
-                                <td>${escapeHtml(c.title || 'Control')}</td>
+                                <td>
+                                    <div>${escapeHtml(c.title || 'Control')}</div>
+                                    <div style="font-size:0.7rem; color:var(--dim); margin-top:4px;">${escapeHtml(c.description || '')}</div>
+                                </td>
                                 <td><span style="font-size:0.75rem; color:var(--dim)">${c.criticality.toUpperCase()}</span></td>
                                 <td><span class="badge badge-${c.status}">${c.status.toUpperCase()}</span></td>
                                 <td>
@@ -969,6 +1068,21 @@
             el.innerHTML = html;
         }
 
+        async function runDirectDownload(envId) {
+            try {
+                const j = await api("/api/governance/session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ environment_id: envId })
+                });
+                if (j && j.ok) {
+                    const downloadUrl = API_BASE + "/api/governance/download/" + j.data.upload_session_id + "?token=" + encodeURIComponent(j.data.token);
+                    window.open(downloadUrl, "_blank");
+                    showToast("Collector sync initiated.");
+                }
+            } catch (e) { showToast("Download failed."); }
+        }
+
         async function loadEnvs() {
             const el = document.getElementById("envsArea");
             el.innerHTML = `<div style="color:var(--dim); text-align:center; padding:2rem;">Synchronizing asset database...</div>`;
@@ -979,31 +1093,80 @@
                 ]);
                 const envs = (envRes && envRes.ok && envRes.data) ? envRes.data : [];
                 const tasks = (tasksRes && tasksRes.ok && tasksRes.data) ? tasksRes.data : [];
+
                 const byEnv = {};
-                envs.forEach(e => { byEnv[e.id] = { name: e.name || e.id, tasks: [] }; });
+                envs.forEach(e => { byEnv[e.id] = { name: e.name || e.id, tasks: [], hosts: [] }; });
                 tasks.forEach(t => {
                     const eid = t.environment_id || "";
-                    if (!byEnv[eid]) byEnv[eid] = { name: t.env_name || eid, tasks: [] };
+                    if (!byEnv[eid]) byEnv[eid] = { name: t.env_name || eid, tasks: [], hosts: [] };
                     byEnv[eid].tasks.push(t);
                 });
+
                 if (envs.length === 0 && Object.keys(byEnv).length === 0) {
                     el.innerHTML = `<div style="color:var(--dim); text-align:center; padding:2rem;">No registered environments found. Register an asset to begin.</div>`;
                     return;
                 }
+
                 const envIds = envs.length ? envs.map(e => e.id) : Object.keys(byEnv);
+
+                // Fetch hosts for each env in parallel
+                await Promise.all(envIds.map(async (eid) => {
+                    try {
+                        const factsRes = await api(`/api/compliance/facts/${eid}`);
+                        if (factsRes.ok && factsRes.facts) {
+                            // Extract unique hosts if we had host info in facts, or just use host metadata if available
+                            // For now, we'll try to find any facts that look like system identifiers
+                            const hosts = new Set();
+                            factsRes.facts.forEach(f => {
+                                if (f.key === 'system.hostname' || f.key === 'identity.computer_name') hosts.add(f.value);
+                            });
+                            if (byEnv[eid]) byEnv[eid].hosts = Array.from(hosts);
+                        }
+                    } catch (e) { }
+                }));
+
                 el.innerHTML = envIds.map(envId => {
-                    const block = byEnv[envId] || { name: envId, tasks: [] };
-                    const taskRows = (block.tasks || []).map(t => {
+                    const block = byEnv[envId] || { name: envId, tasks: [], hosts: [] };
+                    const hostTags = block.hosts.length
+                        ? block.hosts.map(h => `<span class="badge" style="background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent); margin-right:6px; font-size:0.75rem;">${escapeHtml(h)}</span>`).join("")
+                        : '<span style="color:var(--dim); font-size:0.8rem;">No active endpoints detected yet.</span>';
+
+                    const taskRows = (block.tasks || []).slice(0, 3).map(t => {
                         const created = t.created_at ? new Date(t.created_at).toLocaleString() : "—";
                         const status = (t.status || "pending").toUpperCase();
-                        const downloadUrl = API_BASE + "/api/governance/download/" + encodeURIComponent(t.id) + "?token=" + encodeURIComponent(t.token || "");
-                        const action = status === "PENDING" ? `<a href="${downloadUrl}" target="_blank">Download Bundle</a>` : "Assessment Complete";
-                        return `<tr><td>${created}</td><td><span class="score-badge" style="background:rgba(255,255,255,0.05); color:var(--text);">${status}</span></td><td>${action}</td></tr>`;
+                        return `<tr><td>${created}</td><td><span class="score-badge" style="background:rgba(255,255,255,0.05); color:var(--text);">${status}</span></td></tr>`;
                     }).join("");
+
                     const tableHtml = block.tasks && block.tasks.length
-                        ? `<table><thead><tr><th>Registration Time</th><th>Status</th><th>Operations</th></tr></thead><tbody>${taskRows}</tbody></table>`
-                        : `<p style="color:var(--dim); font-size:0.9rem; margin-top:1rem;">No diagnostic tasks initialized for this asset.</p>`;
-                    return `<div class="env-block"><h3>${escapeHtml(block.name || envId)}</h3>${tableHtml}<button type="button" class="btn-danger" style="margin-top:1.5rem; padding: 8px 16px; font-size:0.8rem;" data-clear-env="${envId}">Purge Asset Telemetry</button></div>`;
+                        ? `<table style="font-size:0.85rem;"><thead><tr><th>Registration Time</th><th>Status</th></tr></thead><tbody>${taskRows}</tbody></table>`
+                        : `<p style="color:var(--dim); font-size:0.8rem;">No historical diagnostic tasks.</p>`;
+
+                    return `
+                        <div class="env-block" style="background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
+                                <div>
+                                    <h3 style="margin:0 0 8px 0; color:#fff; font-size:1.1rem;">${escapeHtml(block.name || envId)}</h3>
+                                    <div style="font-size:0.8rem; color:var(--dim)">Environment ID: <span class="mono">${envId}</span></div>
+                                </div>
+                                <div style="display:flex; gap:10px;">
+                                    <button type="button" class="btn-primary" onclick="runDirectDownload('${envId}')" style="padding: 8px 14px; font-size:0.75rem;">
+                                        <svg viewBox="0 0 24 24" style="width:14px; height:14px; fill:currentColor; margin-right:4px;"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Download Collector
+                                    </button>
+                                    <button type="button" class="btn-danger" style="padding: 8px 14px; font-size:0.75rem;" data-clear-env="${envId}">Purge</button>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom:1.5rem;">
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--dim); letter-spacing:0.05em; margin-bottom:10px;">Connected Endpoints</div>
+                                <div style="display:flex; flex-wrap:wrap; gap:6px;">${hostTags}</div>
+                            </div>
+
+                            <div style="opacity:0.8;">
+                                <div style="font-size:0.75rem; text-transform:uppercase; color:var(--dim); letter-spacing:0.05em; margin-bottom:10px;">Recent Activity</div>
+                                ${tableHtml}
+                            </div>
+                        </div>
+                    `;
                 }).join("");
             } catch (e) {
                 el.innerHTML = `<p class="msg err">Failed to synchronize asset database.</p>`;
@@ -1070,8 +1233,86 @@
             location.reload();
         });
 
+        async function customPrompt(title, description, placeholder = "") {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const input = modal.querySelector('input');
+                modal.querySelector('h3').textContent = title;
+                modal.querySelector('p').textContent = description;
+                input.value = "";
+                input.placeholder = placeholder;
+                input.classList.remove('hidden');
+
+                const btnConfirm = modal.querySelector('.btn-primary');
+                const btnCancel = modal.querySelector('.btn-secondary');
+
+                const onConfirm = () => {
+                    cleanup();
+                    resolve(input.value.trim());
+                };
+                const onCancel = () => {
+                    cleanup();
+                    resolve(null);
+                };
+                const onKey = (e) => { if (e.key === 'Enter') onConfirm(); };
+
+                const cleanup = () => {
+                    modal.classList.remove('active');
+                    btnConfirm.removeEventListener('click', onConfirm);
+                    btnCancel.removeEventListener('click', onCancel);
+                    input.removeEventListener('keydown', onKey);
+                };
+
+                btnConfirm.textContent = "Confirm";
+                btnConfirm.addEventListener('click', onConfirm);
+                btnCancel.addEventListener('click', onCancel);
+                input.addEventListener('keydown', onKey);
+
+                modal.classList.add('active');
+                setTimeout(() => input.focus(), 100);
+            });
+        }
+
+        async function customConfirm(title, description) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('customModal');
+                const input = modal.querySelector('input');
+                modal.querySelector('h3').textContent = title;
+                modal.querySelector('p').textContent = description;
+                input.classList.add('hidden');
+
+                const btnConfirm = modal.querySelector('.btn-primary');
+                const btnCancel = modal.querySelector('.btn-secondary');
+
+                const onConfirm = () => {
+                    cleanup();
+                    resolve(true);
+                };
+                const onCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                const cleanup = () => {
+                    modal.classList.remove('active');
+                    btnConfirm.removeEventListener('click', onConfirm);
+                    btnCancel.removeEventListener('click', onCancel);
+                };
+
+                btnConfirm.textContent = "Proceed";
+                btnConfirm.addEventListener('click', onConfirm);
+                btnCancel.addEventListener('click', onCancel);
+
+                modal.classList.add('active');
+            });
+        }
+
         async function runNewTask() {
-            const envName = prompt("Register New Asset Environment (e.g. Production Cluster A):");
+            const envName = await customPrompt(
+                "Register New Asset Environment",
+                "Assign a unique identifier for this deployment (e.g. Production-Cluster-A):",
+                "Environment ID"
+            );
             if (!envName) return;
             try {
                 const j = await api("/api/governance/session", {
@@ -1097,7 +1338,20 @@
             if (el.id === "dashTabOverview") switchDashboardTab("Overview");
             if (el.id === "dashTabCompliance") switchDashboardTab("Compliance");
             if (el.id === "dashTabEnvs") switchDashboardTab("Environments");
-            if (el.id === "btnNewTask") runNewTask();
+            if (el.id === "btnNewTask" || el.id === "btnNewTaskTop") runNewTask();
+
+            if (el.id === "btnRefresh") {
+                const activeTab = document.querySelector(".dashboard-tabs button.active");
+                if (activeTab.id === "dashTabOverview") loadInsights();
+                if (activeTab.id === "dashTabCompliance") loadComplianceDashboard();
+                if (activeTab.id === "dashTabEnvs") loadEnvs();
+
+                const btn = document.getElementById("btnRefresh");
+                btn.style.opacity = "0.5";
+                btn.disabled = true;
+                setTimeout(() => { btn.style.opacity = "1"; btn.disabled = false; }, 1000);
+                showToast("Data synchronization complete.");
+            }
 
             // Compliance Modals
             if (el.id === "btnShowFwManager") document.getElementById("compModalFw").classList.toggle("hidden");
@@ -1128,7 +1382,11 @@
 
             if (el.hasAttribute("data-clear-env")) {
                 const id = el.getAttribute("data-clear-env");
-                if (confirm("Permanently purge all telemetry for this asset?")) {
+                const confirmed = await customConfirm(
+                    "Purge Environmental Data",
+                    "Permanently delete all telemetry and historical assessment facts for this asset? This action is irreversible."
+                );
+                if (confirmed) {
                     await api("/api/governance/environment/" + encodeURIComponent(id) + "/data", { method: "DELETE" });
                     loadEnvs();
                     loadInsights();
@@ -1144,6 +1402,23 @@
             } catch (e) { }
         })();
     </script>
+
+    <!-- Premium Global Modal -->
+    <div id="customModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Dialogue Title</h3>
+                <p>Supporting description goes here.</p>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="modal-input" placeholder="...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary">Cancel</button>
+                <button class="btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
