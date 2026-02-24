@@ -683,6 +683,7 @@
                 <button type="button" id="dashTabOverview" class="active">Maturity Dashboard</button>
                 <button type="button" id="dashTabCompliance">Compliance Center</button>
                 <button type="button" id="dashTabEnvs">Resource Management</button>
+                <button type="button" id="dashTabAudit">Audit Log</button>
             </div>
             <button type="button" id="btnRefresh" class="btn-secondary"
                 style="padding: 8px 16px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px;">
@@ -781,19 +782,15 @@
             </div>
         </div>
 
-        <div id="panelEnvs" class="dashboard-panel hidden">
+        <div id="panelAudit" class="dashboard-panel hidden">
             <div class="card-panel" style="margin-bottom: 0px; border-bottom: none; border-radius: 20px 20px 0 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="margin:0">Environment Inventory</h2>
-                    <button type="button" id="btnNewTask" class="btn-primary"
-                        style="padding: 10px 20px; font-size: 0.9rem;">
-                        Register New Env
-                    </button>
+                    <h2 style="margin:0">Audit Trail</h2>
                 </div>
             </div>
-            <div id="envsArea"
+            <div id="auditArea"
                 style="padding: 2rem; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 20px 20px;">
-                Searching registered systems...
+                Retrieving audit history...
             </div>
         </div>
     </div>
@@ -900,6 +897,10 @@
                 document.getElementById("dashTabEnvs").classList.add("active");
                 document.getElementById("panelEnvs").classList.remove("hidden");
                 loadEnvs();
+            } else if (name === "Audit") {
+                document.getElementById("dashTabAudit").classList.add("active");
+                document.getElementById("panelAudit").classList.remove("hidden");
+                loadAuditLogs();
             }
         }
 
@@ -1178,6 +1179,47 @@
                 el.innerHTML = `<p class="msg err">Failed to synchronize asset database.</p>`;
             }
         }
+        async function loadAuditLogs() {
+            const el = document.getElementById("auditArea");
+            el.innerHTML = `<div style="color:var(--dim); text-align:center; padding:2rem;">Retrieving audit history...</div>`;
+            try {
+                const j = await api("/api/governance/audit");
+                const logs = (j && j.ok && j.data) ? j.data : [];
+                if (logs.length === 0) {
+                    el.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--dim);">No security events recorded yet.</div>`;
+                    return;
+                }
+                let html = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Action</th>
+                                <th>Actor</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                logs.forEach(log => {
+                    const ts = log.timestamp ? new Date(log.timestamp).toLocaleString() : "—";
+                    const action = (log.action || "unknown").toUpperCase();
+                    const details = typeof log.details === 'string' ? escapeHtml(log.details) : JSON.stringify(log.details);
+                    html += `
+                        <tr>
+                            <td class="mono" style="font-size:0.8rem;">${ts}</td>
+                            <td><span class="score-badge" style="background:rgba(0,255,157,0.1); color:var(--accent); border:1px solid rgba(0,255,157,0.2); font-size:0.7rem;">${action}</span></td>
+                            <td class="mono" style="font-size:0.85rem;">${escapeHtml(log.actor_id || "system")}</td>
+                            <td style="font-size:0.85rem; color:var(--dim); max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title='${details}'>${details}</td>
+                        </tr>
+                    `;
+                });
+                html += `</tbody></table>`;
+                el.innerHTML = html;
+            } catch (e) {
+                el.innerHTML = `<p class="msg err">Audit synchronization failed.</p>`;
+            }
+        }
 
         // Event Listeners
         document.getElementById("tabLogin").addEventListener("click", () => {
@@ -1344,6 +1386,7 @@
             if (el.id === "dashTabOverview") switchDashboardTab("Overview");
             if (el.id === "dashTabCompliance") switchDashboardTab("Compliance");
             if (el.id === "dashTabEnvs") switchDashboardTab("Environments");
+            if (el.id === "dashTabAudit") switchDashboardTab("Audit");
             if (el.id === "btnNewTask" || el.id === "btnNewTaskTop") runNewTask();
 
             if (el.id === "btnRefresh") {
@@ -1351,6 +1394,7 @@
                 if (activeTab.id === "dashTabOverview") loadInsights();
                 if (activeTab.id === "dashTabCompliance") loadComplianceDashboard();
                 if (activeTab.id === "dashTabEnvs") loadEnvs();
+                if (activeTab.id === "dashTabAudit") loadAuditLogs();
 
                 const btn = document.getElementById("btnRefresh");
                 btn.style.opacity = "0.5";
