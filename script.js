@@ -406,6 +406,9 @@ const translations = {
             cta_consult: "REQUEST_CUSTOM_AUDIT",
             dmarc_title: "DMARC Intelligence Monitor",
             dmarc_desc: "Professional-grade brand protection that goes beyond manual parsing. <ul><li><i class='fa-solid fa-check'></i> <strong>Consolidated Dashboard</strong>: Single portal for all your sending domains.</li><li><i class='fa-solid fa-check'></i> <strong>Continuous Tracking</strong>: 24/7 automated report collection via RUA.</li><li><i class='fa-solid fa-check'></i> <strong>Forensic Insights</strong>: Identify unauthorized spoofing attempts in real-time.</li></ul>",
+            helix_dns_title: "HelixDNS Security Center",
+            helix_dns_desc: "A high-performance recursive resolver with intelligent security guardrails. <ul><li><i class='fa-solid fa-check'></i> <strong>DGA & Tunneling Detection</strong>: Real-time entropy analysis to block malicious domains.</li><li><i class='fa-solid fa-check'></i> <strong>Egress IP Control</strong>: Strict ACL management for authorized network segments.</li><li><i class='fa-solid fa-check'></i> <strong>Operational Insight</strong>: Full visibility into corporate DNS traffic patterns.</li></ul>",
+            cta_enter: "ENTER_CENTER",
             dmarc_trial_tag: "Free Manual Tool",
             dmarc_pro_title: "Switch to Automated Monitoring",
             dmarc_pro_desc: "Don't waste time on manual uploads. Our subscription tier offers hands-off automation and professional expert interpretation.",
@@ -575,6 +578,9 @@ const translations = {
             cta_consult: "申請客製化稽核",
             dmarc_title: "DMARC 智慧監控系統",
             dmarc_desc: "超越手動分析的專業級品牌保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>單一整合儀表板</strong>：全域網域發信狀況一目瞭裝。</li><li><i class='fa-solid fa-check'></i> <strong>持續性自動追蹤</strong>：透過 RUA 進行每週 7x24 自動化報告採集。</li><li><i class='fa-solid fa-check'></i> <strong>鑑識級深度洞察</strong>：即時識別非法冒名發信來源與地理分佈。</li></ul>",
+            helix_dns_title: "HelixDNS 安全防護中心",
+            helix_dns_desc: "兼具高效能與智慧安全防線的遞迴解析器。 <ul><li><i class='fa-solid fa-check'></i> <strong>DGA 與隧道偵測</strong>：即時熵值分析，有效阻斷惡意連線。</li><li><i class='fa-solid fa-check'></i> <strong>出口 IP 管制</strong>：嚴格的 ACL 存取控制，防護授權網段。</li><li><i class='fa-solid fa-check'></i> <strong>營運深度洞察</strong>：全面掌握企業內部 DNS 查詢行為。</li></ul>",
+            cta_enter: "進入防護中心",
             dmarc_trial_tag: "免費試用工具",
             dmarc_pro_title: "升級至自動化全時監控",
             dmarc_pro_desc: "不再浪費時間手動上傳。訂閱方案提供全自動採集與專業資安專家解讀服務。",
@@ -744,6 +750,9 @@ const translations = {
             cta_consult: "カスタム監査を依頼",
             dmarc_title: "DMARC インテリジェンス・モニタ",
             dmarc_desc: "手動解析を超えたプロフェッショナルなブランド保護。 <ul><li><i class='fa-solid fa-check'></i> <strong>統合ダッシュボード</strong>：全ドメインの送信状態を一元管理。</li><li><i class='fa-solid fa-check'></i> <strong>継続的自動追跡</strong>：RUA経由の24時間365日自動レポート収集。</li><li><i class='fa-solid fa-check'></i> <strong>フォレンジック分析</strong>：不正ななりすまし送信をリアルタイムで特定。</li></ul>",
+            helix_dns_title: "HelixDNS セキュリティセンター",
+            helix_dns_desc: "高性能とインテリジェントな防御機能を兼ね備えた再帰的リゾルバー。 <ul><li><i class='fa-solid fa-check'></i> <strong>DGA・トンネリング検知</strong>：リアルタイムのエントロピー分析で悪意あるドメインをブロック。</li><li><i class='fa-solid fa-check'></i> <strong>送信元IP制御</strong>：許可されたネットワークセグメントに対する厳格なACL管理。</li><li><i class='fa-solid fa-check'></i> <strong>運用の可視化</strong>：企業内のDNSトラフィックパターンを完全に把握。</li></ul>",
+            cta_enter: "セキュリティセンターへ",
             dmarc_trial_tag: "無料試用ツール",
             dmarc_pro_title: "自動監視プランへの移行",
             dmarc_pro_desc: "手動アップロードに時間を費やす必要はありません。自動収集と専門家による解析レポートを提供します。",
@@ -1374,15 +1383,15 @@ function renderReport(report) {
             <div class="section-title">> Executive Risk Profile (Score: ${riskScore}/100)</div>
             <div class="risk-container">
                 ${riskBreakdown.map(r => {
-                    const hint = getRemediationHint(r);
-                    const hintHtml = hint ? `<div class="remediation-card" data-priority="${escapeHtml(hint.priority)}"><span class="remediation-title">${escapeHtml(hint.title)} — Fix:</span> ${escapeHtml(hint.snippet)}</div>` : '';
-                    return `
+            const hint = getRemediationHint(r);
+            const hintHtml = hint ? `<div class="remediation-card" data-priority="${escapeHtml(hint.priority)}"><span class="remediation-title">${escapeHtml(hint.title)} — Fix:</span> ${escapeHtml(hint.snippet)}</div>` : '';
+            return `
                     <div class="risk-item" style="border-left-color: ${riskItemBorder(r)};">
                         <span>${escapeHtml(String(r.item != null ? r.item : ''))}</span>
                         <span class="value pass">+${r.score}</span>
                         ${hintHtml}
                     </div>`;
-                }).join('')}
+        }).join('')}
             </div>
 
             <div class="section-title">> Authentication Infrastructure</div>
