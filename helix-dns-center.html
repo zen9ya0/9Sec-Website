@@ -1,287 +1,307 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HelixDNS Security Center | Nine-Security</title>
+    <title>HelixDNS Security Center | Premium Dashboard</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="helix-dns.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="helix-portal.css">
 </head>
 
 <body>
 
-    <!-- Login Page -->
-    <div id="login-page" class="auth-container">
-        <div class="auth-card">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-            </div>
-            <h1>HelixDNS Center</h1>
-            <p>Enter your credentials to manage your secure navigation.</p>
+    <aside id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-box">9</div>
+            <span style="font-size: 1.2rem; font-weight: 800; font-family: 'Outfit';">HelixDNS</span>
+        </div>
 
-            <div id="login-error"
-                style="color: var(--danger); font-size: 13px; text-align: center; margin-bottom: 15px; display: none;">
+        <div class="sidebar-content">
+            <div class="nav-item active" onclick="switchSection('overview', this)">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Overview</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('event', this)">
+                <i class="fa-solid fa-list-ul"></i>
+                <span>Event Logs</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('audit', this)">
+                <i class="fa-solid fa-fingerprint"></i>
+                <span>Audit Trail</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('allowlist', this)">
+                <i class="fa-solid fa-shield-check"></i>
+                <span>Allowlist</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('users', this)">
+                <i class="fa-solid fa-users-gear"></i>
+                <span>Users & Roles</span>
+            </div>
+            <div class="nav-item" onclick="switchSection('setting', this)">
+                <i class="fa-solid fa-gears"></i>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <button class="toggle-btn" id="sidebar-toggle">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <div style="padding: 24px; border-top: 1px solid var(--border);" class="sidebar-footer">
+            <div onclick="logout()" style="cursor:pointer; color: var(--text-dim);" class="nav-item">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+    </aside>
+
+    <main>
+        <!-- Top bar/Global Search or Info could go here -->
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <div>
+                <h1 id="page-title" style="font-family: 'Outfit'; font-size: 1.8rem;">DASHBOARD OVERVIEW</h1>
+                <p style="color: var(--text-dim);">Welcome back, <span id="user-display">User</span></p>
+            </div>
+            <div class="glass-card"
+                style="padding: 12px 20px; margin-bottom: 0; display:flex; align-items:center; gap: 12px;">
+                <div id="org-badge" class="badge badge-success">ORGANIZATION</div>
+                <div id="resolver-ip" style="font-family: monospace; font-weight:700; color: var(--primary);">0.0.0.0
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections -->
+
+        <!-- Overview Section -->
+        <section id="overview" class="section active">
+            <div class="grid">
+                <div class="glass-card stat-card">
+                    <span class="stat-label">Total Queries (24h)</span>
+                    <span id="stat-total" class="stat-value">0</span>
+                    <span style="font-size: 12px; color: var(--success);"><i class="fa-solid fa-arrow-up"></i> 12% vs
+                        yesterday</span>
+                </div>
+                <div class="glass-card stat-card">
+                    <span class="stat-label">Unique Clients</span>
+                    <span id="stat-clients" class="stat-value">0</span>
+                    <span style="font-size: 12px; color: var(--primary);">Active Nodes</span>
+                </div>
+                <div class="glass-card stat-card">
+                    <span class="stat-label">Malicious Hits</span>
+                    <span id="stat-threats" class="stat-value" style="color: var(--danger);">0</span>
+                    <span style="font-size: 12px; color: var(--danger);"><i
+                            class="fa-solid fa-triangle-exclamation"></i> Action Required</span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Corporate Email</label>
-                <input type="email" id="email" placeholder="name@company.com">
+            <h3 style="margin: 24px 0 16px; font-family: 'Outfit';">Threat Analysis Quadrants</h3>
+            <div class="quadrants">
+                <div class="glass-card quad-card">
+                    <i class="fa-solid fa-microchip" style="font-size: 2rem; color: #a855f7; margin-bottom: 12px;"></i>
+                    <h4 style="margin-bottom: 4px;">DGA Detection</h4>
+                    <p style="color: var(--text-dim); font-size: 13px;">Algorithmically Generated Domains</p>
+                    <div id="quad-dga" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
+                </div>
+                <div class="glass-card quad-card">
+                    <i class="fa-solid fa-skull-crossbones"
+                        style="font-size: 2rem; color: var(--danger); margin-bottom: 12px;"></i>
+                    <h4 style="margin-bottom: 4px;">C2 Communication</h4>
+                    <p style="color: var(--text-dim); font-size: 13px;">Command & Control Infrastructure</p>
+                    <div id="quad-c2" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
+                </div>
+                <div class="glass-card quad-card">
+                    <i class="fa-solid fa-pipe-valve"
+                        style="font-size: 2rem; color: var(--primary); margin-bottom: 12px;"></i>
+                    <h4 style="margin-bottom: 4px;">Exfiltration / Tunnel</h4>
+                    <p style="color: var(--text-dim); font-size: 13px;">DNS Data Tunneling Attempts</p>
+                    <div id="quad-tunnel" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
+                </div>
+                <div class="glass-card quad-card">
+                    <i class="fa-solid fa-file-shield"
+                        style="font-size: 2rem; color: var(--warning); margin-bottom: 12px;"></i>
+                    <h4 style="margin-bottom: 4px;">Policy Violations</h4>
+                    <p style="color: var(--text-dim); font-size: 13px;">Compliance & Allowed Patterns</p>
+                    <div id="quad-policy" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••">
+        </section>
+
+        <!-- Event Logs Section -->
+        <section id="event" class="section">
+            <div class="glass-card">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Real-time Security Events</h3>
+                    <div style="display:flex; gap: 8px;">
+                        <input type="text" id="log-filter" placeholder="Search domain..."
+                            style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff;">
+                        <button class="btn btn-primary" onclick="refreshAnalytics()"><i
+                                class="fa-solid fa-rotate"></i></button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Client IP</th>
+                                <th>Query Domain</th>
+                                <th>Type</th>
+                                <th>Risk</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <button class="btn" id="login-btn">Secure Login</button>
-            <div style="margin-top: 20px; text-align: center; font-size: 12px; color: var(--text-dim);">
-                Nine-Security HelixDNS Infrastructure
+        </section>
+
+        <!-- Audit Trail Section -->
+        <section id="audit" class="section">
+            <div class="glass-card">
+                <h3>System Audit Trail</h3>
+                <p style="color: var(--text-dim); margin-bottom: 20px;">Tracking administrator and automated actions</p>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Allowlist Section -->
+        <section id="allowlist" class="section">
+            <div class="glass-card">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Managed Allowlist</h3>
+                    <button class="btn btn-primary" onclick="showAddAllowlist()"><i class="fa-solid fa-plus"></i> Add
+                        Domain</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Reason</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allowlist-table-body">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="users" class="section">
+            <div class="glass-card">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3>Users & Access Control</h3>
+                    <button class="btn btn-primary" disabled><i class="fa-solid fa-user-plus"></i> Invite User</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="setting" class="section">
+            <div class="glass-card">
+                <h3>Network Egress Settings</h3>
+                <p style="color: var(--text-dim); margin-bottom: 24px;">Manage public IP addresses allowed to use this
+                    resolver</p>
+
+                <div style="display:flex; gap: 12px; margin-bottom: 20px;">
+                    <input type="text" id="cidr-input" placeholder="e.g. 52.1.2.3/32"
+                        style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff;">
+                    <button class="btn btn-primary" id="add-cidr-btn">Add CIDR</button>
+                </div>
+
+                <div id="cidr-list">
+                    <!-- JS injected -->
+                </div>
+
+                <button class="btn btn-primary" style="margin-top: 24px; width:100%; justify-content:center;"
+                    id="save-settings-btn">
+                    Update Infrastructure Config
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for adding allowlist (Simple implementation) -->
+    <div id="allowlist-modal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width: 400px;">
+            <h3 style="margin-bottom: 16px;">Add to Allowlist</h3>
+            <input type="text" id="new-pattern" placeholder="*.example.com"
+                style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
+            <input type="text" id="new-reason" placeholder="Business need"
+                style="width:100%; margin-bottom:20px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
+            <div style="display:flex; gap:12px;">
+                <button class="btn" style="flex:1; background:rgba(255,255,255,0.1); color:#fff;"
+                    onclick="hideAddAllowlist()">Cancel</button>
+                <button class="btn btn-primary" style="flex:1" onclick="submitAllowlist()">Add</button>
             </div>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <div id="dashboard-page" class="dashboard container">
-        <header>
-            <div class="logo">9SEC <span>HELIX-DNS</span></div>
-            <div class="user-nav">
-                <div id="org-badge" class="badge">TEST-ORG</div>
-                <div id="user-display" style="font-size: 14px; font-weight: 600;">Admin</div>
-                <button onclick="logout()"
-                    style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:12px;">Logout</button>
-            </div>
-        </header>
+    <!-- Login Overlay (if not logged in) -->
+    <div id="login-overlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-dark); z-index:2000; align-items:center; justify-content:center;">
+        <div class="glass-card" style="width: 360px; text-align: center;">
+            <div class="logo-box" style="width: 60px; height: 60px; font-size: 2rem; margin: 0 auto 24px;">9</div>
+            <h2 style="font-family: 'Outfit'; margin-bottom: 8px;">SECURITY CENTER</h2>
+            <p style="color: var(--text-dim); margin-bottom: 32px;">Please sign in to your project</p>
 
-        <!-- Step 1: Provisioning (If not active) -->
-        <div id="provision-view" style="display: none;">
-            <div class="setup-wizard">
-                <h2 style="margin-bottom: 10px;">🛡️ Activate Your Secure Resolver</h2>
-                <p style="color:var(--text-dim); margin-bottom: 30px;">To prevent abuse and DNS amplification, you must
-                    specify your authorized Egress IPs (Public CIDRs) before we provision your dedicated IP.</p>
+            <input type="email" id="login-email" placeholder="Email"
+                style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
+            <input type="password" id="login-pass" placeholder="Password"
+                style="width:100%; margin-bottom:24px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
 
-                <div class="form-group">
-                    <label>Internal Office / Gateway Egress IPs</label>
-                    <div class="ip-input-row">
-                        <input type="text" id="cidr-input" placeholder="e.g., 203.0.113.1/32">
-                        <button class="btn" style="width: 100px;" id="add-cidr-btn">Add</button>
-                    </div>
-                    <div id="cidr-list" class="ip-list">
-                        <!-- CIDRs go here -->
-                    </div>
-                </div>
-
-                <div style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
-                    <button class="btn" id="provision-btn" disabled>Activate HelixDNS & Get My IP</button>
-                    <p style="font-size: 12px; color: var(--text-dim); margin-top: 10px; text-align: center;">By
-                        activating, you agree to our security policy. Provisioning takes ~60 seconds.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Step 2: Active Monitoring (If active) -->
-        <div id="monitoring-view" style="display: none;">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="label">Total Queries (24h)</div>
-                    <div class="value" id="stat-total">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Security Alerts</div>
-                    <div class="value" style="color: var(--danger);" id="stat-alerts">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="label">Protected Endpoints</div>
-                    <div class="value" id="stat-clients">0</div>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px;">
-                <div class="stat-card">
-                    <h3 style="margin-bottom: 20px;">Real-time Telemetry</h3>
-                    <div id="log-list" style="max-height: 400px; overflow-y: auto;">
-                        <p style="color: var(--text-dim); text-align: center; padding: 40px;">Waiting for incoming DNS
-                            traffic...</p>
-                    </div>
-                </div>
-                <div>
-                    <div class="stat-card" style="margin-bottom: 20px; border-color: var(--success);">
-                        <div class="label" style="color: var(--success);">Dedicated Resolver IP</div>
-                        <div class="value" style="font-size: 24px;" id="resolver-ip">Loading...</div>
-                        <div style="margin-top: 15px; font-size: 12px; color: var(--text-dim);">
-                            Set this as your AD Forwarder
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Quick Setup</h3>
-                        <ul style="font-size: 13px; color: var(--text-dim); margin-top: 15px; padding-left: 20px;">
-                            <li>Login to AD Domain Controller</li>
-                            <li>Open DNS Manager</li>
-                            <li>Right click Server -> Forwarders</li>
-                            <li>Add the IP shown above</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="login()">Sign
+                In</button>
+            <div id="login-error" style="color: var(--danger); margin-top: 16px; display:none;"></div>
         </div>
     </div>
 
-    <script>
-        const API_BASE = "https://api.nine-security.com/api";
-        let currentUser = null;
-        let egressCidrs = [];
-
-        async function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('login-error');
-
-            try {
-                const resp = await fetch(`${API_BASE}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await resp.json();
-
-                if (data.ok) {
-                    currentUser = data.user;
-                    localStorage.setItem('9sec_user', JSON.stringify(currentUser));
-                    initDashboard();
-                } else {
-                    errorDiv.textContent = data.error;
-                    errorDiv.style.display = 'block';
-                }
-            } catch (e) {
-                errorDiv.textContent = "Cannot connect to security backend.";
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('9sec_user');
-            location.reload();
-        }
-
-        function initDashboard() {
-            document.getElementById('login-page').style.display = 'none';
-            document.getElementById('dashboard-page').style.display = 'block';
-            document.getElementById('user-display').textContent = currentUser.email;
-            document.getElementById('org-badge').textContent = currentUser.organization_id;
-
-            checkProvisionStatus();
-        }
-
-        async function checkProvisionStatus() {
-            const resp = await fetch(`${API_BASE}/admin/infrastructure/dns-ips?key=M2S3I9BES0b5nsLV9N6DL8VSivVrmBvm`);
-            const data = await resp.json();
-
-            const myIp = data.data.find(row => row.organization_id === currentUser.organization_id);
-            if (myIp) {
-                showMonitoring(myIp);
-            } else {
-                showProvisioning();
-            }
-        }
-
-        function showProvisioning() {
-            document.getElementById('provision-view').style.display = 'block';
-            document.getElementById('monitoring-view').style.display = 'none';
-        }
-
-        function showMonitoring(ipInfo) {
-            document.getElementById('provision-view').style.display = 'none';
-            document.getElementById('monitoring-view').style.display = 'block';
-            document.getElementById('resolver-ip').textContent = ipInfo.public_ip;
-
-            refreshAnalytics();
-            setInterval(refreshAnalytics, 10000);
-        }
-
-        async function refreshAnalytics() {
-            const resp = await fetch(`${API_BASE}/admin/infrastructure/dns-analytics?org_id=${currentUser.organization_id}&key=M2S3I9BES0b5nsLV9N6DL8VSivVrmBvm`);
-            const data = await resp.json();
-
-            if (data.ok) {
-                document.getElementById('stat-total').textContent = data.stats.total_queries || 0;
-                document.getElementById('stat-clients').textContent = data.stats.unique_clients || 0;
-
-                const logList = document.getElementById('log-list');
-                if (data.logs.length > 0) {
-                    logList.innerHTML = data.logs.map(log => `
-                        <div class="ip-item" style="border-left: 3px solid ${log.risk_score > 50 ? 'var(--danger)' : 'var(--success)'}">
-                            <div>
-                                <span style="color:#fff">${log.query_domain}</span>
-                                <div style="font-size:11px; color:var(--text-dim)">${log.client_ip} • ${log.query_type} • ${log.response_code || 'NOERROR'}</div>
-                            </div>
-                            <div style="font-weight:700; color:${log.risk_score > 50 ? 'var(--danger)' : 'var(--success)'}">${Math.round(log.risk_score)}%</div>
-                        </div>
-                    `).join('');
-                }
-            }
-        }
-
-        document.getElementById('add-cidr-btn').onclick = () => {
-            const val = document.getElementById('cidr-input').value;
-            if (val && !egressCidrs.includes(val)) {
-                egressCidrs.push(val);
-                renderCidrs();
-                document.getElementById('cidr-input').value = '';
-            }
-        };
-
-        function renderCidrs() {
-            const list = document.getElementById('cidr-list');
-            list.innerHTML = egressCidrs.map((c, i) => `
-                <div class="ip-item">
-                    <span>${c}</span>
-                    <span class="remove-btn" onclick="removeCidr(${i})">Remove</span>
-                </div>
-            `).join('');
-            document.getElementById('provision-btn').disabled = egressCidrs.length === 0;
-        }
-
-        function removeCidr(i) {
-            egressCidrs.splice(i, 1);
-            renderCidrs();
-        }
-
-        document.getElementById('provision-btn').onclick = async () => {
-            const btn = document.getElementById('provision-btn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loader"></span> Provisioning...';
-
-            try {
-                // In a real scenario, this would call provision-dns with actual orgId
-                const resp = await fetch(`${API_BASE}/admin/infrastructure/provision-dns?key=M2S3I9BES0b5nsLV9N6DL8VSivVrmBvm`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        organization_id: currentUser.organization_id,
-                        allowed_cidrs: egressCidrs.join(', ')
-                    })
-                });
-                const data = await resp.json();
-                if (data.ok) location.reload();
-                else alert("Provisioning failed: " + data.error);
-            } catch (e) {
-                alert("Critical failure connecting to cloud orchestrator.");
-            }
-        };
-
-        document.getElementById('login-btn').onclick = login;
-
-        // Auto-login
-        const saved = localStorage.getItem('9sec_user');
-        if (saved) {
-            currentUser = JSON.parse(saved);
-            initDashboard();
-        }
-    </script>
+    <script src="helix-portal.js?v=2.1.2"></script>
 </body>
 
 </html>
