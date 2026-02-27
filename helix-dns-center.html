@@ -129,27 +129,27 @@
 
             <h3 style="margin: 24px 0 16px; font-family: 'Outfit';">Threat Analysis Quadrants</h3>
             <div class="quadrants">
-                <div class="glass-card quad-card">
+                <div class="glass-card quad-card" onclick="viewQuadrantDetails('dga')" style="cursor: pointer;">
                     <i class="fa-solid fa-microchip" style="font-size: 2rem; color: #a855f7; margin-bottom: 12px;"></i>
                     <h4 style="margin-bottom: 4px;">DGA Detection</h4>
                     <p style="color: var(--text-dim); font-size: 13px;">Algorithmically Generated Domains</p>
                     <div id="quad-dga" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
                 </div>
-                <div class="glass-card quad-card">
+                <div class="glass-card quad-card" onclick="viewQuadrantDetails('c2')" style="cursor: pointer;">
                     <i class="fa-solid fa-skull-crossbones"
                         style="font-size: 2rem; color: var(--danger); margin-bottom: 12px;"></i>
                     <h4 style="margin-bottom: 4px;">C2 Communication</h4>
                     <p style="color: var(--text-dim); font-size: 13px;">Command & Control Infrastructure</p>
                     <div id="quad-c2" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
                 </div>
-                <div class="glass-card quad-card">
+                <div class="glass-card quad-card" onclick="viewQuadrantDetails('tunnel')" style="cursor: pointer;">
                     <i class="fa-solid fa-pipe-valve"
                         style="font-size: 2rem; color: var(--primary); margin-bottom: 12px;"></i>
                     <h4 style="margin-bottom: 4px;">Exfiltration / Tunnel</h4>
                     <p style="color: var(--text-dim); font-size: 13px;">DNS Data Tunneling Attempts</p>
                     <div id="quad-tunnel" style="font-size: 1.5rem; font-weight: 700; margin-top: 8px;">0</div>
                 </div>
-                <div class="glass-card quad-card">
+                <div class="glass-card quad-card" onclick="viewQuadrantDetails('policy')" style="cursor: pointer;">
                     <i class="fa-solid fa-file-shield"
                         style="font-size: 2rem; color: var(--warning); margin-bottom: 12px;"></i>
                     <h4 style="margin-bottom: 4px;">Policy Violations</h4>
@@ -347,7 +347,7 @@
         </div>
     </div>
 
-    <script src="helix-dns-center.js?v=2.3.2"></script>
+    <script src="helix-dns-center.js?v=2.3.3"></script>
 </body>
 
 </html>

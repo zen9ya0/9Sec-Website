@@ -181,7 +181,19 @@ async function refreshAnalytics() {
         } else {
             let filteredLogs = data.logs;
             if (logFilterMode === 'malicious') {
-                filteredLogs = data.logs.filter(l => l.risk_score > 50);
+                filteredLogs = data.logs.filter(l => l.risk_score > 0);
+            } else if (logFilterMode === 'dga') {
+                filteredLogs = data.logs.filter(l => l.risk_score > 70 && l.risk_score <= 85);
+            } else if (logFilterMode === 'c2') {
+                filteredLogs = data.logs.filter(l => l.risk_score > 85);
+            } else if (logFilterMode === 'tunnel') {
+                filteredLogs = data.logs.filter(l => l.query_domain.length > 50 || l.query_type === 'TXT_TUNNEL');
+            } else if (logFilterMode === 'policy') {
+                filteredLogs = data.logs.filter(l =>
+                    (l.response_code === 'NXDOMAIN' && l.risk_score > 40) ||
+                    l.query_type === 'DOH_BYPASS' ||
+                    l.query_type === 'DOT_ENCRYPTED'
+                );
             }
 
             body.innerHTML = filteredLogs.map(log => `
@@ -535,10 +547,11 @@ function showAddBlocklist() {
 function viewThreatDetails() {
     logFilterMode = 'malicious';
     const eventNavItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes('Security Event'));
-    if (eventNavItem) {
-        switchSection('event', eventNavItem);
-    } else {
-        // Fallback if nav item text changed
-        switchSection('event', document.querySelectorAll('.nav-item')[1]);
-    }
+    switchSection('event', eventNavItem || document.querySelectorAll('.nav-item')[1]);
+}
+
+function viewQuadrantDetails(type) {
+    logFilterMode = type;
+    const eventNavItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes('Security Event'));
+    switchSection('event', eventNavItem || document.querySelectorAll('.nav-item')[1]);
 }
