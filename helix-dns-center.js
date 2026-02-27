@@ -3,6 +3,7 @@ let currentUser = null;
 let egressCidrs = [];
 
 let trendsChart = null;
+let logFilterMode = 'all'; // 'all' or 'malicious'
 
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,6 +36,7 @@ function setupSidebar() {
 }
 
 function switchSection(sectionId, element) {
+    logFilterMode = 'all';
     // Nav items update
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     element.classList.add('active');
@@ -177,7 +179,12 @@ async function refreshAnalytics() {
         if (data.logs.length === 0) {
             body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-dim);">No traffic detected yet. Ensure your devices are using the Resolver IP.</td></tr>';
         } else {
-            body.innerHTML = data.logs.map(log => `
+            let filteredLogs = data.logs;
+            if (logFilterMode === 'malicious') {
+                filteredLogs = data.logs.filter(l => l.risk_score > 50);
+            }
+
+            body.innerHTML = filteredLogs.map(log => `
                 <tr>
                     <td style="font-size: 12px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</td>
                     <td>
@@ -522,5 +529,16 @@ function showAddBlocklist() {
         }).then(data => {
             if (data.ok) refreshBlocklist();
         });
+    }
+}
+
+function viewThreatDetails() {
+    logFilterMode = 'malicious';
+    const eventNavItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes('Security Event'));
+    if (eventNavItem) {
+        switchSection('event', eventNavItem);
+    } else {
+        // Fallback if nav item text changed
+        switchSection('event', document.querySelectorAll('.nav-item')[1]);
     }
 }
