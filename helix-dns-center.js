@@ -2,15 +2,19 @@ const API_BASE = window.location.hostname === 'nine-security.com' || window.loca
 let currentUser = null;
 let egressCidrs = [];
 
+let trendsChart = null;
+
 // Initial Load
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     setupSidebar();
+    initTrendsChart();
 
     // Auto-refresh analytics every 30s
     setInterval(() => {
         if (currentUser && document.getElementById('overview').classList.contains('active')) {
             refreshAnalytics();
+            refreshTrends();
         }
     }, 30000);
 });
@@ -44,7 +48,7 @@ function switchSection(sectionId, element) {
         overview: 'DASHBOARD OVERVIEW',
         event: 'SECURITY EVENT LOGS',
         audit: 'SYSTEM AUDIT TRAIL',
-        allowlist: 'DOMAIN ALLOWLIST',
+        policy: 'SECURITY POLICY (ACL)',
         users: 'USERS & ROLES',
         setting: 'NETWORK SETTINGS'
     };
@@ -59,14 +63,18 @@ async function loadSectionData(id) {
 
     switch (id) {
         case 'overview':
+            refreshAnalytics();
+            refreshTrends();
+            break;
         case 'event':
             refreshAnalytics();
             break;
         case 'audit':
             refreshAuditLogs();
             break;
-        case 'allowlist':
+        case 'policy':
             refreshAllowlist();
+            refreshBlocklist();
             break;
         case 'users':
             refreshUsers();
@@ -160,18 +168,32 @@ async function refreshAnalytics() {
         document.getElementById('quad-policy').textContent = q.policy;
         document.getElementById('stat-threats').textContent = q.dga + q.c2 + q.tunneling;
 
-        // Table
+        // Table - Flicker reduction
         const body = document.getElementById('log-table-body');
-        body.innerHTML = data.logs.map(log => `
-            <tr>
-                <td style="font-size: 12px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</td>
-                <td>${log.client_ip}</td>
-                <td style="font-weight:600;">${log.query_domain}</td>
-                <td><span class="badge" style="background: rgba(255,255,255,0.05)">${log.query_type}</span></td>
-                <td><span style="color: ${getRiskColor(log.risk_score)}">${Math.round(log.risk_score)}%</span></td>
-                <td><span class="badge ${log.response_code === 'NXDOMAIN' ? 'badge-danger' : 'badge-success'}">${log.response_code || 'NOERROR'}</span></td>
-            </tr>
-        `).join('');
+        const latestLogId = data.logs.length > 0 ? data.logs[0].id : null;
+        if (window.lastProcessedLogId === latestLogId && data.logs.length > 0) return;
+        window.lastProcessedLogId = latestLogId;
+
+        if (data.logs.length === 0) {
+            body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-dim);">No traffic detected yet. Ensure your devices are using the Resolver IP.</td></tr>';
+        } else {
+            body.innerHTML = data.logs.map(log => `
+                <tr>
+                    <td style="font-size: 12px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td>
+                        <div style="font-weight:600; color: var(--accent);">${log.client_hostname || 'External Gateway'}</div>
+                        <div style="font-size: 11px; opacity: 0.7;">${log.internal_ip || log.client_ip}</div>
+                    </td>
+                    <td style="font-weight:600;">${log.query_domain}</td>
+                    <td><span class="badge" style="background: rgba(255,255,255,0.05)">${log.query_type}</span></td>
+                    <td><span style="color: ${getRiskColor(log.risk_score)}">${Math.round(log.risk_score)}%</span></td>
+                    <td><span class="badge ${log.response_code === 'NXDOMAIN' ? 'badge-danger' : 'badge-success'}">${log.response_code || 'NOERROR'}</span></td>
+                </tr>
+            `).join('');
+        }
+        console.log(`[Dashboard] Sync complete: ${data.logs.length} logs found.`);
+    } else {
+        console.error("[Dashboard] Failed to fetch analytics:", data.error);
     }
 }
 
@@ -301,4 +323,204 @@ function getRiskColor(score) {
     if (score > 75) return '#ef4444';
     if (score > 40) return '#f59e0b';
     return '#10b981';
+}
+
+// Trends
+async function refreshTrends() {
+    const data = await apiFetch('/api/user/dns-trends');
+    if (data.ok && trendsChart) {
+        // Prepare 24 hourly buckets
+        const hours = [];
+        const now = new Date();
+        for (let i = 23; i >= 0; i--) {
+            const d = new Date(now.getTime() - i * 3600000);
+            d.setMinutes(0, 0, 0);
+            hours.push(d.toISOString().substring(0, 14) + "00:00Z");
+        }
+
+        const labels = hours.map(h => new Date(h).getHours() + ":00");
+        const totals = hours.map(h => {
+            const match = data.data.find(d => d.hour === h);
+            return match ? match.total : 0;
+        });
+        const threats = hours.map(h => {
+            const match = data.data.find(d => d.hour === h);
+            return match ? match.threats : 0;
+        });
+
+        trendsChart.data.labels = labels;
+        trendsChart.data.datasets[0].data = totals;
+        trendsChart.data.datasets[1].data = threats;
+        trendsChart.update();
+    }
+}
+
+function initTrendsChart() {
+    const ctx = document.getElementById('trendsChart');
+    if (!ctx) return;
+
+    trendsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Total Queries',
+                    data: [],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                },
+                {
+                    label: 'Threats Detected',
+                    data: [],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#9ca3af', font: { size: 10 } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af', font: { size: 10 } }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { color: '#e5e7eb', font: { family: 'Inter', size: 11 }, usePointStyle: true }
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    titleFont: { family: 'Outfit' },
+                    bodyFont: { family: 'Inter' }
+                }
+            }
+        }
+    });
+}
+
+// PDF Reporting
+async function generateReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const img = new Image();
+    img.src = 'https://nine-security.com/9sec-logo-white.png'; // Fallback path
+
+    // Title Section
+    doc.setFillColor(17, 24, 39);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(22);
+    doc.text('HelixDNS Security Report', 15, 20);
+    doc.setFontSize(10);
+    doc.text(`Organization: ${currentUser.organization_id} | Date: ${new Date().toLocaleDateString()}`, 15, 30);
+
+    // Summary Analytics
+    const total = document.getElementById('stat-total').textContent;
+    const threats = document.getElementById('stat-threats').textContent;
+    const clients = document.getElementById('stat-clients').textContent;
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text('Executive Summary (Last 24h)', 15, 55);
+
+    doc.autoTable({
+        startY: 60,
+        head: [['Metric', 'Value', 'Status']],
+        body: [
+            ['Total DNS Queries', total, 'Normal'],
+            ['Security Threats Blocked', threats, threats > 0 ? 'Action Required' : 'Clean'],
+            ['Active Client Nodes', clients, 'Operational']
+        ],
+        theme: 'striped'
+    });
+
+    // Threat Quadrants
+    const qDga = document.getElementById('quad-dga').textContent;
+    const qC2 = document.getElementById('quad-c2').textContent;
+    const qTun = document.getElementById('quad-tunnel').textContent;
+
+    doc.text('Threat Distribution', 15, doc.lastAutoTable.finalY + 15);
+    doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 20,
+        head: [['Quadrant', 'Detections', 'Severity']],
+        body: [
+            ['DGA Algorithm', qDga, 'High'],
+            ['C2 Communication', qC2, 'Critical'],
+            ['DNS Tunneling', qTun, 'Medium']
+        ],
+        theme: 'grid'
+    });
+
+    // Recent Logs
+    const data = await apiFetch('/api/user/dns-analytics');
+    if (data.ok && data.logs.length > 0) {
+        doc.text('Recent Security Incidents', 15, doc.lastAutoTable.finalY + 15);
+        const logBody = data.logs.slice(0, 15).map(l => [
+            new Date(l.timestamp).toLocaleTimeString(),
+            l.query_domain,
+            l.risk_score + '%',
+            l.response_code
+        ]);
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 20,
+            head: [['Time', 'Domain', 'Risk', 'Result']],
+            body: logBody,
+            headStyles: { fillColor: [239, 68, 68] }
+        });
+    }
+
+    doc.save(`9Sec_HelixDNS_${currentUser.organization_id}_${Date.now()}.pdf`);
+}
+
+// Blacklist Management
+async function refreshBlocklist() {
+    const data = await apiFetch('/api/user/dns-blacklist');
+    if (data.ok) {
+        const body = document.getElementById('blacklist-table-body');
+        body.innerHTML = data.data.map(row => `
+            <tr>
+                <td style="font-weight:700; color: var(--danger);">${row.pattern}</td>
+                <td><span class="badge badge-danger">${row.category}</span></td>
+                <td>
+                    <button class="btn" style="color:var(--danger);" onclick="deleteBlacklist('${row.id}')"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+async function deleteBlacklist(id) {
+    if (!confirm("Are you sure you want to remove this block rule?")) return;
+    const data = await apiFetch(`/api/user/dns-blacklist/${id}`, { method: 'DELETE' });
+    if (data.ok) refreshBlocklist();
+}
+
+function showAddBlocklist() {
+    const pattern = prompt("Enter domain pattern to block (e.g. malwaredomain.com):");
+    if (pattern) {
+        apiFetch('/api/user/dns-blacklist', {
+            method: 'POST',
+            body: { pattern, category: 'manual_block' }
+        }).then(data => {
+            if (data.ok) refreshBlocklist();
+        });
+    }
 }

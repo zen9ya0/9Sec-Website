@@ -17,8 +17,12 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="helix-dns-center.css?v=2.2.1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <!-- PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="helix-dns-center.css?v=2.3.0">
 </head>
 
 <body>
@@ -42,9 +46,9 @@
                 <i class="fa-solid fa-fingerprint"></i>
                 <span>Audit Trail</span>
             </div>
-            <div class="nav-item" onclick="switchSection('allowlist', this)">
-                <i class="fa-solid fa-shield-check"></i>
-                <span>Allowlist</span>
+            <div class="nav-item" onclick="switchSection('policy', this)">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Security Policy</span>
             </div>
             <div class="nav-item" onclick="switchSection('users', this)">
                 <i class="fa-solid fa-users-gear"></i>
@@ -75,10 +79,17 @@
                 <h1 id="page-title" style="font-family: 'Outfit'; font-size: 1.8rem;">DASHBOARD OVERVIEW</h1>
                 <p style="color: var(--text-dim);">Welcome back, <span id="user-display">User</span></p>
             </div>
-            <div class="glass-card"
-                style="padding: 12px 20px; margin-bottom: 0; display:flex; align-items:center; gap: 12px;">
-                <div id="org-badge" class="badge badge-success">ORGANIZATION</div>
-                <div id="resolver-ip" style="font-family: monospace; font-weight:700; color: var(--primary);">0.0.0.0
+            <div style="display:flex; align-items:center; gap: 16px;">
+                <button class="btn btn-primary" onclick="generateReport()"
+                    style="background: var(--accent); color: #000; font-weight:700;">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF Report
+                </button>
+                <div class="glass-card"
+                    style="padding: 12px 20px; margin-bottom: 0; display:flex; align-items:center; gap: 12px;">
+                    <div id="org-badge" class="badge badge-success">ORGANIZATION</div>
+                    <div id="resolver-ip" style="font-family: monospace; font-weight:700; color: var(--primary);">
+                        0.0.0.0
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,6 +115,15 @@
                     <span id="stat-threats" class="stat-value" style="color: var(--danger);">0</span>
                     <span style="font-size: 12px; color: var(--danger);"><i
                             class="fa-solid fa-triangle-exclamation"></i> Action Required</span>
+                </div>
+            </div>
+
+            <div class="glass-card" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 20px; font-family: 'Outfit'; display: flex; align-items:center; gap: 10px;">
+                    <i class="fa-solid fa-chart-area" style="color: var(--primary);"></i> Traffic Trends (Last 24h)
+                </h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="trendsChart"></canvas>
                 </div>
             </div>
 
@@ -156,7 +176,7 @@
                         <thead>
                             <tr>
                                 <th>Timestamp</th>
-                                <th>Client IP</th>
+                                <th>Endpoint (Host/LAN)</th>
                                 <th>Query Domain</th>
                                 <th>Type</th>
                                 <th>Risk</th>
@@ -193,27 +213,53 @@
             </div>
         </section>
 
-        <!-- Allowlist Section -->
-        <section id="allowlist" class="section">
-            <div class="glass-card">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Managed Allowlist</h3>
-                    <button class="btn btn-primary" onclick="showAddAllowlist()"><i class="fa-solid fa-plus"></i> Add
-                        Domain</button>
+        <!-- Policy Section (Allowlist & Blacklist) -->
+        <section id="policy" class="section">
+            <div class="grid">
+                <!-- Blacklist -->
+                <div class="glass-card">
+                    <div
+                        style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Blocked Domains (Blacklist)</h3>
+                        <button class="btn btn-primary" onclick="showAddBlocklist()"
+                            style="background: var(--danger);"><i class="fa-solid fa-plus"></i> Block Domain</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pattern</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blacklist-table-body">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pattern</th>
-                            <th>Reason</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="allowlist-table-body">
-                        <!-- JS injected -->
-                    </tbody>
-                </table>
+
+                <!-- Allowlist -->
+                <div class="glass-card">
+                    <div
+                        style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Trusted Domains (Allowlist)</h3>
+                        <button class="btn btn-primary" onclick="showAddAllowlist()"><i class="fa-solid fa-plus"></i>
+                            Trust Domain</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pattern</th>
+                                <th>Reason</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allowlist-table-body">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
