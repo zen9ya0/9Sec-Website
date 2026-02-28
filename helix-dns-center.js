@@ -617,7 +617,7 @@ async function refreshBlocklist() {
 
 async function deleteBlacklist(id) {
     if (!confirm("Are you sure you want to remove this block rule?")) return;
-    const data = await apiFetch(`/api/user/dns-blacklist/${id}`, { method: 'DELETE' });
+    const data = await apiFetch(`/api/user/dns-blacklist/${id}`, 'DELETE');
     if (data.ok) {
         refreshBlocklist();
         showAlert("Domain removed from blacklist.", "Policy Updated");
