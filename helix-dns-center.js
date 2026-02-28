@@ -156,8 +156,20 @@ async function apiFetch(endpoint, method = 'GET', body = null) {
 
 // Overview & Events
 async function refreshAnalytics() {
-    const data = await apiFetch('/api/user/dns-analytics');
+    const [data, aiData] = await Promise.all([
+        apiFetch('/api/user/dns-analytics'),
+        apiFetch('/api/user/dns-ai-verdicts')
+    ]);
+
     if (data.ok) {
+        // AI Verdict Mapping
+        if (aiData && aiData.ok) {
+            window.aiVerdicts = window.aiVerdicts || {};
+            aiData.verdicts.forEach(v => {
+                window.aiVerdicts[v.domain] = v;
+            });
+        }
+
         // Stats
         document.getElementById('stat-total').textContent = data.stats.total_queries || 0;
         document.getElementById('stat-clients').textContent = data.stats.unique_clients || 0;
@@ -177,7 +189,7 @@ async function refreshAnalytics() {
         window.lastProcessedLogId = latestLogId;
 
         if (data.logs.length === 0) {
-            body.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: var(--text-dim);">No traffic detected yet. Ensure your devices are using the Resolver IP.</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--text-dim);">No traffic detected yet. Ensure your devices are using the Resolver IP.</td></tr>';
         } else {
             let filteredLogs = data.logs;
             if (logFilterMode === 'malicious') {
@@ -196,19 +208,25 @@ async function refreshAnalytics() {
                 );
             }
 
-            body.innerHTML = filteredLogs.map(log => `
-                <tr>
-                    <td style="font-size: 12px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</td>
-                    <td>
-                        <div style="font-weight:600; color: var(--accent);">${log.client_hostname || 'External Gateway'}</div>
-                        <div style="font-size: 11px; opacity: 0.7;">${log.internal_ip || log.client_ip}</div>
-                    </td>
-                    <td style="font-weight:600;">${log.query_domain}</td>
-                    <td><span class="badge" style="background: rgba(255,255,255,0.05)">${log.query_type}</span></td>
-                    <td><span style="color: ${getRiskColor(log.risk_score)}">${Math.round(log.risk_score)}%</span></td>
-                    <td><span class="badge ${log.response_code === 'NXDOMAIN' ? 'badge-danger' : 'badge-success'}">${log.response_code || 'NOERROR'}</span></td>
-                </tr>
-            `).join('');
+            body.innerHTML = filteredLogs.map(log => {
+                const ai = (window.aiVerdicts || {})[log.query_domain];
+                const aiHtml = ai ? `<span class="badge" title="${ai.reasoning}" style="background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.2); font-size: 10px; cursor: help; padding: 2px 6px;"><i class="fa-solid fa-robot" style="margin-right:4px;"></i>${ai.verdict}</span>` : '-';
+
+                return `
+                    <tr>
+                        <td style="font-size: 11px; color: var(--text-dim);">${new Date(log.timestamp).toLocaleString()}</td>
+                        <td>
+                            <div style="font-weight:600; color: var(--accent); font-size: 13px;">${log.client_hostname || 'External Gateway'}</div>
+                            <div style="font-size: 10px; opacity: 0.7;">${log.internal_ip || log.client_ip}</div>
+                        </td>
+                        <td style="font-weight:600; font-size: 13px;">${log.query_domain}</td>
+                        <td><span class="badge" style="background: rgba(255,255,255,0.05); font-size: 10px;">${log.query_type}</span></td>
+                        <td><span style="color: ${getRiskColor(log.risk_score)}; font-weight: 700;">${Math.round(log.risk_score)}%</span></td>
+                        <td><span class="badge ${log.response_code === 'NXDOMAIN' ? 'badge-danger' : 'badge-success'}" style="font-size: 10px;">${log.response_code || 'NOERROR'}</span></td>
+                        <td>${aiHtml}</td>
+                    </tr>
+                `;
+            }).join('');
         }
         console.log(`[Dashboard] Sync complete: ${data.logs.length} logs found.`);
     } else {
