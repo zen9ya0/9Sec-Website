@@ -83,6 +83,7 @@ async function loadSectionData(id) {
             break;
         case 'setting':
             refreshSettings();
+            refresh2FAStatus();
             break;
     }
 }
@@ -112,6 +113,7 @@ function checkAuth() {
         document.getElementById('org-badge').textContent = currentUser.organization_id;
         loadSectionData('overview');
         refreshSettings(); // Get IP info
+        refresh2FAStatus(); // Get 2FA info
     } else {
         document.getElementById('login-overlay').style.display = 'flex';
     }
@@ -131,6 +133,12 @@ async function login() {
         const data = await resp.json();
 
         if (data.ok) {
+            if (data.requires_2fa) {
+                window.tempToken2FA = data.temp_token;
+                document.getElementById('2fa-login-modal').style.display = 'flex';
+                document.getElementById('login-overlay').style.display = 'none';
+                return;
+            }
             localStorage.setItem('9sec_user', JSON.stringify(data.user));
             localStorage.setItem('9sec_token', data.token);
             checkAuth();
@@ -141,6 +149,30 @@ async function login() {
     } catch (e) {
         errorDiv.textContent = "Cannot connect to server";
         errorDiv.style.display = 'block';
+    }
+}
+
+async function submit2FALogin() {
+    const code = document.getElementById('2fa-login-code').value;
+    if (!code) return;
+
+    try {
+        const resp = await fetch(`${API_BASE}/api/auth/verify-2fa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temp_token: window.tempToken2FA, code })
+        });
+        const data = await resp.json();
+        if (data.ok) {
+            document.getElementById('2fa-login-modal').style.display = 'none';
+            localStorage.setItem('9sec_user', JSON.stringify(data.user));
+            localStorage.setItem('9sec_token', data.token);
+            checkAuth();
+        } else {
+            showAlert(data.error || "Invalid 2FA code", "Auth Error", "fa-triangle-exclamation", "var(--danger)");
+        }
+    } catch (e) {
+        showAlert("Connection error during 2FA", "Error");
     }
 }
 
@@ -310,9 +342,29 @@ async function refreshUsers() {
             <tr>
                 <td>${u.email}</td>
                 <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-success'}">${u.role}</span></td>
+                <td><i class="fa-solid ${u.two_factor_enabled ? 'fa-circle-check text-accent' : 'fa-circle-xmark'}" style="color: ${u.two_factor_enabled ? 'var(--accent)' : 'var(--text-dim)'};"></i> ${u.two_factor_enabled ? 'Protected' : 'No 2FA'}</td>
                 <td style="font-size: 12px; color: var(--text-dim);">${new Date(u.created_at).toLocaleDateString()}</td>
             </tr>
         `).join('');
+    }
+}
+
+async function submitAddUser() {
+    const email = document.getElementById('new-user-email').value.trim();
+    const password = document.getElementById('new-user-pass').value;
+    const role = document.getElementById('new-user-role').value;
+
+    if (!email || !password) return showAlert("Email and password are required.", "Error", "fa-triangle-exclamation", "var(--danger)");
+
+    const data = await apiFetch('/api/user/users', 'POST', { email, password, role });
+    if (data.ok) {
+        hideAddUser();
+        refreshUsers();
+        showAlert(`User ${email} has been successfully invited.`, "User Invited");
+        document.getElementById('new-user-email').value = '';
+        document.getElementById('new-user-pass').value = '';
+    } else {
+        showAlert("Failed to invite user: " + data.error, "Error", "fa-triangle-exclamation", "var(--danger)");
     }
 }
 
@@ -421,10 +473,77 @@ async function testGSVKey() {
 }
 
 // Modals
+function showAddUser() { document.getElementById('user-modal').style.display = 'flex'; }
+function hideAddUser() { document.getElementById('user-modal').style.display = 'none'; }
 function showAddAllowlist() { document.getElementById('allowlist-modal').style.display = 'flex'; }
 function hideAddAllowlist() { document.getElementById('allowlist-modal').style.display = 'none'; }
 function showAddBlocklist() { document.getElementById('blocklist-modal').style.display = 'flex'; }
 function hideAddBlocklist() { document.getElementById('blocklist-modal').style.display = 'none'; }
+
+// 2FA Functions
+async function setup2FA() {
+    const data = await apiFetch('/api/user/2fa/setup');
+    if (data.ok) {
+        window.current2FASecret = data.secret;
+        document.getElementById('2fa-qr-img').src = data.qr_code;
+        document.getElementById('2fa-setup-modal').style.display = 'flex';
+    }
+}
+
+function hide2FA() {
+    document.getElementById('2fa-setup-modal').style.display = 'none';
+}
+
+async function verifyEnable2FA() {
+    const code = document.getElementById('2fa-verify-code').value;
+    if (!code) return;
+
+    const data = await apiFetch('/api/user/2fa/enable', 'POST', { secret: window.current2FASecret, code });
+    if (data.ok) {
+        hide2FA();
+        refresh2FAStatus();
+        showAlert("Two-Factor Authentication has been enabled successfully!", "Security Shield Active");
+    } else {
+        showAlert(data.error, "Verification Failed", "fa-triangle-exclamation", "var(--danger)");
+    }
+}
+
+async function disable2FA() {
+    showAlert("Are you sure you want to disable 2FA? This will make your account less secure.", "Disable Security", "fa-triangle-exclamation", "var(--warning)")
+        .then(async confirmed => {
+            const data = await apiFetch('/api/user/2fa/disable', 'POST');
+            if (data.ok) {
+                refresh2FAStatus();
+                showAlert("2FA has been disabled.", "Security Alert", "fa-shield", "var(--warning)");
+            }
+        });
+}
+
+async function refresh2FAStatus() {
+    const data = await apiFetch('/api/user/me');
+    if (data.ok && data.user) {
+        const isEnabled = data.user.two_factor_enabled;
+        const statusText = document.getElementById('2fa-status-text');
+        const toggleBtn = document.getElementById('btn-2fa-toggle');
+        const iconDiv = document.getElementById('2fa-icon-shield');
+
+        if (isEnabled) {
+            statusText.textContent = "2FA is currently ENABLED";
+            statusText.style.color = "var(--accent)";
+            toggleBtn.textContent = "Disable 2FA";
+            toggleBtn.className = "btn btn-danger";
+            toggleBtn.onclick = disable2FA;
+            iconDiv.innerHTML = '<i class="fa-solid fa-shield-check" style="color: var(--accent);"></i>';
+        } else {
+            statusText.textContent = "2FA is currently Disabled";
+            statusText.style.color = "#fff";
+            toggleBtn.textContent = "Enable 2FA";
+            toggleBtn.className = "btn btn-primary";
+            toggleBtn.onclick = setup2FA;
+            iconDiv.innerHTML = '<i class="fa-solid fa-shield" style="color: var(--text-dim);"></i>';
+        }
+    }
+}
 
 // Colors
 function getRiskColor(score) {
