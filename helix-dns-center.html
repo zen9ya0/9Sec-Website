@@ -303,10 +303,61 @@
                     <!-- JS injected -->
                 </div>
 
-                <button class="btn btn-primary" style="margin-top: 24px; width:100%; justify-content:center;"
-                    id="save-settings-btn">
-                    Update Infrastructure Config
-                </button>
+                <button class="btn btn-primary" id="save-settings-btn" style="width:100%; margin-top: 10px;">Update
+                    Infrastructure Config</button>
+            </div>
+
+            <div class="glass-card" style="margin-top: 24px;">
+                <h3>Advanced DNA Security (AI & Intelligence)</h3>
+                <p style="color: var(--text-dim); margin-bottom: 24px;">Enhance threat detection using Large Language
+                    Models and Global Reputation services.</p>
+
+                <!-- AI Dispatcher -->
+                <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                    <div
+                        style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">AI Dispatcher (OpenAI GPT-4o)</div>
+                            <div style="font-size: 12px; color: var(--text-dim);">Perform deep semantic analysis on
+                                suspicious high-entropy domains.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="ai-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; gap: 10px;">
+                        <input type="password" id="openai-key" placeholder="sk-..."
+                            style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff;">
+                        <button class="btn" style="background: rgba(255,255,255,0.05);" onclick="testOpenAIKey()">Test
+                            Connection</button>
+                    </div>
+                </div>
+
+                <!-- Google Safe Browsing -->
+                <div style="margin-bottom: 30px;">
+                    <div
+                        style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">Google Safe Browsing</div>
+                            <div style="font-size: 12px; color: var(--text-dim);">Check domains against Google's global
+                                malware and phishing database.</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="gsv-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; gap: 10px;">
+                        <input type="password" id="gsv-key" placeholder="API Key"
+                            style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: #fff;">
+                        <button class="btn" style="background: rgba(255,255,255,0.05);" onclick="testGSVKey()">Test
+                            Connection</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="save-advanced-btn"
+                    style="width:100%; background: var(--accent);">Save Advanced Settings</button>
             </div>
         </section>
 
@@ -348,7 +399,7 @@
         </div>
     </div>
 
-    <script src="helix-dns-center.js?v=2.3.4"></script>
+    <script src="helix-dns-center.js?v=2.3.5"></script>
 </body>
 
 </html>

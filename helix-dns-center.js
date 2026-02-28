@@ -300,14 +300,21 @@ async function refreshUsers() {
     }
 }
 
-// Settings (CIDRs)
+// Settings (CIDRs & Advanced)
 async function refreshSettings() {
-    // 1. Get provisioned IP
+    // 1. Get provisioned IP & CIDRs
     const ipData = await apiFetch('/api/user/dns-ips');
     if (ipData.ok && ipData.data.length > 0) {
         const info = ipData.data[0];
         document.getElementById('resolver-ip').textContent = info.public_ip;
         egressCidrs = info.allowed_cidrs ? info.allowed_cidrs.split(',').map(s => s.trim()).filter(s => s) : [];
+
+        // Populate Advanced Settings
+        document.getElementById('ai-toggle').checked = !!info.ai_dispatcher_enabled;
+        document.getElementById('openai-key').value = info.openai_api_key || '';
+        document.getElementById('gsv-toggle').checked = !!info.safe_browsing_enabled;
+        document.getElementById('gsv-key').value = info.safe_browsing_api_key || '';
+
         renderSettings();
     }
 }
@@ -350,6 +357,52 @@ document.getElementById('save-settings-btn').onclick = async () => {
     btn.disabled = false;
     btn.textContent = 'Update Infrastructure Config';
 };
+
+document.getElementById('save-advanced-btn').onclick = async () => {
+    const btn = document.getElementById('save-advanced-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const payload = {
+        ai_dispatcher_enabled: document.getElementById('ai-toggle').checked,
+        openai_api_key: document.getElementById('openai-key').value,
+        safe_browsing_enabled: document.getElementById('gsv-toggle').checked,
+        safe_browsing_api_key: document.getElementById('gsv-key').value
+    };
+
+    const data = await apiFetch('/api/user/dns-settings', 'PATCH', payload);
+    if (data.ok) {
+        alert("Advanced DNA Security settings saved!");
+    } else {
+        alert("Save failed: " + data.error);
+    }
+    btn.disabled = false;
+    btn.textContent = 'Save Advanced Settings';
+};
+
+async function testOpenAIKey() {
+    const key = document.getElementById('openai-key').value;
+    if (!key) return alert("Please enter an API Key first.");
+
+    document.body.style.cursor = 'wait';
+    const data = await apiFetch('/api/user/test-openai-key', 'POST', { key });
+    document.body.style.cursor = 'default';
+
+    if (data.ok) alert("✅ OpenAI Connection Successful!");
+    else alert("❌ Connection Failed: " + data.error);
+}
+
+async function testGSVKey() {
+    const key = document.getElementById('gsv-key').value;
+    if (!key) return alert("Please enter an API Key first.");
+
+    document.body.style.cursor = 'wait';
+    const data = await apiFetch('/api/user/test-safebrowsing-key', 'POST', { key });
+    document.body.style.cursor = 'default';
+
+    if (data.ok) alert("✅ Google Safe Browsing Connection Successful!");
+    else alert("❌ Connection Failed: " + data.error);
+}
 
 // Modals
 function showAddAllowlist() { document.getElementById('allowlist-modal').style.display = 'flex'; }
