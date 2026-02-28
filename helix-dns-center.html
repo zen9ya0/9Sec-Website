@@ -277,9 +277,13 @@
                                 </div>
                             </div>
                         </div>
-                        <button id="btn-2fa-toggle" class="btn btn-primary" onclick="setup2FA()">Enable 2FA</button>
                     </div>
+                    <label class="switch">
+                        <input type="checkbox" id="2fa-toggle-input" onchange="handle2FAToggle(this)">
+                        <span class="slider round"></span>
+                    </label>
                 </div>
+            </div>
             </div>
         </section>
 
@@ -296,7 +300,9 @@
                         <tr>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Join Date</th>
+                            <th style="width: 80px; text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="users-table-body">

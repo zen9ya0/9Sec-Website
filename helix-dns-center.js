@@ -338,15 +338,48 @@ async function refreshUsers() {
     const data = await apiFetch('/api/user/users');
     if (data.ok) {
         const body = document.getElementById('users-table-body');
+        const selfEmail = JSON.parse(localStorage.getItem('9sec_user')).email;
         body.innerHTML = data.data.map(u => `
             <tr>
                 <td>${u.email}</td>
                 <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-success'}">${u.role}</span></td>
                 <td><i class="fa-solid ${u.two_factor_enabled ? 'fa-circle-check text-accent' : 'fa-circle-xmark'}" style="color: ${u.two_factor_enabled ? 'var(--accent)' : 'var(--text-dim)'};"></i> ${u.two_factor_enabled ? 'Protected' : 'No 2FA'}</td>
                 <td style="font-size: 12px; color: var(--text-dim);">${new Date(u.created_at).toLocaleDateString()}</td>
+                <td style="text-align: center; display: flex; gap: 8px; justify-content: center;">
+                    ${u.two_factor_enabled ? `<button class="btn" style="padding: 4px 8px; font-size: 10px; background: rgba(255,150,0,0.1); color: #ff9f43;" title="Reset 2FA" onclick="resetUser2FA('${u.id}', '${u.email}')"><i class="fa-solid fa-shield-slash"></i></button>` : ''}
+                    ${u.email !== selfEmail ? `<button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="deleteUser('${u.id}', '${u.email}')"><i class="fa-solid fa-user-minus"></i></button>` : `<span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-dim);">You</span>`}
+                </td>
             </tr>
         `).join('');
     }
+}
+
+async function resetUser2FA(id, email) {
+    showAlert(`Reset 2FA for user ${email}? Use this only if they lost access to their device.`, "Confirm Reset", "fa-shield-slash", "var(--warning)")
+        .then(async confirmed => {
+            if (confirmed) {
+                const data = await apiFetch(`/api/user/users/${id}/reset-2fa`, 'POST');
+                if (data.ok) {
+                    refreshUsers();
+                    showAlert(`2FA for ${email} has been reset.`, "Reset Successful");
+                }
+            }
+        });
+}
+
+async function deleteUser(id, email) {
+    showAlert(`Are you sure you want to delete user ${email}?`, "Confirm Delete", "fa-user-minus", "var(--danger)")
+        .then(async confirmed => {
+            if (confirmed) {
+                const data = await apiFetch(`/api/user/users/${id}`, 'DELETE');
+                if (data.ok) {
+                    refreshUsers();
+                    showAlert(`User ${email} has been removed.`, "Success");
+                } else {
+                    showAlert(data.error, "Error", "fa-triangle-exclamation", "var(--danger)");
+                }
+            }
+        });
 }
 
 async function submitAddUser() {
@@ -511,12 +544,26 @@ async function verifyEnable2FA() {
 async function disable2FA() {
     showAlert("Are you sure you want to disable 2FA? This will make your account less secure.", "Disable Security", "fa-triangle-exclamation", "var(--warning)")
         .then(async confirmed => {
-            const data = await apiFetch('/api/user/2fa/disable', 'POST');
-            if (data.ok) {
-                refresh2FAStatus();
-                showAlert("2FA has been disabled.", "Security Alert", "fa-shield", "var(--warning)");
+            if (confirmed) {
+                const data = await apiFetch('/api/user/2fa/disable', 'POST');
+                if (data.ok) {
+                    refresh2FAStatus();
+                    showAlert("2FA has been disabled.", "Security Alert", "fa-shield", "var(--warning)");
+                }
+            } else {
+                refresh2FAStatus(); // Reset switch state
             }
         });
+}
+
+function handle2FAToggle(el) {
+    const isChecked = el.checked;
+    el.checked = !isChecked; // Don't let it change automatically
+    if (isChecked) {
+        setup2FA();
+    } else {
+        disable2FA();
+    }
 }
 
 async function refresh2FAStatus() {
@@ -524,22 +571,18 @@ async function refresh2FAStatus() {
     if (data.ok && data.user) {
         const isEnabled = data.user.two_factor_enabled;
         const statusText = document.getElementById('2fa-status-text');
-        const toggleBtn = document.getElementById('btn-2fa-toggle');
+        const toggleInput = document.getElementById('2fa-toggle-input');
         const iconDiv = document.getElementById('2fa-icon-shield');
 
         if (isEnabled) {
             statusText.textContent = "2FA is currently ENABLED";
             statusText.style.color = "var(--accent)";
-            toggleBtn.textContent = "Disable 2FA";
-            toggleBtn.className = "btn btn-danger";
-            toggleBtn.onclick = disable2FA;
+            if (toggleInput) toggleInput.checked = true;
             iconDiv.innerHTML = '<i class="fa-solid fa-shield-check" style="color: var(--accent);"></i>';
         } else {
             statusText.textContent = "2FA is currently Disabled";
             statusText.style.color = "#fff";
-            toggleBtn.textContent = "Enable 2FA";
-            toggleBtn.className = "btn btn-primary";
-            toggleBtn.onclick = setup2FA;
+            if (toggleInput) toggleInput.checked = false;
             iconDiv.innerHTML = '<i class="fa-solid fa-shield" style="color: var(--text-dim);"></i>';
         }
     }
