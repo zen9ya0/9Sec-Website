@@ -216,6 +216,25 @@
 
         <!-- Policy Section (Allowlist & Blacklist) -->
         <section id="policy" class="section">
+            <div class="glass-card" style="margin-bottom: 24px;">
+                <h3 style="margin-bottom: 16px;">HelixDNS Operation Mode</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div id="mode-active" class="mode-card" onclick="setHelixMode('Active')">
+                        <div class="mode-icon"><i class="fa-solid fa-shield-bolt"></i></div>
+                        <div>
+                            <div class="mode-title">Active Mode</div>
+                            <div class="mode-desc">Automatically block malicious domains and policy violations.</div>
+                        </div>
+                    </div>
+                    <div id="mode-passive" class="mode-card" onclick="setHelixMode('Passive')">
+                        <div class="mode-icon"><i class="fa-solid fa-eye"></i></div>
+                        <div>
+                            <div class="mode-title">Passive Mode</div>
+                            <div class="mode-desc">Monitor and log all traffic without blocking. (Detection Only)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="grid">
                 <!-- Blacklist -->
                 <div class="glass-card">
@@ -261,28 +280,6 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- Security Settings (2FA) -->
-                <div class="glass-card" style="margin-top: 24px;">
-                    <h3>Account Security</h3>
-                    <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 20px;">Protect your account with
-                        Two-Factor Authentication (TOTP).</p>
-                    <div id="2fa-status-area"
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid var(--border);">
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div id="2fa-icon-shield" style="font-size: 24px; color: var(--text-dim);"><i
-                                    class="fa-solid fa-shield"></i></div>
-                            <div>
-                                <div id="2fa-status-text" style="font-weight: 600;">2FA is currently Disabled</div>
-                                <div style="font-size: 12px; color: var(--text-dim);">Recommended for all administrators
-                                </div>
-                            </div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="2fa-toggle-input" onchange="handle2FAToggle(this)">
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -294,20 +291,22 @@
                     <button class="btn btn-primary" onclick="showAddUser()"><i class="fa-solid fa-user-plus"></i> Invite
                         User</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th style="text-align: center;">Status</th>
-                            <th style="text-align: center;">Join Date</th>
-                            <th style="width: 80px; text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body">
-                        <!-- JS injected -->
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th style="text-align: center;">Status / 2FA</th>
+                                <th style="text-align: center;">Join Date</th>
+                                <th style="width: 120px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- JS injected -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 

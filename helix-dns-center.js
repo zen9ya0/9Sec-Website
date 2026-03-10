@@ -77,9 +77,11 @@ async function loadSectionData(id) {
         case 'policy':
             refreshAllowlist();
             refreshBlocklist();
+            refreshHelixMode();
             break;
         case 'users':
             refreshUsers();
+            refresh2FAStatus();
             break;
         case 'setting':
             refreshSettings();
@@ -339,20 +341,38 @@ async function refreshUsers() {
     if (data.ok) {
         const body = document.getElementById('users-table-body');
         const selfEmail = JSON.parse(localStorage.getItem('9sec_user')).email;
-        body.innerHTML = data.data.map(u => `
-            <tr>
-                <td>${u.email}</td>
-                <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-success'}">${u.role}</span></td>
-                <td><i class="fa-solid ${u.two_factor_enabled ? 'fa-circle-check text-accent' : 'fa-circle-xmark'}" style="color: ${u.two_factor_enabled ? 'var(--accent)' : 'var(--text-dim)'};"></i> ${u.two_factor_enabled ? 'Protected' : 'No 2FA'}</td>
-                <td style="font-size: 12px; color: var(--text-dim); text-align: center;">${new Date(u.created_at).toLocaleDateString()}</td>
-                <td>
-                    <div style="display: flex; gap: 8px; justify-content: center;">
-                        ${u.two_factor_enabled ? `<button class="btn" style="padding: 4px 8px; font-size: 10px; background: rgba(255,150,0,0.1); color: #ff9f43;" title="Reset 2FA" onclick="resetUser2FA('${u.id}', '${u.email}')"><i class="fa-solid fa-shield-slash"></i></button>` : ''}
-                        ${u.email !== selfEmail ? `<button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="deleteUser('${u.id}', '${u.email}')"><i class="fa-solid fa-user-minus"></i></button>` : `<span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-dim);">You</span>`}
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        body.innerHTML = data.data.map(u => {
+            const isSelf = u.email === selfEmail;
+            const statusCell = isSelf ? `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <span id="2fa-status-text" style="font-size: 11px; font-weight: 600; color: ${u.two_factor_enabled ? 'var(--accent)' : 'var(--text-dim)'}">${u.two_factor_enabled ? 'Protected' : 'No 2FA'}</span>
+                    <label class="switch" style="transform: scale(0.8);">
+                        <input type="checkbox" id="2fa-toggle-input" ${u.two_factor_enabled ? 'checked' : ''} onchange="handle2FAToggle(this)">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+            ` : `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid ${u.two_factor_enabled ? 'fa-circle-check text-accent' : 'fa-circle-xmark'}" style="color: ${u.two_factor_enabled ? 'var(--accent)' : 'var(--text-dim)'};"></i>
+                    <span style="font-size: 13px;">${u.two_factor_enabled ? 'Protected' : 'No 2FA'}</span>
+                </div>
+            `;
+
+            return `
+                <tr>
+                    <td>${u.email}</td>
+                    <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-success'}">${u.role}</span></td>
+                    <td>${statusCell}</td>
+                    <td style="font-size: 12px; color: var(--text-dim); text-align: center;">${new Date(u.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <div style="display: flex; gap: 8px; justify-content: center;">
+                            ${u.two_factor_enabled ? `<button class="btn" style="padding: 4px 8px; font-size: 10px; background: rgba(255,150,0,0.1); color: #ff9f43;" title="Reset 2FA" onclick="resetUser2FA('${u.id}', '${u.email}')"><i class="fa-solid fa-shield-slash"></i></button>` : ''}
+                            ${!isSelf ? `<button class="btn btn-danger" style="padding: 4px 8px; font-size: 10px;" onclick="deleteUser('${u.id}', '${u.email}')"><i class="fa-solid fa-user-minus"></i></button>` : `<span class="badge" style="background: rgba(255,255,255,0.05); color: var(--text-dim);">You</span>`}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
     }
 }
 
@@ -577,15 +597,19 @@ async function refresh2FAStatus() {
         const iconDiv = document.getElementById('2fa-icon-shield');
 
         if (isEnabled) {
-            statusText.textContent = "2FA is currently ENABLED";
-            statusText.style.color = "var(--accent)";
+            if (statusText) {
+                statusText.textContent = "Protected";
+                statusText.style.color = "var(--accent)";
+            }
             if (toggleInput) toggleInput.checked = true;
-            iconDiv.innerHTML = '<i class="fa-solid fa-shield-check" style="color: var(--accent);"></i>';
+            if (iconDiv) iconDiv.innerHTML = '<i class="fa-solid fa-shield-check" style="color: var(--accent);"></i>';
         } else {
-            statusText.textContent = "2FA is currently Disabled";
-            statusText.style.color = "#fff";
+            if (statusText) {
+                statusText.textContent = "No 2FA";
+                statusText.style.color = "var(--text-dim)";
+            }
             if (toggleInput) toggleInput.checked = false;
-            iconDiv.innerHTML = '<i class="fa-solid fa-shield" style="color: var(--text-dim);"></i>';
+            if (iconDiv) iconDiv.innerHTML = '<i class="fa-solid fa-shield" style="color: var(--text-dim);"></i>';
         }
     }
 }
@@ -776,6 +800,34 @@ async function refreshBlocklist() {
                 </td>
             </tr>
         `).join('');
+    }
+}
+
+async function refreshHelixMode() {
+    const data = await apiFetch('/api/user/dns-ips');
+    if (data.ok && data.data.length > 0) {
+        const mode = data.data[0].helix_dns_mode || 'Active';
+        updateModeUI(mode);
+    }
+}
+
+function updateModeUI(mode) {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+    if (mode === 'Active') {
+        document.getElementById('mode-active').classList.add('active');
+    } else {
+        document.getElementById('mode-passive').classList.add('active');
+    }
+}
+
+async function setHelixMode(mode) {
+    updateModeUI(mode); // Optimistic UI update
+    const data = await apiFetch('/api/user/dns-settings', 'PATCH', { helix_dns_mode: mode });
+    if (data.ok) {
+        showAlert(`HelixDNS mode switched to ${mode}.`, "Policy Synchronized");
+    } else {
+        showAlert("Failed to update mode: " + data.error, "Error", "fa-triangle-exclamation", "var(--danger)");
+        refreshHelixMode(); // Revert on failure
     }
 }
 
