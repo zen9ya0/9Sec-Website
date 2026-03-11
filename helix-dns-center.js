@@ -1115,3 +1115,43 @@ function viewQuadrantDetails(type) {
     const eventNavItem = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.includes('Security Event'));
     switchSection('event', eventNavItem || document.querySelectorAll('.nav-item')[1]);
 }
+
+// ── Explicit global exports (ensures onclick= attributes always resolve) ──
+window.fetchEventLogs = fetchEventLogs;
+window.applyEventLogs = applyEventLogs;
+window.resetEventFilters = resetEventFilters;
+window.setEventFilter = setEventFilter;
+window.logClientFilter = logClientFilter;
+window.prevPage = prevPage;
+window.nextPage = nextPage;
+window.onDateFromChange = onDateFromChange;
+window.onDateToChange = onDateToChange;
+window.updatePaginationFooter = updatePaginationFooter;
+window.renderLogTable = renderLogTable;
+window.deepDive = deepDive;
+window.switchSection = switchSection;
+window.login = login;
+window.logout = logout;
+window.submit2FALogin = submit2FALogin;
+window.closeAlert = closeAlert;
+window.resolveConfirm = resolveConfirm;
+window.removeCidr = removeCidr;
+window.showAddUser = showAddUser;
+window.hideAddUser = hideAddUser;
+window.showAddAllowlist = showAddAllowlist;
+window.hideAddAllowlist = hideAddAllowlist;
+window.showAddBlocklist = showAddBlocklist;
+window.hideAddBlocklist = hideAddBlocklist;
+window.submitAllowlist = submitAllowlist;
+window.deleteAllowlist = deleteAllowlist;
+window.submitAddUser = submitAddUser;
+window.deleteUser = deleteUser;
+window.resetUser2FA = resetUser2FA;
+window.setup2FA = setup2FA;
+window.hide2FA = hide2FA;
+window.verifyEnable2FA = verifyEnable2FA;
+window.disable2FA = disable2FA;
+window.handle2FAToggle = handle2FAToggle;
+window.testOpenAIKey = testOpenAIKey;
+window.testGSVKey = testGSVKey;
+window.viewQuadrantDetails = viewQuadrantDetails;
