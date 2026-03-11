@@ -589,13 +589,15 @@
             <h2 style="font-family: 'Outfit'; margin-bottom: 8px;">SECURITY CENTER</h2>
             <p style="color: var(--text-dim); margin-bottom: 32px;">Please sign in to your project</p>
 
-            <input type="email" id="login-email" placeholder="Email"
-                style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
-            <input type="password" id="login-pass" placeholder="Password"
-                style="width:100%; margin-bottom:24px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
+            <form onsubmit="login(); return false;" autocomplete="on">
+                <input type="email" id="login-email" placeholder="Email" autocomplete="username"
+                    style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
+                <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password"
+                    style="width:100%; margin-bottom:24px; padding:12px; border-radius:8px; border:1px solid var(--border); background:rgba(0,0,0,0.2); color:#fff;">
 
-            <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="login()">Sign
-                In</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Sign
+                    In</button>
+            </form>
             <div id="login-error" style="color: var(--danger); margin-top: 16px; display:none;"></div>
         </div>
     </div>
